@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"Version": 0,
+	"VersionName": "0.0",
+	"EngineVersion": "4.2.0-0+UE4",
+	"PackageFileUE4Version": 363,
+	"PackageFileLicenseeUE4Version": 0,
+	"EngineAssociation": "{D057EA08-4E1D-F3C4-6DB8-33B9E9E55731}",
+	"FriendlyName": "",
+	"Description": "",
+	"Category": "",
+	"CreatedBy": "",
+	"CreatedByURL": "",
+	"Modules": [
+		{
+			"Name": "ActionRPGGame",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"EpicSampleNameHash": "0"
+}

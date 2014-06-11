@@ -13,6 +13,9 @@ class AARPAbility : public AActor, public IIARActionState
 	UPROPERTY(Replicated)
 	bool BlankRep;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Casting Speed")
+		float CastingSpeed;
+
 	virtual void Tick(float DeltaSeconds) OVERRIDE;
 
 	/* [client] OVERIDE from IIARActionState */

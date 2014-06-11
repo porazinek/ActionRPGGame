@@ -2,6 +2,8 @@
 #pragma once
 
 #include "GameFramework/SpringArmComponent.h"
+#include "Types/ARStructTypes.h"
+
 #include "ARCharacter.generated.h"
 
 UCLASS(config = Game)
@@ -9,6 +11,10 @@ class AARCharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+		TSubobjectPtr<class UARAttributeComponent> Attributes;
+	float HealthVal;
 	virtual void PostInitializeComponents() OVERRIDE;
 
 	/////TESTING ONLY
@@ -27,6 +33,10 @@ class AARCharacter : public ACharacter
 		void ServerEquipAbility(class AARPAbility* AbilityIn);
 
 	void SetCurrentAbility(class AARPAbility* AbilityIn);
+
+	/*[Server] - fire after actions has been initialized*/
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnActionInitialized();
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling
 protected:

@@ -18,7 +18,9 @@ class IIARActionState
 	*/
 	/*[Server]*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-		void OnActionStart();
+		void ServerOnActionStart();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void ClientOnActionStart();
 	/*[Server]*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void OnActionInterval();

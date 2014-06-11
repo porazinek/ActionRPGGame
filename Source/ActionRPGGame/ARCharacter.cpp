@@ -5,6 +5,7 @@
 #include "Abilities/ARPAbility.h"
 #include "ActionState/IARActionState.h"
 #include "ActionState/ARActionStateComponent.h"
+#include "Componenets/ARAttributeComponent.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -34,6 +35,12 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	CharacterMovement->JumpZVelocity = 600.f;
 	CharacterMovement->AirControl = 0.2f;
 
+	Attributes = PCIP.CreateDefaultSubobject<UARAttributeComponent>(this, TEXT("Attributes"));
+	Attributes->Activate();
+	Attributes->bAutoRegister = true;
+	Attributes->GetNetAddressable();
+	Attributes->SetIsReplicated(true);
+
 }
 
 void AARCharacter::PostInitializeComponents()
@@ -62,6 +69,7 @@ void AARCharacter::SpawnDefaultAbility()
 			EquipAbility(AbilityInInventory);
 		}
 	}
+	OnActionInitialized();
 }
 
 void AARCharacter::EquipAbility(class AARPAbility* AbilityIn)
@@ -81,6 +89,7 @@ void AARCharacter::EquipAbility(class AARPAbility* AbilityIn)
 
 void AARCharacter::ServerEquipAbility_Implementation(class AARPAbility* AbilityIn)
 {
+
 	EquipAbility(AbilityIn);
 }
 

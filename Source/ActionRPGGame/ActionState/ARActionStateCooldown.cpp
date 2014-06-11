@@ -18,7 +18,8 @@ void UARActionStateCooldown::Tick(float DeltaTime)
 	if (IsOnCooldown)
 	{
 		CurrentCooldownTime += DeltaTime;
-		if (CurrentCooldownTime >= GetOuterUARActionStateComponent()->ActionCooldownTime)
+		float ActionCooldownTime = GetOuterUARActionStateComponent()->ActionCooldownTime;
+		if (CurrentCooldownTime >= ActionCooldownTime)
 		{
 			CooldownEnded();
 			GetOuterUARActionStateComponent()->GotoState(GetOuterUARActionStateComponent()->ActiveState);

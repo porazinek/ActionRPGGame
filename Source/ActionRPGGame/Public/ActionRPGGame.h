@@ -4,5 +4,7 @@
 #define __ACTIONRPGGAME_H__
 
 #include "Engine.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "ParticleDefinitions.h"
 
 #endif

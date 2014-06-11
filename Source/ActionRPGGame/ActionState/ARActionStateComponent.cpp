@@ -89,7 +89,7 @@ void UARActionStateComponent::BeginActionSequence()
 
 void UARActionStateComponent::FireAction()
 {
-	CastBegin();
+	CastEnd();
 }
 
 void UARActionStateComponent::StartAction()

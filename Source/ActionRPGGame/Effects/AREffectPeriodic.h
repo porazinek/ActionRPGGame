@@ -4,12 +4,12 @@
 #include "AREffectPeriodic.generated.h"
 
 /*
-	Periodic effects are replicated back to client.
-	That is because they work over period of time, and for sake of smoothnes of gameplay
-	we need to make some client side predictions about effect duration.
+	Logic of effect is executed only on server. Although Periodic effect is spawned on both
+	cliet and server, client only receive cosmetic non-authorative stuff, that is
+	as for not not really synced with what is going on on server.
+	This needs to be fixed.
 
-	Still best solution would be probably to make replicated UObject. But that is way over my skill
-	honestly ;p.
+	Server should have ability to override client effect. 
 */
 
 UCLASS(minimalapi)
@@ -17,6 +17,32 @@ class AAREffectPeriodic : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
+		virtual void TickMe(float DeltaTime);
+
+	bool IsEffectActive;
+
+	float MaxDuration;
+	UPROPERTY(Transient)
+	float CurrentDuration;
+
+	float PeriodDuration;
+	UPROPERTY(Transient)
+	float CurrentPeriodDuration;
+
+	UFUNCTION()
+		void Initialze();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Effect")
+		void OnEffectPeriod();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Effect")
+		void OnEffectEnd();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerActivate();
+
+	void Activate();
+
+	void Deactivate();
 };
 
 

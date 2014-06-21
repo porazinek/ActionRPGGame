@@ -120,8 +120,8 @@ void UARActionStateComponent::CooldownBegin()
 }
 void UARActionStateComponent::CooldownEnded()
 {
-	GetOwner()->PrimaryActorTick.SetTickFunctionEnable(false);
-	GetOwner()->PrimaryActorTick.UnRegisterTickFunction();
+	//GetOwner()->PrimaryActorTick.SetTickFunctionEnable(false);
+	//GetOwner()->PrimaryActorTick.UnRegisterTickFunction();
 	OnCooldownEnded.Broadcast();
 }
 

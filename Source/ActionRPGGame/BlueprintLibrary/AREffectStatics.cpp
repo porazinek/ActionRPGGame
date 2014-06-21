@@ -49,6 +49,17 @@ void UAREffectStatics::ChangeAttribute(AActor* Target, AActor* CausedBy, float M
 
 	if (!attrComp.IsValid())
 		return;
+	//Pass ability info here ?
+	//how Do I distinguish type of damage.
+	//Or is it healing ?
+	//In UI might want to color code damage numbers depending on damage type.
+	//Or display ability/effect icons along damage numbers.
+	//Do I want floating damage numbers in the first place ?
+
+	//I will need data struct, that will be constructed here
+	//then passed to component
+	//and the replicated and broadcasted using delegate. (also broadcasted for server as well).
+
 
 	attrComp->ChangeAttribute(ModVal, AttributeName, OpType);
 }

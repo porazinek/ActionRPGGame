@@ -3,5 +3,4 @@
 #include "ActionRPGGame.h"
 
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, ActionRPGGame, "ActionRPGGame" );
- 
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, ActionRPGGame, "ActionRPGGame");

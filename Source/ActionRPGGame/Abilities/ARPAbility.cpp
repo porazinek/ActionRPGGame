@@ -19,7 +19,7 @@ AARPAbility::AARPAbility(const class FPostConstructInitializeProperties& PCIP)
 	CurrentCastTime = false;
 
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
 
 	ActionState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
@@ -49,11 +49,11 @@ void AARPAbility::Tick(float DeltaSeconds)
 		CurrentCastTime += DeltaSeconds*CastingSpeed;
 		if (CurrentCastTime >= ActionState->MaxCastTime)
 		{
-			ActionState->FireAction();
+			//ActionState->FireAction();
 			CurrentCastTime = 0;
 			IsBeingUsed = false;
 			IsOnCooldown = true;
-			ActionState->CooldownBegin();
+			//ActionState->CooldownBegin();
 			
 		}
 	}
@@ -62,7 +62,7 @@ void AARPAbility::Tick(float DeltaSeconds)
 		CurrentCooldownTime += DeltaSeconds*CastingSpeed;
 		if (CurrentCooldownTime >= ActionState->ActionCooldownTime)
 		{
-			ActionState->CooldownEnded();
+			//ActionState->CooldownEnded();
 			IsOnCooldown = false;
 			CurrentCooldownTime = 0;
 			//PrimaryActorTick.SetTickFunctionEnable(false);
@@ -88,18 +88,23 @@ void AARPAbility::InputPressed()
 	//only cosmetic stuff.
 	if (!IsOnCooldown)
 	{
-		Execute_ServerOnActionStart(this);
+		//Execute_ServerOnActionStart(this);
 		//Execute_ClientOnActionStart(this);
-		ActionState->CastBegin();
+		
+		if (Role < ROLE_Authority)
+		{
+			ActionState->CastBegin();
+		}
+		
 		IsBeingUsed = true;
-		PrimaryActorTick.SetTickFunctionEnable(true);
-		PrimaryActorTick.RegisterTickFunction(GetLevel());
+		//PrimaryActorTick.SetTickFunctionEnable(true);
+		//PrimaryActorTick.RegisterTickFunction(GetLevel());
 	}
 }
 void AARPAbility::StartAction()
 {
-	PrimaryActorTick.SetTickFunctionEnable(true);
-	PrimaryActorTick.RegisterTickFunction(GetLevel());
+	//PrimaryActorTick.SetTickFunctionEnable(true);
+	//PrimaryActorTick.RegisterTickFunction(GetLevel());
 	Execute_ServerOnActionStart(this);
 	ActionState->StartAction();
 }

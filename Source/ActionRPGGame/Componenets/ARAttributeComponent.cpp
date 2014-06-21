@@ -30,7 +30,7 @@ void UARAttributeComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 
 void UARAttributeComponent::OnRep_Health()
 {
-	SetAttributeModifiedTwo();
+	GetAttributeModified();
 	//SetAttributeModified(20, "Health");
 }
 

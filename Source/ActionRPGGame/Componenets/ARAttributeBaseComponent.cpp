@@ -39,18 +39,12 @@ void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick T
 
 		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
 		{
-			//if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect == PeriodicEffect)
-			//{
-			//if (effect.IsEffectActive)
-			//{
 			ActivePeriodicEffects.ActiveEffects[It.GetIndex()].ClientCurrentDuration += DeltaTime;
 			if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].ClientCurrentDuration >= ActivePeriodicEffects.ActiveEffects[It.GetIndex()].MaxDuration)
 			{
 				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].ClientCurrentDuration = 0;
 				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].IsEffectActive = false;
 			}
-			//}
-			//}
 		}
 		//for (FPeriodicEffect& effect : ActivePeriodicEffects.ActiveEffects)
 		//{
@@ -160,8 +154,8 @@ void UARAttributeBaseComponent::ChangeAttribute(float ModValue, FName AttributeN
 	float attrValue = GetFloatValue(AttributeName);
 	ModifiedAttribute.ActuallDamage = ModValue;
 	ModifiedAttribute.AttributeName = AttributeName;
-	SetAttributeModified(ModValue, AttributeName);
 	SetFloatValue(AttributeOp(ModValue, attrValue, OpType), AttributeName);
+	SetAttributeModified(ModValue, AttributeName);
 }
 void UARAttributeBaseComponent::SetAttributeModified(float ModValue, FName AttributeName)
 {
@@ -171,7 +165,7 @@ void UARAttributeBaseComponent::SetAttributeModified(float ModValue, FName Attri
 	OnAttributeModified.Broadcast(ModedAttribute);
 }
 
-void UARAttributeBaseComponent::SetAttributeModifiedTwo()
+void UARAttributeBaseComponent::GetAttributeModified()
 {
 	OnAttributeModified.Broadcast(ModifiedAttribute);
 }

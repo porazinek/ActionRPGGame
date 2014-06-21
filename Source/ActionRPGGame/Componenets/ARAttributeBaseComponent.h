@@ -58,7 +58,7 @@ public:
 	void ChangeAttribute(float ModValue, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
 protected:
 	void SetAttributeModified(float ModValue, FName AttributeName);
-	void SetAttributeModifiedTwo();
+	void GetAttributeModified();
 	UPROPERTY(Replicated)
 	FAttributeModified ModifiedAttribute;
 

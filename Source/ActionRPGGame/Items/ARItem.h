@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../Types/ARStructTypes.h"
-
+#include "../Types//AREnumTypes.h"
 #include "ARItem.generated.h"
 
 /*
@@ -18,8 +18,25 @@ class AARItem : public AActor
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 		TArray<FAttribute> ItemAttributes;
 
+	UPROPERTY(EditAnywhere, Category = "Item")
+		FName ItemName;
+	UPROPERTY(EditAnywhere, Category = "Item")
+		FString ItemDescription;
+	UPROPERTY(EditAnywhere, Category = "Item")
+		FSlateBrush ItemIcon;
+
 	UPROPERTY()
 	class AARCharacter* ItemOwner;
+
+	//Set when adding to equipped items.
+	FName ItemID;
+	TEnumAsByte<EItemSlot> ItemSlotEquipped;
+
+
+	//bool operator==(const AARItem& Other) const
+	//{
+	//	return ItemID == Other.ItemID;
+	//};
 };
 
 

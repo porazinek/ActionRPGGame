@@ -21,10 +21,19 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	{
 		PlayerCameraManager->ViewPitchMax = 70.0f;
 	}
-	MaxInventorySize = 50;
-	Inventory.Reserve(50);
-	
-	for (int i = 0; i < MaxInventorySize; i++)
+	MaxInventorySize = 4;
+	Inventory.Reserve(MaxInventorySize);
+	InventorySmall.Reserve(MaxInventorySize);
+	for (int32 i = 0; i < MaxInventorySize; i++)
+	{
+		FInventorySlot slot;
+		slot.SlotID = i;
+		slot.ItemID = "-1"; //no item on that slot.
+		slot.ItemSlot = EItemSlot::Item_Inventory;
+		slot.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
+		InventorySmall.Add(slot);
+	};
+	for (int32 i = 0; i < MaxInventorySize; i++)
 	{
 		FARItemInfo item;
 		item.ItemID = i;
@@ -49,33 +58,137 @@ void AARPlayerController::OnRep_InventoryChanged()
 	IsInventoryChanged = true;
 }
 
-void AARPlayerController::AddItemToInventory(FARItemInfo& Item)
+void AARPlayerController::AddItemToInventory(FInventorySlot Item)
 {
-	if (Inventory.Num() <= MaxInventorySize)
+	if (Role < ROLE_Authority)
 	{
-		for (FARItemInfo& item : Inventory)
+		ServerAddItemToInventory(Item);
+	}
+	else
+	{
+		if (InventorySmall.Num() <= MaxInventorySize)
 		{
-			if (item.ItemName == "Default")
+			for (FInventorySlot& item : InventorySmall)
 			{
-				Item.ItemID = Inventory.Num() + Item.ItemID + 1;
-				if (item.ItemType)
+				if (item.ItemID == "-1")
 				{
-					AARCharacter* MyChar = Cast<AARCharacter>(GetPawn());
-					//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
-					FActorSpawnParameters SpawnInfo;
-					SpawnInfo.bNoCollisionFail = true;
-					SpawnInfo.Owner = MyChar;
-					Item.Item = GetWorld()->SpawnActor<AARWeapon>(item.ItemType, SpawnInfo);
-					Item.Item->SetOwner(MyChar);
-					Item.Item->Instigator = MyChar;
-					Item.Item->ItemOwner = MyChar;
+					item.ItemID = Item.ItemID;
+					item.ItemSlot = Item.ItemSlot;
+					item.EEquipmentSlot = Item.EEquipmentSlot;
+					//OnRep_InventoryChanged();
+					return;
 				}
-
-				item = Item;
-				return;
 			}
 		}
 	}
+}
+
+void AARPlayerController::ServerAddItemToInventory_Implementation(FInventorySlot Item)
+{
+	AddItemToInventory(Item);
+}
+bool AARPlayerController::ServerAddItemToInventory_Validate(FInventorySlot Item)
+{
+	//I dunno how I can validate this.
+	//best option would be to never call this directely on client. Just do it indirectly.
+	return true;
+}
+//it's really only used to swap items.
+void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerAddItemToInventoryOnSlot(Item, SlotID);
+	}
+	else
+	{
+		if (InventorySmall.Num() <= MaxInventorySize)
+		{
+			for (FInventorySlot& item : InventorySmall)
+			{
+				if (item.SlotID == SlotID && item.ItemID != "-1")
+				{
+					FInventorySlot oldItemTemp = item;
+					item.ItemID = Item.ItemID;
+					item.ItemSlot = Item.ItemSlot;
+					item.EEquipmentSlot = Item.EEquipmentSlot;
+					for (FInventorySlot& oldItem : InventorySmall)
+					{
+						if (Item.SlotID == oldItem.SlotID)
+						{
+							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemSlot = oldItemTemp.ItemSlot;
+							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							return;
+						}
+					}
+					return;
+				}
+				if (item.ItemID == "-1" && item.SlotID == SlotID)
+				{
+					item.ItemID = Item.ItemID;
+					item.ItemSlot = Item.ItemSlot;
+					item.EEquipmentSlot = Item.EEquipmentSlot;
+					RemoveItemFromInventory(Item.ItemID, Item.SlotID);
+					//OnRep_InventoryChanged();
+					return;
+				}
+			}
+		}
+	}
+}
+void AARPlayerController::ServerAddItemToInventoryOnSlot_Implementation(FInventorySlot Item, int32 SlotID)
+{
+	AddItemToInventoryOnSlot(Item, SlotID);
+}
+bool AARPlayerController::ServerAddItemToInventoryOnSlot_Validate(FInventorySlot Item, int32 SlotID)
+{
+	for (FInventorySlot& item : InventorySmall)
+	{
+		if (item.ItemID == item.ItemID)
+		{
+			return true;
+		}
+	}
+	return false;
+	/*
+		Since it is used to swap items, we check it user have particular item in inventory.
+		If he dosn't then he probably is trying to cheat.
+	*/
+}
+
+bool AARPlayerController::RemoveItemFromInventory(FName ItemID, int32 SlotID)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerRemoveItemFromInventory(ItemID, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& item : InventorySmall)
+		{
+			if (item.SlotID == SlotID)
+			{
+				//we don't remove actually anything from array.
+				//just change ID and slot types, to match an "empty" slot 
+				// in inventory.
+				item.ItemID = "-1";
+				item.ItemSlot = EItemSlot::Item_Inventory;
+				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
+				//OnRep_InventoryChanged();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+void AARPlayerController::ServerRemoveItemFromInventory_Implementation(FName ItemID, int32 SlotID)
+{
+	RemoveItemFromInventory(ItemID, SlotID);
+}
+bool AARPlayerController::ServerRemoveItemFromInventory_Validate(FName ItemID, int32 SlotID)
+{
+	return true;
 }
 
 void AARPlayerController::SwapItemPosition(FARItemInfo& Item, int32 NewIndex)

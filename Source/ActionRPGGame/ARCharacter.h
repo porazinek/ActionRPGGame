@@ -78,6 +78,8 @@ class AARCharacter : public ACharacter
 	/**[Input]*/
 	void InputSwapLeftWeapon();
 
+	void InputSwapRightWeapon();
+
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling
 protected:

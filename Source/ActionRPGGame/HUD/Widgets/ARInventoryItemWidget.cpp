@@ -12,7 +12,13 @@
 #include "SlateDynamicImageBrush.h"
 
 #include "ARInventoryItemWidget.h"
-
+SARInventoryItemWidget::~SARInventoryItemWidget()
+{
+	if (ItemInSlot.IsValid())
+	{
+		ItemInSlot->Destroy();
+	}
+}
 void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 {
 	PlayerController = InArgs._PlayerController;
@@ -20,20 +26,46 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 	TextColor = FSlateColor(FLinearColor(1, 0, 0, 1));
 	SlotType = InArgs._SlotType;
 	SlotName = InArgs._SlotName;
-	ItemInSlot = InArgs._ItemInSlot;
+	//ItemInSlot = InArgs._ItemInSlot;
 	EquipmentSlot = InArgs._EquipmentSlot;
 	InventoryItemObj = InArgs._InventoryItemObj;
+
+	if (PlayerController != NULL && InventoryItemObj.IsValid())
+	{
+		if (ItemInSlot.IsValid())
+		{
+			ItemInSlot->Destroy();
+			ItemInSlot.Reset();
+		}
+		FString usless;
+		FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(InventoryItemObj->ItemID, usless);
+		if (data)
+		{
+			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+			if (gen)
+			{
+
+				FActorSpawnParameters SpawnInfo;
+				SpawnInfo.bNoCollisionFail = true;
+				SpawnInfo.Owner = PlayerController->GetPawn();
+				ItemInSlot = PlayerController->GetWorld()->SpawnActor<AARItem>(gen->GeneratedClass, SpawnInfo);
+				ItemInSlot->SetOwner(PlayerController->GetPawn());
+				ItemInSlot->Instigator = PlayerController->GetPawn();
+				ItemInSlot->ItemID = InventoryItemObj->ItemID;
+			}
+		}
+	}
 
 	ChildSlot
 		[
 			SNew(SOverlay)
 			+ SOverlay::Slot()
 			[
-				SNew(STextBlock)
-				.Text(this, &SARInventoryItemWidget::GetItemText)
-				.ColorAndOpacity(this, &SARInventoryItemWidget::GetTextColor)
-				//SNew(SImage)
-				//.Image(this, &SARInventoryItemWidget::GetImage)
+				//SNew(STextBlock)
+				//.Text(this, &SARInventoryItemWidget::GetItemText)
+				//.ColorAndOpacity(this, &SARInventoryItemWidget::GetTextColor)
+				SNew(SImage)
+				.Image(this, &SARInventoryItemWidget::GetImage)
 			]
 		];
 }
@@ -42,11 +74,11 @@ const FSlateBrush* SARInventoryItemWidget::GetImage() const
 {
 	FSlateBrush* image = NULL;
 
-	if (InventoryItem.IsValid())
+	if (ItemInSlot.IsValid())
 	{
-		image = &InventoryItem->SlateIcon;
+		image = &ItemInSlot->ItemIcon;
 	}
-
+	//should return default image.
 	return image;
 }
 FText SARInventoryItemWidget::GetItemText() const
@@ -86,10 +118,7 @@ FReply SARInventoryItemWidget::OnDragOver(const FGeometry& MyGeometry, const FDr
 }
 FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
 {
-
-	//TSharedPtr<SARInventoryItemWidget> Widget = MakeShareable(this);
-	//we want to equip items only when dragged on proper slot (not inventory one!)
-	if (this->SlotType != EItemSlot::Item_Inventory && this->SlotType != EItemSlot::Item_Weapon)
+	if (this->SlotType == EItemSlot::Item_Chest)
 	{
 		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
@@ -98,62 +127,48 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 
 			if (MyChar.IsValid())
 			{
-				//assign pointer to this slot on drop.
-				InventoryItem = Operation->PickedItem;
+				int32 tempSlotID = Operation->PickedItem->SlotID;
+				Operation->LastItemSlot->ItemInSlot.Reset();
+				Operation->LastItemSlot->InventoryItemObj.Reset();
+				InventoryItemObj = Operation->PickedItem;
+				ItemInSlot = Operation->InventoryItemObj;
+				MyChar->Equipment->ChangeItem(*Operation->PickedItem, tempSlotID);
 
-				//for user feedback it would be best to create separate slot types for each item
-				//though all will call the same function, and server will do checking 
-				//if item fits to slot.
-				MyChar->Equipment->ChangeItem(Operation->PickedItem->ItemName);
+				//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItemObj->ItemID, Operation->LastItemSlot->InventoryItemObj->SlotID);
 				return FReply::Handled();
 			}
 		}
 	}
-
-	if (this->SlotType == EItemSlot::Item_Weapon)
-	{
-		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
-		if (PlayerController.IsValid() && Operation.IsValid())
-		{
-			TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
-
-			if (MyChar.IsValid())
-			{
-				//assign pointer to this slot on drop.
-				InventoryItem = Operation->PickedItem;
-				MyChar->Equipment->AddLeftHandWeapon(Operation->PickedItem->ItemName);
-				return FReply::Handled();
-			}
-		}
-	}
-
 	if (this->SlotType == EItemSlot::Item_Inventory)
 	{
 		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
 		{
-			int32 ItemIndex = 0;
-			for (FARItemInfo& item : PlayerController->Inventory)
+			int32 tempSlot = InventoryItemObj->SlotID;
+			InventoryItemObj = Operation->PickedItem;
+			ItemInSlot = Operation->InventoryItemObj;
+			FInventorySlot item;
+			item.SlotID = Operation->PickedItem->SlotID;
+			item.ItemID = Operation->PickedItem->ItemID;
+			item.ItemSlot = Operation->PickedItem->ItemSlot;
+			item.EEquipmentSlot = Operation->PickedItem->EEquipmentSlot;
+
+			PlayerController->AddItemToInventoryOnSlot(item, tempSlot);
+
+			if (Operation->LastItemSlot->SlotType != EItemSlot::Item_Inventory)
 			{
-				if (item.ItemID == InventoryItem->ItemID)
+				const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
+				if (MyChar.IsValid())
 				{
-					PlayerController->SwapItemPosition(*Operation->PickedItem, ItemIndex);
-					ItemIndex = 0;
-					return FReply::Handled();
-					
+					MyChar->Equipment->UnEquipItem(*InventoryItemObj);
 				}
-				ItemIndex++;
+				Operation->LastItemSlot->InventoryItemObj.Reset();
+				//InventoryItemObj = NULL
+				Operation->LastItemSlot->ItemInSlot.Reset();
 			}
+			return FReply::Handled();
 		}
 	}
-	TSharedPtr<FInventoryDragDrop> Operation2 = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
-	
-	Operation2->LastItemSlot->InventoryItem = Operation2->PickedItem;
-
-	//if (this->SlotType == EItemSlot::Item_Chest)
-	//{
-	//	float flo = 10;
-	//}
 	return FReply::Handled();
 }
 void SARInventoryItemWidget::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -166,17 +181,23 @@ void SARInventoryItemWidget::OnMouseLeave(const FPointerEvent& MouseEvent)
 }
 FReply SARInventoryItemWidget::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	//TSharedPtr<FDragDropOperation> Operation = MakeShareable(new FDragDropOperation);
-	TSharedRef<FInventoryDragDrop> Operation = FInventoryDragDrop::New(InventoryItem, InventoryItemObj, SharedThis(this));
+	TSharedRef<FInventoryDragDrop> Operation = FInventoryDragDrop::New(InventoryItemObj, ItemInSlot, SharedThis(this));
 	Operation->SetDecoratorVisibility(true);
-	InventoryItem.Reset();
-	InventoryItem = NULL;
+	//InventoryItemObj.Reset();
+	//InventoryItemObj = NULL;
+	//ItemInSlot->Destroy();
+	//ItemInSlot.Reset();
+
 	return FReply::Handled().BeginDragDrop(Operation);
 }
 
 FReply SARInventoryItemWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton()).CaptureMouse(SharedThis(this));
+	if (InventoryItemObj->ItemID != "-1")
+	{
+		return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton()).CaptureMouse(SharedThis(this));
+	}
+	return FReply::Unhandled();
 }
 FReply SARInventoryItemWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
@@ -185,12 +206,12 @@ FReply SARInventoryItemWidget::OnMouseButtonUp(const FGeometry& MyGeometry, cons
 
 
 
-TSharedRef<FInventoryDragDrop> FInventoryDragDrop::New(TSharedPtr<FARItemInfo> PickedItemIn, TWeakObjectPtr<UObject> InventoryItemObj, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn)
+TSharedRef<FInventoryDragDrop> FInventoryDragDrop::New(TSharedPtr<FInventorySlot> PickedItemIn, TWeakObjectPtr<class AARItem> InventoryItemObjIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn)
 {
 	TSharedRef<FInventoryDragDrop> Operation = MakeShareable(new FInventoryDragDrop);
 
 	Operation->PickedItem = PickedItemIn;
-	Operation->InventoryItemObj = InventoryItemObj;
+	Operation->InventoryItemObj = InventoryItemObjIn;
 	Operation->LastItemSlot = LastItemSlotIn;
 	Operation->Construct();
 	return Operation;
@@ -201,14 +222,15 @@ TSharedPtr<SWidget> FInventoryDragDrop::GetDefaultDecorator() const
 	return SNew(SBorder).Cursor(EMouseCursor::GrabHandClosed)
 		.Content()
 		[
-			SNew(STextBlock)
-			.ShadowColorAndOpacity(FLinearColor::Black)
-				.ColorAndOpacity(FLinearColor::White)
-				.ShadowOffset(FIntPoint(-1, 1))
-				.Font(FSlateFontInfo("Veranda", 16)) //don't believe this works, see Rama's tutorial
-				.Text(FText::FromName(PickedItem->ItemName))
-			//SNew(SImage)
-			//.Image(this, &FInventoryDragDrop::GetDecoratorIcon)
+			//SNew(STextBlock)
+			//.ShadowColorAndOpacity(FLinearColor::Black)
+			//	.ColorAndOpacity(FLinearColor::White)
+			//	.ShadowOffset(FIntPoint(-1, 1))
+			//	.Font(FSlateFontInfo("Veranda", 16)) //don't believe this works, see Rama's tutorial
+			//	//.Text(FText::FromName(PickedItem->ItemName))
+			//	.Text(FText::FromName("Picked.Item"))
+			SNew(SImage)
+			.Image(this, &FInventoryDragDrop::GetDecoratorIcon)
 		];
 }
 
@@ -216,9 +238,9 @@ const FSlateBrush* FInventoryDragDrop::GetDecoratorIcon() const
 {
 	FSlateBrush* image = NULL;
 
-	if (PickedItem.IsValid())
+	if (InventoryItemObj.IsValid())
 	{
-		image = &PickedItem->SlateIcon;
+		image = &InventoryItemObj->ItemIcon;
 	}
 
 	return image;

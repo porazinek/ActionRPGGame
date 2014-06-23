@@ -202,6 +202,7 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 
 	//Add weapon switch for left and right hand.
 	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
+	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARCharacter::InputSwapRightWeapon);
 }
 
 void AARCharacter::MoveForward(float Value)
@@ -298,6 +299,10 @@ EVisibility AARCharacter::GetInventoryVisibility()
 void AARCharacter::InputSwapLeftWeapon()
 {
 	Equipment->SwapLeftWeapon();
+}
+void AARCharacter::InputSwapRightWeapon()
+{
+	Equipment->SwapRightWeapon();
 }
 
 void AARCharacter::ServerSwapLeftWeapon_Implementation()

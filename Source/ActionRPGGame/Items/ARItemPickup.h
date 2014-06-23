@@ -65,7 +65,7 @@ class AARItemPickup : public AActor
 	GENERATED_UCLASS_BODY()
 public:
 	UPROPERTY(EditAnywhere, Replicated, Category="Pickup Items")
-		TArray<FPickupItem> ItemPickups;
+		TArray<FInventorySlot> ItemPickups;
 
 	//It will attemp to add ALL items from pick to player inventory.
 	//For testing now, might use it later.

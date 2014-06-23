@@ -4,7 +4,22 @@
 
 #include "ARStructTypes.generated.h"
 
-const FString ChestDataAssetPathAwsome = "/Game/Blueprints/Items_DataAsset.Items_DataAsset";
+//it probably will be better to store these informations in DataTable
+//or in database. For much faster lookups.
+//and the best option possible would be to create hard references at global level
+//to each table, so we won't need to initialize the every time we need them...
+const FString ChestDataAssetPath = "/Game/Blueprints/Items_DataAsset.Items_DataAsset";
+const FString WeaponDataAssetPath = "/Game/Blueprints/Data/WeaponData.WeaponData";
+
+const FString HeadItemDataAssetPath = "/Game/Blueprints/Data/HeadData.HeadData";
+const FString ShoulderItemDataAssetPath = "/Game/Blueprints/Data/ShoulderData.ShoulderData";
+const FString ChestItemDataAssetPath = "/Game/Blueprints/Data/ChestData.ChestData";
+const FString HandsItemDataAssetPath = "/Game/Blueprints/Data/HandsData.HandsData";
+const FString LegItemDataAssetPath = "/Game/Blueprints/Data/LegsData.LegsData";
+const FString FootItemDataAssetPath = "/Game/Blueprints/Data/FootData.FootData";
+const FString WeaponItemDataAssetPath = "/Game/Blueprints/Data/WeaponData.WeaponData";
+static UDataTable* ChestItemDataTable;
+
 USTRUCT()
 struct FEmptyStruct
 {
@@ -165,6 +180,9 @@ struct FARItemInfo
 		TWeakObjectPtr<class AARItem> Item;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
+		TAssetSubclassOf<class AARItem> ItemClass;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
 	struct FSlateBrush SlateIcon;
 
 	inline bool operator!= (const FARItemInfo& Other) const
@@ -217,23 +235,18 @@ public:
 	UPROPERTY()
 		int8 SlotID;
 
-	UPROPERTY()
-		int32 ItemID;
+	UPROPERTY(EditAnywhere, Category="Item")
+		FName ItemID;
 
-	UPROPERTY()
-		FName ItemName;
-
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Item")
 		TEnumAsByte<EItemSlot> ItemSlot; //to check which datasset we should query.
 
-	//UPROPERTY()
-	//	FARItemInfo EquipableItem;
-
-	//might be more item types here.
+	UPROPERTY(EditAnywhere, Category = "Item")
+		TEnumAsByte<EEquipmentSlot::Type> EEquipmentSlot;
 
 	inline bool operator!= (const FInventorySlot& Other) const
 	{
-		return SlotID != Other.SlotID;
+		return ItemID != Other.ItemID;
 	};
 
 	inline FInventorySlot& operator=(const FInventorySlot& Other)
@@ -241,13 +254,16 @@ public:
 		if (*this != Other)
 		{
 			SlotID = Other.SlotID;
+			ItemID = Other.ItemID;
+			ItemSlot = Other.ItemSlot;
+			EEquipmentSlot = Other.EEquipmentSlot;
 		}
 		return *this;
 	};
 
 	inline bool operator==(const FInventorySlot& Other) const
 	{
-		return SlotID == Other.SlotID;
+		return ItemID == Other.ItemID;
 	};
 };
 
@@ -321,4 +337,19 @@ struct FActivePeriodicEffects
 
 		UPROPERTY(BlueprintReadOnly, Category = "Effect")
 		TArray<FPeriodicEffect> ActiveEffects;
+};
+
+
+USTRUCT(BlueprintType)
+struct FARItemData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	FARItemData()
+		: ItemBlueprint(NULL)
+	{}
+
+	UPROPERTY(BlueprintReadOnly, Category = "Item")
+		TAssetSubclassOf<class AARItem> ItemBlueprint;
+
 };

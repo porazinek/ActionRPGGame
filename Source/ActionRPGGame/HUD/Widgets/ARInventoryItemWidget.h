@@ -16,7 +16,7 @@ public:
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARCharacter>, Character)
 		SLATE_ARGUMENT(TSharedPtr<FARItemInfo>, InventoryItem)
 
-		SLATE_ARGUMENT(TWeakObjectPtr<UObject>, InventoryItemObj)
+		SLATE_ARGUMENT(TSharedPtr<FInventorySlot>, InventoryItemObj)
 
 		SLATE_ARGUMENT(TEnumAsByte<EItemSlot>, SlotType)
 		SLATE_ARGUMENT(TEnumAsByte<EEquipmentSlot::Type>, EquipmentSlot)
@@ -26,7 +26,7 @@ public:
 	SLATE_END_ARGS()
 public:
 	void Construct(const FArguments& InArgs);
-
+	~SARInventoryItemWidget();
 	//Mouse input
 	virtual void OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) OVERRIDE;
 	virtual void OnDragLeave(const FDragDropEvent& DragDropEvent) OVERRIDE;
@@ -41,7 +41,7 @@ public:
 
 protected:
 
-private:
+public:
 	TSharedPtr<FARItemInfo> InventoryItem;
 	TWeakObjectPtr<class AARPlayerController> PlayerController;
 	TWeakObjectPtr<class AARCharacter> Character;
@@ -50,7 +50,7 @@ private:
 	//item equiped in current slot. Coressponds to pointers in EquipmentComponent.
 	TWeakObjectPtr<class AARItem> ItemInSlot;
 
-	TWeakObjectPtr<UObject> InventoryItemObj;
+	TSharedPtr<FInventorySlot> InventoryItemObj;
 
 	FText SlotName;
 
@@ -72,14 +72,12 @@ public:
 	//FInventoryDragDrop()
 	//{}
 	
-	static TSharedRef<FInventoryDragDrop> New(TSharedPtr<FARItemInfo> PickedItemIn, TWeakObjectPtr<UObject> InventoryItemObj, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn);
+	static TSharedRef<FInventoryDragDrop> New(TSharedPtr<FInventorySlot> PickedItemIn, TWeakObjectPtr<class AARItem> InventoryItemObjIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn);
 
 	virtual TSharedPtr<SWidget> GetDefaultDecorator() const OVERRIDE;
 
-	TSharedPtr<FARItemInfo> PickedItem;
-
-	TWeakObjectPtr<UObject> InventoryItemObj;
-
+	TSharedPtr<FInventorySlot> PickedItem;
+	TWeakObjectPtr<class AARItem> InventoryItemObj;
 	TSharedPtr<SARInventoryItemWidget> LastItemSlot;
 
 private:

@@ -36,22 +36,17 @@ namespace EEquipmentSlot
 {
 	enum Type
 	{
-		tfrItem_Head,
+		Item_Head,
 		Item_Shoulders,
 		Item_Chest,
 		Item_Hands,
 		Item_Legs,
 		Item_Foot,
 		Item_LeftHandOne,
-		Item_LeftHandTwo,
-		Item_LeftHandThree,
-		Item_LeftHandFour,
 		Item_LeftHandActive,
 		Item_RightHandOne,
-		Item_RightHandTwo,
-		Item_RightHandThree,
-		Item_RightHandFour,
 		Item_RightHandActive,
+		Item_Inventory,
 		Item_MAX
 	};
 }

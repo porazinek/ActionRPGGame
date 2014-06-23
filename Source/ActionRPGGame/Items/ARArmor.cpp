@@ -7,6 +7,6 @@
 AARArmor::AARArmor(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-	bReplicates = true;
+	bReplicates = false;
 	bNetUseOwnerRelevancy = true;
 }

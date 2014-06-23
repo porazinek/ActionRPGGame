@@ -242,6 +242,7 @@ Binaries/
 Config/
 Content/*
 !Content/Blueprints/
+!Content/UI/
 DerivedDataCache/
 Intermediate/
 Saved/

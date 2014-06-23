@@ -49,14 +49,14 @@ USkeletalMeshComponent* UARTraceStatics::GetWeaponMesh(APawn* InitiatedBy)
 		TWeakObjectPtr<UAREquipmentComponent> eqComp = InitiatedBy->FindComponentByClass<UAREquipmentComponent>();
 		if (eqComp.Get())
 		{
-			if (eqComp->MainHand)
+			if (eqComp->ActiveLeftHandWeapon)
 			{
-				return eqComp->MainHand->WeaponMesh;
+				return eqComp->ActiveLeftHandWeapon->WeaponMesh;
 			}
 
-			if (eqComp->OffHand)
+			if (eqComp->ActiveRightHandWeapon)
 			{
-				return eqComp->OffHand->WeaponMesh;
+				return eqComp->ActiveRightHandWeapon->WeaponMesh;
 			}
 		}
 	}
@@ -73,15 +73,15 @@ FVector UARTraceStatics::GetStartLocation(FName SocketName, APawn* InitiatedBy)
 		TWeakObjectPtr<UAREquipmentComponent> eqComp = InitiatedBy->FindComponentByClass<UAREquipmentComponent>();
 		if (eqComp.Get())
 		{
-			if (eqComp->MainHand)
+			if (eqComp->ActiveLeftHandWeapon)
 			{
-				OriginMesh = eqComp->MainHand->WeaponMesh.Get();
+				OriginMesh = eqComp->ActiveLeftHandWeapon->WeaponMesh.Get();
 				return OriginMesh->GetSocketLocation(SocketName);
 			}
 
-			if (eqComp->OffHand)
+			if (eqComp->ActiveRightHandWeapon)
 			{
-				OriginMesh = eqComp->OffHand->WeaponMesh.Get();
+				OriginMesh = eqComp->ActiveRightHandWeapon->WeaponMesh.Get();
 				return OriginMesh->GetSocketLocation(SocketName);
 			}
 		}

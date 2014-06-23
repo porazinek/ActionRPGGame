@@ -8,7 +8,7 @@ public class ActionRPGGame : ModuleRules
     {
         PublicDependencyModuleNames.AddRange(new string[] 
         { 
-            "Core", "CoreUObject", "Engine", "InputCore"
+            "Core", "CoreUObject", "Engine", "InputCore", "UnrealEd", "GameplayTags"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[]

@@ -35,10 +35,10 @@ private:
 
 	TArray < TWeakObjectPtr<class UObject>> ItemsTest;
 
-	TSharedPtr<STileView<TSharedPtr<FARItemInfo>>> TileView;
-	//TSharedPtr<STileView<TWeakObjectPtr<class AARItem>>> TileView;
-	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FARItemInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
-	//TSharedRef<ITableRow> MakeTileViewWidget(TWeakObjectPtr<class UObject> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	//TSharedPtr<STileView<TSharedPtr<FARItemInfo>>> TileView;
+	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> TileView;
+	//TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FARItemInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 	TArray<TSharedPtr<FARItemInfo>> ClonedInventory;
 	TArray<TSharedPtr<FInventorySlot>> ClonedInventory2;

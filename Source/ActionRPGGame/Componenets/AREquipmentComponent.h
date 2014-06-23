@@ -1,6 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "../Types/ARStructTypes.h"
+#include "../Types/AREnumTypes.h"
 
 #include "AREquipmentComponent.generated.h"
 
@@ -18,24 +19,35 @@ public:
 	UPROPERTY()
 		bool IsInventoryChanged;
 
-		virtual void InitializeComponent() OVERRIDE;
+	//UDataTable* ChestItemDataTable;
+
+
+	virtual void InitializeComponent() OVERRIDE;
 	virtual void BeginDestroy() OVERRIDE;
 	//this is placeholder. inventory should use different data struct
 	//to componesante for myriads of possible item types, not just armor in this case.
 	//It doesn't even allow to keep weapons!
 	//Hmm or maybe... change it to inventory of Ints! or FNames, and then just query DataAsset for whatever
 	//we need!
+
+	/* Inventory Handling **/
+
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_Inventory, Category = "Inventory")
 		TArray<FARItemInfo> Inventory;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+		TArray<class AARItem*> EquippedItems;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Inventory")
-		TArray<class UARInvItem*> InventoryData;
+	//UPROPERTY(BlueprintReadOnly, Replicated, Category = "Inventory")
+	//	TArray<FARItemInfo> EquippedItems;
+
+	int8 MaxEquippedItems;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-		void AddItemToInventory(FName ItemName);
+		void AddItemToInventory(FInventorySlot NewItem);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddItemToInventory(FName ItemName);
+		void ServerAddItemToInventory(FInventorySlot NewItem);
 	void AddItemToInventoryRep();
 
 	void PickupItem();
@@ -49,10 +61,7 @@ public:
 	UFUNCTION()
 		void OnRep_Inventory();
 
-	UPROPERTY(EditAnywhere, Category = "Main Hand")
-		TSubclassOf<class AARWeapon> MainHandType;
-	UPROPERTY(ReplicatedUsing = OnRep_MainHand)
-	class AARWeapon* MainHand;
+	void SortEquipedItemsByAttribute(FName AttributeName);
 
 	/* Weapon Handling **/
 	/**
@@ -61,11 +70,11 @@ public:
 		To make these weapons active.
 	*/
 	UPROPERTY() //not sure but I think we shouldn't really replicate this back.
-		TArray<AARWeapon*> LeftHandWeapons;
-	TArray<FARItemInfo> LeftHandWeaponsShared;
+		TArray<class AARWeapon*> LeftHandWeapons;
+		TArray<FARItemInfo> LeftHandWeaponsShared;
 
 	UPROPERTY()
-		TArray<AARWeapon*> RightHandWeapons;
+		TArray<class AARWeapon*> RightHandWeapons;
 
 	/* [Server][Client] - Add weapon to equiped weapons list**/
 	UFUNCTION()
@@ -76,14 +85,17 @@ public:
 	/*
 		These weapons are active and can be used by Player.
 	**/
-	UPROPERTY(ReplicatedUsing = OnRep_MainHand)
-		AARWeapon* ActiveLeftHandWeapon;
+	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
+		class AARWeapon* ActiveLeftHandWeapon;
 	UPROPERTY()
 		FARItemInfo ActiveLeftHandWeaponStruct;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FName LeftWeaponSocket;
+	UFUNCTION()
+		void OnRep_AtiveLeftHandWeapon();
+
 	UPROPERTY()
-		AARWeapon* ActiveRightHandWeapon;
+		class AARWeapon* ActiveRightHandWeapon;
 
 	int32 MaxEquipedWeapons;
 
@@ -97,82 +109,42 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerEquipLeftWeapon(const FARItemInfo Weapon);
 
-	void SetLeftWeapon(FARItemInfo Weapon);
+	void SetLeftWeapon(FARItemInfo Weapon, class AARWeapon* PrevWeapon);
 
-	UPROPERTY()
-	class AARWeapon* RightHand;
-	UPROPERTY()
-	class AARWeapon* LeftHand;
-
-	FName WeaponName;
-
-	UFUNCTION()
-		void OnRep_MainHand();
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-		FName MainHandSocket;
-
-	UPROPERTY(Replicated)
-	class AARWeapon* OffHand;
-
-	UFUNCTION(BlueprintCallable, Category = "Equipment")
-		void EquipWeapon(TSubclassOf<class AARWeapon> Weapon, FName SocketName, FName ItemName);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerEquipWeapon(TSubclassOf<class AARWeapon> Weapon, FName SocketName, FName ItemName);
+	void SwapRightWeapon();
 
 	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
-	UFUNCTION(BlueprintCallable, Category = "Equipment")
-		void ChangeItem(FName ItemName);
 
-	//UFUNCTION(BlueprintCallable, Category = "Equipment")
-	//	void ChangeItem(FARItemInfo ItemIn);
+	/* Other Equipment Handling **/
+
+	/**[Server] - central function to change item */
+	UFUNCTION(BlueprintCallable, Category = "Equipment")
+		void ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerChangeItem(FInventorySlot ItemIn, int32 OldItemSlotID);
+
+	void UnEquipItem(FInventorySlot ItemIn);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerUnEquipItem(FInventorySlot ItemIn);
 
 	UPROPERTY(ReplicatedUsing = OnRep_ChestItem)
-		FName ChestItem;
-	//FARItemInfo ChestItem;
+		FInventorySlot ChestItem;
 
 	UFUNCTION()
 		void OnRep_ChestItem();
 	void SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet);
 
-	FString ItemDataAssetPath;
-
-	FString HeadItemDataAssetPath;
-
-	FString ShoulderItemDataAssetPath;
-
-	FString ChestItemDataAssetPath;
-
-	FString HandsItemDataAssetPath;
-
-	FString LegItemDataAssetPath;
-
-	FString FootItemDataAssetPath;
-
-	FString WeaponItemDataAssetPath;
-
-	/*
-	Special item that exist only as data in DataAsset. They may or may not affect owning character
-	but they are only visible as part of HUD information.
-	While other items consist of object displayed in game world as well as item that can respond
-	to events or input.
-	*/
-	FString BlankItemDataAssetPath; 
-
-	/**[Server] - central function to change item */
+	bool ChangeChestItem(FInventorySlot ItemIn);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerChangeItem(FName ItemName);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerChangeChestItem(FName ItemName);
-
-	void ChangeItemValid(FName ItemName);
-
-	void ChangeChestItem(FName ItemName);
-
-	FStringAssetReference ChestMeshToLoad;
+		void ServerChangeChestItem(FInventorySlot ItemIn);
 
 	void DoAsyncChestChange();
+	FStringAssetReference ChestMeshToLoad;
+
+	void ChangeLegItem(FName ItemName);
+	void DoAsyncLegChange();
+	FStringAssetReference LegMeshToLoad;
+
 };
 
 

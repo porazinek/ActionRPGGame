@@ -52,10 +52,10 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						.HeightOverride(50)
 						[
 							SNew(SARInventoryItemWidget)
-							.SlotType(EItemSlot::Item_Chest)
-							.EquipmentSlot(EEquipmentSlot::Item_Chest)
+							.SlotType(EItemSlot::Item_Weapon)
+							.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 							.PlayerController(MyPC)
-							.SlotName(FText::FromName("Chest"))
+							.SlotName(FText::FromName("LHand"))
 						]
 					]
 				]
@@ -75,7 +75,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							.SlotType(EItemSlot::Item_Weapon)
 							.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 							.PlayerController(MyPC)
-							.SlotName(FText::FromName("LeftHandOne"))
+							.SlotName(FText::FromName("LHand"))
 						]
 					]
 				]
@@ -93,9 +93,9 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						[
 							SNew(SARInventoryItemWidget)
 							.SlotType(EItemSlot::Item_Weapon)
-							.EquipmentSlot(EEquipmentSlot::Item_LeftHandTwo)
+							.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 							.PlayerController(MyPC)
-							.SlotName(FText::FromName("LeftHandTwo"))
+							.SlotName(FText::FromName("LHand"))
 						]
 					]
 				]
@@ -113,29 +113,9 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						[
 							SNew(SARInventoryItemWidget)
 							.SlotType(EItemSlot::Item_Weapon)
-							.EquipmentSlot(EEquipmentSlot::Item_LeftHandThree)
+							.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 							.PlayerController(MyPC)
-							.SlotName(FText::FromName("LeftHandThree"))
-						]
-					]
-				]
-			+ SHorizontalBox::Slot()
-				.AutoWidth()
-				.HAlign(HAlign_Right)
-				.VAlign(VAlign_Bottom)
-				[
-					SNew(SBorder) //add visibility check
-					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-					[
-						SNew(SBox)
-						.WidthOverride(50)
-						.HeightOverride(50)
-						[
-							SNew(SARInventoryItemWidget)
-							.SlotType(EItemSlot::Item_Weapon)
-							.EquipmentSlot(EEquipmentSlot::Item_LeftHandFour)
-							.PlayerController(MyPC)
-							.SlotName(FText::FromName("LeftHandFour"))
+							.SlotName(FText::FromName("LHand"))
 						]
 					]
 				]
@@ -156,6 +136,126 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							.EquipmentSlot(EEquipmentSlot::Item_LeftHandActive)
 							.PlayerController(MyPC)
 							.SlotName(FText::FromName("LActive"))
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.WidthOverride(50)
+						.HeightOverride(50)
+						[
+							SNew(SARInventoryItemWidget)
+							.SlotType(EItemSlot::Item_Head)
+							.EquipmentSlot(EEquipmentSlot::Item_Head)
+							.PlayerController(MyPC)
+							.SlotName(FText::FromName("Head"))
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.WidthOverride(50)
+						.HeightOverride(50)
+						[
+							SNew(SARInventoryItemWidget)
+							.SlotType(EItemSlot::Item_Shoulders)
+							.EquipmentSlot(EEquipmentSlot::Item_Shoulders)
+							.PlayerController(MyPC)
+							.SlotName(FText::FromName("Shoulders"))
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.WidthOverride(50)
+						.HeightOverride(50)
+						[
+							SNew(SARInventoryItemWidget)
+							.SlotType(EItemSlot::Item_Hands)
+							.EquipmentSlot(EEquipmentSlot::Item_Hands)
+							.PlayerController(MyPC)
+							.SlotName(FText::FromName("Hands"))
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.WidthOverride(50)
+						.HeightOverride(50)
+						[
+							SNew(SARInventoryItemWidget)
+							.SlotType(EItemSlot::Item_Chest)
+							.EquipmentSlot(EEquipmentSlot::Item_Chest)
+							.PlayerController(MyPC)
+							.SlotName(FText::FromName("Chest"))
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.WidthOverride(50)
+						.HeightOverride(50)
+						[
+							SNew(SARInventoryItemWidget)
+							.SlotType(EItemSlot::Item_Legs)
+							.EquipmentSlot(EEquipmentSlot::Item_Legs)
+							.PlayerController(MyPC)
+							.SlotName(FText::FromName("Legs"))
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.WidthOverride(50)
+						.HeightOverride(50)
+						[
+							SNew(SARInventoryItemWidget)
+							.SlotType(EItemSlot::Item_Foot)
+							.EquipmentSlot(EEquipmentSlot::Item_Foot)
+							.PlayerController(MyPC)
+							.SlotName(FText::FromName("Foot"))
 						]
 					]
 				]

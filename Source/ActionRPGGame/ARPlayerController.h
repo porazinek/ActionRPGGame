@@ -13,6 +13,9 @@ class AARPlayerController : public APlayerController
 public:
 	//virtual void PostInitializeComponents() OVERRIDE;
 
+
+
+	/* Inventory **/
 	UPROPERTY(ReplicatedUsing=OnRep_InventoryChanged)
 		TArray<FARItemInfo> Inventory;
 
@@ -21,19 +24,26 @@ public:
 
 	UPROPERTY(ReplicatedUsing = OnRep_InventoryChanged)
 		TArray<FInventorySlot> InventorySmall;
-
-		TMap<int32, FInventorySlot> InventoryMap;
-
-	//TWeakPtr<FARItemInfo> weakitem;
-	//max inventory size. Can be increased in game. Probably should change to int8
-	//make it protected or private, and access it trough accessor in other classes.
+	
 	UPROPERTY(Replicated)
 		int32 MaxInventorySize;
 
 	UFUNCTION()
 		void OnRep_InventoryChanged();
 
-	void AddItemToInventory(FARItemInfo& Item);
+	void AddItemToInventory(FInventorySlot Item);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddItemToInventory(FInventorySlot Item);
+
+	void AddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID);
+
+	bool RemoveItemFromInventory(FName ItemID, int32 SlotID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemoveItemFromInventory(FName ItemID, int32 SlotID);
+	
+	//prolly no longer needed.
 	void SwapItemPosition(FARItemInfo& Item, int32 NewIndex);
 	bool IsInventoryChanged;
 };

@@ -5,6 +5,7 @@
 #include "../Types/AREnumTypes.h"
 #include "../Items/ARItem.h"
 #include "../Items/ARWeapon.h"
+#include "../Items/ARArmor.h"
 #include "../ARCharacter.h"
 #include "../Items/ARItemDataAsset.h"
 #include "../ARSingleton.h"
@@ -25,14 +26,12 @@ UAREquipmentComponent::UAREquipmentComponent(const class FPostConstructInitializ
 	bReplicates = true;
 	bWantsInitializeComponent = true;
 	bAutoRegister = true;
+	//ChestItem = "-1";
 }
 
 void UAREquipmentComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
-	
-	ItemDataAssetPath = "/Game/Blueprints/Items_DataAsset.Items_DataAsset";
-	WeaponItemDataAssetPath = "/Game/Blueprints/Data/WeaponData.WeaponData";
 }
 void UAREquipmentComponent::BeginDestroy()
 {
@@ -43,9 +42,6 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UAREquipmentComponent, MainHand);
-	DOREPLIFETIME(UAREquipmentComponent, OffHand);
-	
 	DOREPLIFETIME(UAREquipmentComponent, TargetCharacter);
 	DOREPLIFETIME(UAREquipmentComponent, TargetController);
 
@@ -59,16 +55,17 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 
 	DOREPLIFETIME(UAREquipmentComponent, ChestItem);
 }
-void UAREquipmentComponent::OnRep_MainHand()
+
+void UAREquipmentComponent::OnRep_AtiveLeftHandWeapon()
 {
 	SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
-	//ClientEquipWeapon(MainHand, MainHandSocket);
 }
+
 void UAREquipmentComponent::OnRep_ChestItem()
 {
 	//if (ChestItem.ItemMesh.IsValid())
 	//{
-		//SetChestMesh(ChestItem.ItemMesh);
+	//SetChestMesh(ChestItem.ItemMesh);
 	//}
 
 	ChangeChestItem(ChestItem);
@@ -77,15 +74,15 @@ void UAREquipmentComponent::SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet)
 {
 	//if (ChestMeshToLoad.ResolveObject() != nullptr)
 	//{
-		//UObject* NewChestMesh = ChestMeshToLoad.ResolveObject();
+	//UObject* NewChestMesh = ChestMeshToLoad.ResolveObject();
 
-		//should change it to Withing, but for testing.. it will do just fine.
+	//should change it to Withing, but for testing.. it will do just fine.
 
-		AARCharacter* CharOwner = Cast<AARCharacter>(GetOwner());
-		if (CharOwner)
-		{
-			CharOwner->ChestMesh->SetSkeletalMesh(Cast<USkeletalMesh>(MeshToSet.Get()));
-		}
+	AARCharacter* CharOwner = Cast<AARCharacter>(GetOwner());
+	if (CharOwner)
+	{
+		CharOwner->ChestMesh->SetSkeletalMesh(Cast<USkeletalMesh>(MeshToSet.Get()));
+	}
 	//}
 }
 
@@ -94,6 +91,33 @@ void UAREquipmentComponent::OnRep_Inventory()
 	IsInventoryChanged = true;
 }
 
+//terrible sorting but:
+// 1. It should work for now
+// 2. Sorted array will have at most 20 elements.
+// 3. But the question is how often we will sort that array ?
+// 4. If item have for example 4 stats, the array will need to be sorted 4 times, each time for each stat on item.
+void UAREquipmentComponent::SortEquipedItemsByAttribute(FName AttributeName)
+{
+	//for (int32 itemIdx = 0; itemIdx < EquippedItems.Num(); itemIdx++)
+	//{
+	//	for (int32 i = 0; i < EquippedItems.Num() - 1; i++)
+	//	{
+	//		for (int32 attrIdx = 0; attrIdx < EquippedItems[itemIdx].Attributes.Num(); attrIdx++)
+	//		{
+	//			if (EquippedItems[i].Attributes[attrIdx].AttributeName == AttributeName)
+	//			{
+	//				if (EquippedItems[i].Attributes[attrIdx].ModValue < EquippedItems[i + 1].Attributes[attrIdx].ModValue)
+	//				{
+	//					FARItemInfo tempArr = EquippedItems[i + 1];
+	//					EquippedItems[i + 1] = EquippedItems[i];
+	//					EquippedItems[i] = tempArr;
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+}
+/* Inventory Handling **/
 void UAREquipmentComponent::PickupItem()
 {
 	if (GetOwnerRole() < ROLE_Authority)
@@ -125,12 +149,12 @@ bool UAREquipmentComponent::ServerPickupItem_Validate()
 {
 	return true;
 }
-void UAREquipmentComponent::AddItemToInventory(FName ItemName)
+void UAREquipmentComponent::AddItemToInventory(FInventorySlot NewItem)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
 		//add item on server
-		ServerAddItemToInventory(ItemName);
+		ServerAddItemToInventory(NewItem);
 
 		//add item on client
 		//comsetics. Server have authrative list of items.
@@ -144,49 +168,69 @@ void UAREquipmentComponent::AddItemToInventory(FName ItemName)
 	}
 	else
 	{
-		if (TargetController)
-		{
-			UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ItemDataAssetPath, NULL, LOAD_None, NULL));
+		//if (TargetController)
+		//{
+		//	if (ItemSlot == EItemSlot::Item_Chest)
+		//	{
+		//		UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ChestItemDataAssetPath, NULL, LOAD_None, NULL));
 
-			if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
-			{
-				for (FARItemInfo& item : ItemDataAsset->Items)
-				{
-					if (item.ItemName == ItemName)
-					{
-						//FInventorySlot
-						TargetController->Inventory.Add(item);
-						break;
-					}
-				}
-			}
-		}
+		//		if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
+		//		{
+		//			for (FARItemInfo& item : ItemDataAsset->Items)
+		//			{
+		//				if (item.ItemID == ItemID)
+		//				{
+		//					FInventorySlot it;
+		//					it.ItemID = item.ItemID;
+		//					it.ItemSlot = item.ItemSlot;
+
+		//					TargetController->InventorySmall.Add(it);
+		//					//TargetController->Inventory.Add(item);
+		//					break;
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 	}
 }
-void UAREquipmentComponent::ServerAddItemToInventory_Implementation(FName ItemName)
+void UAREquipmentComponent::ServerAddItemToInventory_Implementation(FInventorySlot NewItem)
 {
 	if (TargetController)
 	{
-		UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ItemDataAssetPath, NULL, LOAD_None, NULL));
-
-		if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
+		if (NewItem.ItemSlot == EItemSlot::Item_Chest)
 		{
-			for (FARItemInfo& item : ItemDataAsset->Items)
+			FString usless;
+			FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(NewItem.ItemID, usless);
+			if (data)
 			{
-				if (item.ItemName == ItemName)
-				{
-					FInventorySlot invSlot;
-					invSlot.ItemName = item.ItemName;
-					invSlot.ItemSlot = item.ItemSlot;
-					TargetController->InventorySmall.Add(invSlot);
-					TargetController->AddItemToInventory(item);
-					break;
-				}
+				TargetController->AddItemToInventory(NewItem);
 			}
 		}
+		//if (ItemSlot == EItemSlot::Item_Chest)
+		//{
+		//UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ChestItemDataAssetPath, NULL, LOAD_None, NULL));
+
+		//if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
+		//{
+		//	for (FARItemInfo& item : ItemDataAsset->Items)
+		//	{
+		//		if (item.ItemID == ItemID)
+		//		{
+		//			FInventorySlot it;
+		//			it.ItemID = item.ItemID;
+		//			it.ItemSlot = item.ItemSlot;
+
+		//			//TargetController->InventorySmall.Add(it);
+		//			TargetController->AddItemToInventory(it);
+		//			//TargetController->Inventory.Add(item);
+		//			break;
+		//		}
+		//	}
+		//}
 	}
 }
-bool UAREquipmentComponent::ServerAddItemToInventory_Validate(FName ItemName)
+bool UAREquipmentComponent::ServerAddItemToInventory_Validate(FInventorySlot NewItem)
 {
 	return true;
 }
@@ -195,140 +239,157 @@ TArray<FARItemInfo> UAREquipmentComponent::GetItems()
 	return Inventory;
 }
 
-void UAREquipmentComponent::EquipWeapon(TSubclassOf<class AARWeapon> Weapon, FName SocketName, FName ItemName)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		if (Weapon)
-		{
-			ServerEquipWeapon(Weapon, SocketName, ItemName);
-		}
-	}
-	else
-	{
-		if (Weapon)
-		{
-
-			UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *WeaponItemDataAssetPath, NULL, LOAD_None, NULL));
-
-			if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
-			{
-				TArray<FStringAssetReference> ObjToLoad;
-				FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
-
-				//do it this way until I figure out predicate...
-				for (FARItemInfo& item : ItemDataAsset->Items)
-				{
-					//this probably need some rework.
-					if (item.ItemName == ItemName)
-					{
-						AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-						//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
-						FActorSpawnParameters SpawnInfo;
-						SpawnInfo.bNoCollisionFail = true;
-						SpawnInfo.Owner = MyChar;
-						AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(item.ItemType, SpawnInfo);
-						weaponBase->SetOwner(MyChar);
-						weaponBase->Instigator = MyChar;
-						weaponBase->WeaponOwner = MyChar;
-						MainHand = weaponBase;
-						OffHand = weaponBase;
-						SetAttachWeapon(weaponBase, item.AttachSocket);
-						return;
-					}
-				}
-				//ChestMeshToLoad = ItemDataAsset->Items.FindByPredicate
-			}
-
-			//AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-			////AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
-			//FActorSpawnParameters SpawnInfo;
-			//SpawnInfo.bNoCollisionFail = true;
-			//SpawnInfo.Owner = MyChar;
-			//AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(Weapon, SpawnInfo);
-			//weaponBase->SetOwner(MyChar);
-			//weaponBase->Instigator = MyChar;
-			//weaponBase->WeaponOwner = MyChar;
-			//MainHand = weaponBase;
-			//OffHand = weaponBase;
-			//SetAttachWeapon(weaponBase, SocketName);
-		}
-	}
-
-}
-
-void UAREquipmentComponent::ServerEquipWeapon_Implementation(TSubclassOf<class AARWeapon> Weapon, FName SocketName, FName ItemName)
-{
-	//we are on server now, so we just call function that brought us here again.
-	EquipWeapon(Weapon, SocketName, ItemName);
-}
-
-bool UAREquipmentComponent::ServerEquipWeapon_Validate(TSubclassOf<class AARWeapon> Weapon, FName SocketName, FName ItemName)
-{
-	return true;
-}
-
 void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName SocketName)
 {
 	if (Weapon)
 	{
 		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-		//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
 		if (MyChar)
 		{
 			Weapon->WeaponMesh->AttachTo(MyChar->Mesh, SocketName);
 			Weapon->WeaponMesh->SetHiddenInGame(false);
 		}
 		Weapon->WeaponOwner = MyChar;
-		//Weapon->AttachWeapon();
 	}
 }
 
-void UAREquipmentComponent::ServerChangeChestItem_Implementation(FName ItemName)
+
+void UAREquipmentComponent::ServerChangeItem_Implementation(FInventorySlot ItemIn, int32 OldItemSlotID)
 {
-	ChangeChestItem(ItemName);
+	ChangeItem(ItemIn, OldItemSlotID);
+}
+bool UAREquipmentComponent::ServerChangeItem_Validate(FInventorySlot ItemIn, int32 OldItemSlotID)
+{
+	return true;
+}
+void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotID)
+{
+	bool itemRemoved = false;
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerChangeItem(ItemIn, OldItemSlotID);
+	}
+	else
+	{
+		//check if there is something in that particular slot
+		for (AARItem* eqItem : EquippedItems)
+		{
+			if (eqItem->ItemSlotEquipped == ItemIn.ItemSlot)
+			{
+				FInventorySlot tempItem;
+				tempItem.ItemID = eqItem->ItemID;
+				tempItem.ItemSlot = eqItem->ItemSlotEquipped;
+				//if there is, Unequip it. Before we proceed.
+				UnEquipItem(ItemIn);
+				itemRemoved = TargetController->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+				TargetController->AddItemToInventoryOnSlot(tempItem, OldItemSlotID);
+			}
+		}
+		//case EItemSlot::Item_Chest:
+		if (ChangeChestItem(ItemIn))
+		{
+			if (!itemRemoved)
+			{
+				TargetController->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+			}
+		}
+	}
 }
 
-bool UAREquipmentComponent::ServerChangeChestItem_Validate(FName ItemName)
+void UAREquipmentComponent::UnEquipItem(FInventorySlot ItemIn)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerUnEquipItem(ItemIn);
+	}
+	else
+	{
+		for (int32 index = 0; index < EquippedItems.Num(); index++)
+		{
+			if (EquippedItems[index]->ItemSlotEquipped == ItemIn.ItemSlot)
+			{
+				EquippedItems[index]->Destroy();
+				EquippedItems.RemoveAt(index);
+			}
+		}
+	}
+}
+void UAREquipmentComponent::ServerUnEquipItem_Implementation(FInventorySlot ItemIn)
+{
+	UnEquipItem(ItemIn);
+}
+bool UAREquipmentComponent::ServerUnEquipItem_Validate(FInventorySlot ItemIn)
+{
+	return true;
+}
+void UAREquipmentComponent::ServerChangeChestItem_Implementation(FInventorySlot ItemIn)
+{
+	ChangeChestItem(ItemIn);
+}
+bool UAREquipmentComponent::ServerChangeChestItem_Validate(FInventorySlot ItemIn)
 {
 	return true;
 }
 
-void UAREquipmentComponent::ChangeChestItem(FName ItemName)
+bool UAREquipmentComponent::ChangeChestItem(FInventorySlot ItemIn)
 {
+	FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
+	TArray<FStringAssetReference> ObjToLoad;
+
+	//UBlueprint* gen = Cast<UBlueprint>(itemObj);
 	//this can be called by both client and server
 	//server need to do it, to propagate mesh change
 	//to other players.
 	//and client
-	UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ItemDataAssetPath, NULL, LOAD_None, NULL));
+	FString usless;
+	FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(ItemIn.ItemID, usless);
 
-	if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
+	if (data)
 	{
+		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+		if (!gen)
+			return false;
+
 		TArray<FStringAssetReference> ObjToLoad;
 		FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
 
-		//do it this way until I figure out predicate...
-		for (FARItemInfo& item : ItemDataAsset->Items)
+		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.bNoCollisionFail = true;
+		SpawnInfo.Owner = MyChar;
+		AARArmor* itemBase = GetWorld()->SpawnActor<AARArmor>(gen->GeneratedClass, SpawnInfo);
+		itemBase->SetOwner(MyChar);
+		itemBase->Instigator = MyChar;
+		itemBase->ItemID = ItemIn.ItemID;
+		itemBase->ItemSlotEquipped = ItemIn.ItemSlot;
+		if (itemBase)
 		{
-			if (item.ItemName == ItemName)
+			for (int32 itemIdx = 0; itemIdx < EquippedItems.Num(); itemIdx++)
 			{
-				ChestMeshToLoad = item.ItemMesh.ToStringReference();
-				ObjToLoad.AddUnique(ChestMeshToLoad);
-				Loader.RequestAsyncLoad(ObjToLoad, FStreamableDelegate::CreateUObject(this, &UAREquipmentComponent::DoAsyncChestChange));
-				ChestItem = item.ItemName;
-				return;
+				if (EquippedItems[itemIdx]->IsA(itemBase->GetClass()))
+				{
+					EquippedItems[itemIdx]->Destroy();
+					EquippedItems.RemoveAt(itemIdx);
+				}
 			}
+
+			EquippedItems.AddUnique(itemBase);
+			ChestMeshToLoad = itemBase->ArmorMesh.ToStringReference();
+			ObjToLoad.AddUnique(ChestMeshToLoad);
+			Loader.RequestAsyncLoad(ObjToLoad, FStreamableDelegate::CreateUObject(this, &UAREquipmentComponent::DoAsyncChestChange));
+			ChestItem = ItemIn;
+			return true;
 		}
-		//ChestMeshToLoad = ItemDataAsset->Items.FindByPredicate
-	}
 
-	//this is only for server
-	//because here we will be changing character stats
-	if (GetOwnerRole() == ROLE_Authority)
-	{
+		//this is only for server
+		//because here we will be changing character stats
+		if (GetOwnerRole() == ROLE_Authority)
+		{
 
+		}
 	}
-	//return false;
+	return false;
 }
 
 void UAREquipmentComponent::DoAsyncChestChange()
@@ -347,45 +408,54 @@ void UAREquipmentComponent::DoAsyncChestChange()
 	}
 }
 
-void UAREquipmentComponent::ChangeItemValid(FName ItemName)
+void UAREquipmentComponent::ChangeLegItem(FName ItemName)
 {
-	for (FARItemInfo& item : TargetController->Inventory)
+	//this can be called by both client and server
+	//server need to do it, to propagate mesh change
+	//to other players.
+	//and client
+	UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *LegItemDataAssetPath, NULL, LOAD_None, NULL));
+
+	if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
 	{
-		if (item.ItemName == ItemName)
+		TArray<FStringAssetReference> ObjToLoad;
+		FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
+
+		//do it this way until I figure out predicate...
+		for (FARItemInfo& item : ItemDataAsset->Items)
 		{
-			switch (item.ItemSlot)
+			if (item.ItemName == ItemName)
 			{
-			case EItemSlot::Item_Weapon:
-				EquipWeapon(NULL, item.AttachSocket, ItemName);
-				break;
-			case EItemSlot::Item_Chest:
-				ChangeChestItem(item.ItemName);
-				break;
-			default:
+				LegMeshToLoad = item.ItemMesh.ToStringReference();
+				ObjToLoad.AddUnique(LegMeshToLoad);
+				Loader.RequestAsyncLoad(ObjToLoad, FStreamableDelegate::CreateUObject(this, &UAREquipmentComponent::DoAsyncChestChange));
+				//ChestItem = item.ItemName;
 				return;
 			}
 		}
 	}
-}
 
-void UAREquipmentComponent::ServerChangeItem_Implementation(FName ItemName)
-{
-	ChangeItemValid(ItemName);
-}
-bool UAREquipmentComponent::ServerChangeItem_Validate(FName ItemName)
-{
-	return true;
-}
-
-void UAREquipmentComponent::ChangeItem(FName ItemName)
-{
-	if (GetOwnerRole() < ROLE_Authority)
+	//this is only for server
+	//because here we will be changing character stats
+	if (GetOwnerRole() == ROLE_Authority)
 	{
-		ServerChangeItem(ItemName);
+
 	}
-	else
+	//return false;
+}
+void UAREquipmentComponent::DoAsyncLegChange()
+{
+	if (ChestMeshToLoad.ResolveObject() != nullptr)
 	{
-		ChangeItemValid(ItemName);
+		UObject* NewChestMesh = ChestMeshToLoad.ResolveObject();
+
+		//should change it to Withing, but for testing.. it will do just fine.
+
+		AARCharacter* CharOwner = Cast<AARCharacter>(GetOwner());
+		if (CharOwner)
+		{
+			CharOwner->ChestMesh->SetSkeletalMesh(Cast<USkeletalMesh>(NewChestMesh));
+		}
 	}
 }
 
@@ -421,16 +491,19 @@ bool UAREquipmentComponent::ServerAddLeftHandWeapon_Validate(FName ItemName)
 
 void UAREquipmentComponent::SwapLeftWeapon()
 {
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerSwapLeftWeapon();
-	}
-	else
-	{
-		const int32 CurrentWeaponIndex = LeftHandWeaponsShared.IndexOfByKey(ActiveLeftHandWeaponStruct);
-		FARItemInfo weapon = LeftHandWeaponsShared[(CurrentWeaponIndex + 1) % LeftHandWeaponsShared.Num()];
-		EquipLeftWeapon(weapon);
-	}
+	//if (GetOwnerRole() < ROLE_Authority)
+	//{
+	//	ServerSwapLeftWeapon();
+	//}
+	//else
+	//{
+	//	const int32 CurrentWeaponIndex = LeftHandWeaponsShared.IndexOfByKey(ActiveLeftHandWeaponStruct);
+	//	EquippedItems.RemoveSingle(ActiveLeftHandWeaponStruct);
+	//	FARItemInfo weapon = LeftHandWeaponsShared[(CurrentWeaponIndex + 1) % LeftHandWeaponsShared.Num()];
+	//	ActiveLeftHandWeaponStruct = weapon;
+	//	EquippedItems.Add(ActiveLeftHandWeapon);
+	//	EquipLeftWeapon(weapon);
+	//}
 }
 
 void UAREquipmentComponent::ServerSwapLeftWeapon_Implementation()
@@ -450,7 +523,7 @@ void UAREquipmentComponent::EquipLeftWeapon(FARItemInfo Weapon)
 	}
 	else
 	{
-		SetLeftWeapon(Weapon);
+		SetLeftWeapon(Weapon, ActiveLeftHandWeapon);
 	}
 }
 
@@ -463,8 +536,12 @@ bool UAREquipmentComponent::ServerEquipLeftWeapon_Validate(FARItemInfo Weapon)
 	return true;
 }
 
-void UAREquipmentComponent::SetLeftWeapon(FARItemInfo Weapon)
+void UAREquipmentComponent::SetLeftWeapon(FARItemInfo Weapon, class AARWeapon* PrevWeapon)
 {
+	if (PrevWeapon)
+	{
+		PrevWeapon->Destroy();
+	}
 	AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
 	//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
 	FActorSpawnParameters SpawnInfo;
@@ -476,4 +553,9 @@ void UAREquipmentComponent::SetLeftWeapon(FARItemInfo Weapon)
 	weaponBase->WeaponOwner = MyChar;
 	ActiveLeftHandWeapon = weaponBase;
 	SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
+}
+
+void UAREquipmentComponent::SwapRightWeapon()
+{
+
 }

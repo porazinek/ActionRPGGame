@@ -39,22 +39,40 @@ void AARItemPickup::GiveAllItemsTo(class AARPlayerController* PickupInstigator)
 		//for (FPickupItem& itemPickup : ItemPickups)
 		for (auto it = ItemPickups.CreateIterator(); it; ++it)
 		{
-			if (it->DataAsset.IsValid())
+			if (it->ItemSlot == EItemSlot::Item_Chest)
 			{
-				for (FARItemInfo& item : it->DataAsset->Items)
+				FString usless;
+				FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(it->ItemID, usless);
+				if (data)
 				{
-					if (item.ItemName == it->ItemName)
-					{
-						PickupInstigator->AddItemToInventory(item);
-						ItemPickups.RemoveAt(it.GetIndex()); //remove item
-						--it;
-						//if (ItemPickups.Num() == 1)
-						//{
-						//	--it;
-						//}
-					}
+					FInventorySlot item;
+					item.ItemID = it->ItemID;
+					item.ItemSlot = it->ItemSlot;
+					item.EEquipmentSlot = it->EEquipmentSlot;
+					PickupInstigator->AddItemToInventory(item);
+					ItemPickups.RemoveAt(it.GetIndex()); //remove item
+					--it;
+					break;
 				}
 			}
+
+			//if (it->DataAsset.IsValid())
+			//{
+			//	for (FARItemInfo& item : it->DataAsset->Items)
+			//	{
+			//		if (item.ItemName == it->ItemName)
+			//		{
+			//			//PickupInstigator->AddItemToInventory(item);
+			//			ItemPickups.RemoveAt(it.GetIndex()); //remove item
+			//			--it;
+			//			break;
+			//			//if (ItemPickups.Num() == 1)
+			//			//{
+			//			//	--it;
+			//			//}
+			//		}
+			//	}
+			//}
 		}
 	}
 

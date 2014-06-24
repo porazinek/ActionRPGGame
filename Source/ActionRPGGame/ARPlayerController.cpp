@@ -42,7 +42,7 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 		item.ItemID = i;
 		Inventory.Add(item);
 	}
-	//PlayerCameraManagerClass
+	PlayerCameraManagerClass = AARPlayerCameraManager::StaticClass();
 
 	//Inventory.AddZeroed(MaxInventorySize);
 }

@@ -87,10 +87,6 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	FootMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("FootMesh"));
 	FootMesh->AttachParent = Mesh;
 	FootMesh->SetMasterPoseComponent(Mesh);
-
-
-	InventoryVisibility = EVisibility::Collapsed;
-
 }
 
 void AARCharacter::PostInitializeComponents()
@@ -200,7 +196,6 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARCharacter::InputActionButtonOne);
 
 	InputComponent->BindAction("PickupItem", IE_Pressed, this, &AARCharacter::PickupItem);
-	InputComponent->BindAction("ShowInventory", IE_Pressed, this, &AARCharacter::SetInventoryVisibility);
 
 	//Add weapon switch for left and right hand.
 	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
@@ -280,22 +275,6 @@ void AARCharacter::InputActionButtonOne()
 void AARCharacter::PickupItem()
 {
 	Equipment->PickupItem();
-}
-
-void AARCharacter::SetInventoryVisibility()
-{
-	if (InventoryVisibility == EVisibility::Visible)
-	{
-		InventoryVisibility = EVisibility::Collapsed;
-	}
-	else if (InventoryVisibility == EVisibility::Collapsed)
-	{
-		InventoryVisibility = EVisibility::Visible;
-	}
-}
-EVisibility AARCharacter::GetInventoryVisibility()
-{
-	return InventoryVisibility;
 }
 
 void AARCharacter::InputSwapLeftWeapon()

@@ -62,9 +62,7 @@ class AARCharacter : public ACharacter
 
 	void PickupItem();
 
-	void SetInventoryVisibility();
-	EVisibility InventoryVisibility;
-	EVisibility GetInventoryVisibility();
+
 	/*[Server] - fire after actions has been initialized*/
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnActionInitialized();

@@ -58,14 +58,16 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 
 	ChildSlot
 		[
-			SNew(SOverlay)
-			+ SOverlay::Slot()
+
+			SNew(SBorder)
+			.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
 			[
-				//SNew(STextBlock)
-				//.Text(this, &SARInventoryItemWidget::GetItemText)
-				//.ColorAndOpacity(this, &SARInventoryItemWidget::GetTextColor)
-				SNew(SImage)
-				.Image(this, &SARInventoryItemWidget::GetImage)
+				SNew(SOverlay)
+				+ SOverlay::Slot()
+				[
+					SNew(SImage)
+					.Image(this, &SARInventoryItemWidget::GetImage)
+				]
 			]
 		];
 }
@@ -193,9 +195,12 @@ FReply SARInventoryItemWidget::OnDragDetected(const FGeometry& MyGeometry, const
 
 FReply SARInventoryItemWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	if (InventoryItemObj->ItemID != "-1")
+	if (InventoryItemObj.IsValid())
 	{
-		return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton()).CaptureMouse(SharedThis(this));
+		if (InventoryItemObj->ItemID != "-1")
+		{
+			return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton()).CaptureMouse(SharedThis(this));
+		}
 	}
 	return FReply::Unhandled();
 }

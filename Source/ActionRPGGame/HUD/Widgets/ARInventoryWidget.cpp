@@ -21,21 +21,11 @@ void SARInventoryWidget::Construct(const FArguments& InArgs)
 
 	InventoryColumns = InArgs._InventoryColumns;
 	InventoryRows = InArgs._InventoryRows;
-	InventoryVisibility = InArgs._InventoryVisibility;
-
-	InventoryVisibility = EVisibility::Visible;
-
 	SyncInventory();
 	ChildSlot
 		[
 			SNew(SBox)
 			[
-				//SAssignNew(TileView, STileView<TSharedPtr<FARItemInfo>>)
-				//.ListItemsSource(&ClonedInventory)
-				//.OnGenerateTile(this, &SARInventoryWidget::MakeTileViewWidget)
-				//.ItemHeight(64)
-				//.ItemWidth(64)
-				//.Visibility(this, &SARInventoryWidget::GetInventoryVisibility)
 				SAssignNew(TileView, STileView<TSharedPtr<FInventorySlot>>)
 				.ListItemsSource(&ClonedInventory2)
 				.OnGenerateTile(this, &SARInventoryWidget::MakeTileViewWidget)
@@ -45,22 +35,6 @@ void SARInventoryWidget::Construct(const FArguments& InArgs)
 		];
 }
 
-void SARInventoryWidget::SetInventoryVisibility(EVisibility VisIn)
-{
-	InventoryVisibility = VisIn;
-}
-
-EVisibility SARInventoryWidget::GetInventoryVisibility() const
-{
-	AARCharacter* MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
-
-	if (MyChar)
-	{
-		return MyChar->GetInventoryVisibility();
-	}
-	return EVisibility::Collapsed;
-	//return InventoryVisibility;
-}
 TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 

@@ -4,6 +4,8 @@
 
 #include "Types/ARInvItem.h"
 
+#include "Slate.h"
+
 #include "ARPlayerController.generated.h"
 
 UCLASS()
@@ -13,7 +15,15 @@ class AARPlayerController : public APlayerController
 public:
 	//virtual void PostInitializeComponents() OVERRIDE;
 
+	/* Input **/
+	virtual void SetupInputComponent() override;
 
+	/* Inventory Visibility **/
+	void SetInventoryVisibility();
+	EVisibility InventoryVisibility;
+
+	void SetCharacterSheetVisibility();
+	EVisibility CharacterSheetVisibility;
 
 	/* Inventory **/
 	UPROPERTY(ReplicatedUsing=OnRep_InventoryChanged)

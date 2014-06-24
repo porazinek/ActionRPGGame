@@ -29,9 +29,6 @@ private:
 	TWeakObjectPtr<class AARPlayerController> PlayerController;
 	TWeakObjectPtr<class AARCharacter> Character;
 	TSharedPtr<SGridPanel> GridPanel;
-	EVisibility InventoryVisibility;
-
-	EVisibility GetInventoryVisibility() const;
 
 	TArray < TWeakObjectPtr<class UObject>> ItemsTest;
 

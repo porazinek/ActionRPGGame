@@ -14,6 +14,9 @@
 AARPlayerController::AARPlayerController(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+
+	InventoryVisibility = EVisibility::Collapsed;
+	CharacterSheetVisibility = EVisibility::Collapsed;
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;
 	IsInventoryChanged = false;
@@ -39,9 +42,42 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 		item.ItemID = i;
 		Inventory.Add(item);
 	}
+	//PlayerCameraManagerClass
+
 	//Inventory.AddZeroed(MaxInventorySize);
 }
 
+void AARPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	//GUI input
+	InputComponent->BindAction("ShowInventory", IE_Pressed, this, &AARPlayerController::SetInventoryVisibility);
+	InputComponent->BindAction("ShowCharacterSheet", IE_Pressed, this, &AARPlayerController::SetCharacterSheetVisibility);
+}
+void AARPlayerController::SetInventoryVisibility()
+{
+	if (InventoryVisibility == EVisibility::Collapsed)
+	{
+		InventoryVisibility = EVisibility::Visible;
+	}
+	else
+	{
+		InventoryVisibility = EVisibility::Collapsed;
+	}
+}
+
+void AARPlayerController::SetCharacterSheetVisibility()
+{
+	if (CharacterSheetVisibility == EVisibility::Collapsed)
+	{
+		CharacterSheetVisibility = EVisibility::Visible;
+	}
+	else
+	{
+		CharacterSheetVisibility = EVisibility::Collapsed;
+	}
+}
 void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

@@ -6,6 +6,9 @@
 #include "../../Types/AREnumTypes.h"
 #include "Slate.h"
 
+//this class begs for refactor.
+//move some of drag and drop functionality higher in hierarchy
+//as we will reuse it quite a bit.
 class SARInventoryItemWidget : public SCompoundWidget
 {
 public:

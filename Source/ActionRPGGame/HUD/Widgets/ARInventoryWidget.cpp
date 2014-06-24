@@ -126,7 +126,7 @@ void SARInventoryWidget::Tick(const FGeometry& AllottedGeometry, const double In
 		{
 			SyncInventory();
 			TileView->RequestListRefresh();
-			pPlayerController->SetInventoryChanged();
+			pPlayerController->IsInventoryChanged = false;
 		}
 	}
 }

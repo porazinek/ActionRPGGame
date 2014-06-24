@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Programs", "Programs", "{57A13979-68D4-4AEB-B320-A690C19365B3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Programs", "Programs", "{E9377B6A-1C2C-4EDB-8585-C0326C99909E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{7DF5F429-AA89-4413-9391-9A8296D4E59F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{5EFB6400-A81F-4F00-A6C4-0206B42E9B3E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{B4BD4400-A8A3-4A7F-A594-5D12479E976E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{146A34F2-CC4A-4594-9FDD-B4FB7E0A6254}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Automation", "Automation", "{7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Automation", "Automation", "{B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4", "Intermediate\ProjectFiles\UE4.vcxproj", "{637BD73E-DAD1-4ADF-8F9D-BF7FBF4A57F9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -79,11 +79,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealPak", "Intermediate\P
 		{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC} = {FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealSync", "Intermediate\ProjectFiles\UnrealSync.vcxproj", "{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC} = {FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnrealVersionSelector", "Intermediate\ProjectFiles\UnrealVersionSelector.vcxproj", "{088F8156-834A-40A6-9F01-29225953B066}"
 	ProjectSection(ProjectDependencies) = postProject
 		{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC} = {FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC}
@@ -94,37 +89,37 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ActionRPGGame", "Intermedia
 		{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC} = {FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnrealBuildTool", "..\UnrealEngine-latest-preview\Engine\Source\Programs\UnrealBuildTool\UnrealBuildTool.csproj", "{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnrealBuildTool", "..\UnrealEngine\Engine\Source\Programs\UnrealBuildTool\UnrealBuildTool.csproj", "{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomationTool", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\AutomationTool.csproj", "{A35B0261-D868-475E-A098-EB14CE6DC89F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomationTool", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\AutomationTool.csproj", "{A35B0261-D868-475E-A098-EB14CE6DC89F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomationToolLauncher", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationToolLauncher\AutomationToolLauncher.csproj", "{1D67A316-7EEC-4C07-83E3-BBD9C67AD129}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomationToolLauncher", "..\UnrealEngine\Engine\Source\Programs\AutomationToolLauncher\AutomationToolLauncher.csproj", "{1D67A316-7EEC-4C07-83E3-BBD9C67AD129}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Android.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\Android\Android.Automation.csproj", "{32E3A47E-359A-4F78-AE6C-703B87DE0B97}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Android.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\Android\Android.Automation.csproj", "{32E3A47E-359A-4F78-AE6C-703B87DE0B97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTML5.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\HTML5\HTML5.Automation.csproj", "{90FF4220-1CAE-4CCA-BBF6-7AAAED069F03}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTML5.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\HTML5\HTML5.Automation.csproj", "{90FF4220-1CAE-4CCA-BBF6-7AAAED069F03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOS.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\IOS\IOS.Automation.csproj", "{E1F1261F-DA95-41BD-80C1-60FBE0D37D22}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOS.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\IOS\IOS.Automation.csproj", "{E1F1261F-DA95-41BD-80C1-60FBE0D37D22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linux.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\Linux\Linux.Automation.csproj", "{EC395254-405B-4030-92CE-E346CC50848D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linux.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\Linux\Linux.Automation.csproj", "{EC395254-405B-4030-92CE-E346CC50848D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mac.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\Mac\Mac.Automation.csproj", "{16778681-DAB8-46A4-89F6-927796467995}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mac.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\Mac\Mac.Automation.csproj", "{16778681-DAB8-46A4-89F6-927796467995}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomationScripts.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\Scripts\AutomationScripts.Automation.csproj", "{8AA00D65-0954-4A27-AC0D-FB8B1106120F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomationScripts.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\Scripts\AutomationScripts.Automation.csproj", "{8AA00D65-0954-4A27-AC0D-FB8B1106120F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win.Automation", "..\UnrealEngine-latest-preview\Engine\Source\Programs\AutomationTool\Win\Win.Automation.csproj", "{6F6F8E5B-53CA-4C9F-A696-96AA9B8FB128}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win.Automation", "..\UnrealEngine\Engine\Source\Programs\AutomationTool\Win\Win.Automation.csproj", "{6F6F8E5B-53CA-4C9F-A696-96AA9B8FB128}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Distill", "..\UnrealEngine-latest-preview\Engine\Source\Programs\Distill\Distill.csproj", "{586471A8-BA8A-4101-B160-EEF0E5A8144D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Distill", "..\UnrealEngine\Engine\Source\Programs\Distill\Distill.csproj", "{586471A8-BA8A-4101-B160-EEF0E5A8144D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNETUtilities", "..\UnrealEngine-latest-preview\Engine\Source\Programs\DotNETCommon\DotNETUtilities\DotNETUtilities.csproj", "{5D7D66E8-8C76-4AF9-B3EC-2EF03421D730}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNETUtilities", "..\UnrealEngine\Engine\Source\Programs\DotNETCommon\DotNETUtilities\DotNETUtilities.csproj", "{5D7D66E8-8C76-4AF9-B3EC-2EF03421D730}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhonePackager", "..\UnrealEngine-latest-preview\Engine\Source\Programs\IOS\iPhonePackager\iPhonePackager.csproj", "{DAEDEC3D-6FE8-4A24-92BF-FA08BB892E49}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhonePackager", "..\UnrealEngine\Engine\Source\Programs\IOS\iPhonePackager\iPhonePackager.csproj", "{DAEDEC3D-6FE8-4A24-92BF-FA08BB892E49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeploymentInterface", "..\UnrealEngine-latest-preview\Engine\Source\Programs\IOS\DeploymentInterface\DeploymentInterface.csproj", "{2DA5397A-F93F-41E0-A1AD-B220D40FD739}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeploymentInterface", "..\UnrealEngine\Engine\Source\Programs\IOS\DeploymentInterface\DeploymentInterface.csproj", "{2DA5397A-F93F-41E0-A1AD-B220D40FD739}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeploymentServer", "..\UnrealEngine-latest-preview\Engine\Source\Programs\IOS\DeploymentServer\DeploymentServer.csproj", "{461BB9A9-EEDA-4E54-8944-A7E09F53EC5A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeploymentServer", "..\UnrealEngine\Engine\Source\Programs\IOS\DeploymentServer\DeploymentServer.csproj", "{461BB9A9-EEDA-4E54-8944-A7E09F53EC5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobileDeviceInterface", "..\UnrealEngine-latest-preview\Engine\Source\Programs\IOS\MobileDeviceInterface\MobileDeviceInterface.csproj", "{A5CA2153-90B2-42E4-9547-341C28A7726A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MobileDeviceInterface", "..\UnrealEngine\Engine\Source\Programs\IOS\MobileDeviceInterface\MobileDeviceInterface.csproj", "{A5CA2153-90B2-42E4-9547-341C28A7726A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -714,20 +709,12 @@ Global
 		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping Server|Win64.ActiveCfg = Development_Program|x64
 		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping Server|WinRT.ActiveCfg = Development_Program|x64
 		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping Server|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|IOS.ActiveCfg = IOS_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|IOS.Build.0 = IOS_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Mac.ActiveCfg = Mac_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Mac.Build.0 = Mac_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Win32.ActiveCfg = Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Win32.Build.0 = Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Win64.ActiveCfg = Shipping_Program|x64
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Win64.Build.0 = Shipping_Program|x64
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT.ActiveCfg = WinRT_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT.Build.0 = WinRT_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT.Deploy.0 = WinRT_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT_ARM.ActiveCfg = WinRT_ARM_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT_ARM.Build.0 = WinRT_ARM_Shipping_Program|Win32
-		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT_ARM.Deploy.0 = WinRT_ARM_Shipping_Program|Win32
+		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|IOS.ActiveCfg = Development_Program|x64
+		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Mac.ActiveCfg = Development_Program|x64
+		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Win32.ActiveCfg = Development_Program|x64
+		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|Win64.ActiveCfg = Development_Program|x64
+		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT.ActiveCfg = Development_Program|x64
+		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Shipping|WinRT_ARM.ActiveCfg = Development_Program|x64
 		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Test Client|IOS.ActiveCfg = Development_Program|x64
 		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Test Client|Mac.ActiveCfg = Development_Program|x64
 		{D8EA5D98-B22F-43E1-A202-8314F906682D}.Test Client|Win32.ActiveCfg = Development_Program|x64
@@ -2110,130 +2097,6 @@ Global
 		{3F2E35FE-5DEE-43D2-B356-840C266C9BF5}.Test|Win64.ActiveCfg = Development_Program|x64
 		{3F2E35FE-5DEE-43D2-B356-840C266C9BF5}.Test|WinRT.ActiveCfg = Development_Program|x64
 		{3F2E35FE-5DEE-43D2-B356-840C266C9BF5}.Test|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Client|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Client|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Client|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Client|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Client|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Client|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Editor|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Editor|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Editor|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Editor|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Editor|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Editor|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Server|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Server|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Server|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Server|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Server|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug Server|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|IOS.ActiveCfg = IOS_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|IOS.Build.0 = IOS_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|Mac.ActiveCfg = Mac_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|Mac.Build.0 = Mac_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|Win32.ActiveCfg = Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|Win32.Build.0 = Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|Win64.ActiveCfg = Debug_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|Win64.Build.0 = Debug_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|WinRT.ActiveCfg = WinRT_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|WinRT.Build.0 = WinRT_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|WinRT.Deploy.0 = WinRT_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|WinRT_ARM.ActiveCfg = WinRT_ARM_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|WinRT_ARM.Build.0 = WinRT_ARM_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Debug|WinRT_ARM.Deploy.0 = WinRT_ARM_Debug_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Client|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Client|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Client|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Client|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Client|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Client|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Editor|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Editor|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Editor|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Editor|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Editor|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Editor|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Server|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Server|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Server|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Server|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Server|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame Server|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.DebugGame|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Client|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Client|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Client|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Client|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Client|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Client|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Editor|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Editor|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Editor|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Editor|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Editor|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Editor|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Server|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Server|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Server|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Server|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Server|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development Server|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|IOS.ActiveCfg = IOS_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|IOS.Build.0 = IOS_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|Mac.ActiveCfg = Mac_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|Mac.Build.0 = Mac_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|Win32.ActiveCfg = Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|Win32.Build.0 = Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|Win64.Build.0 = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|WinRT.ActiveCfg = WinRT_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|WinRT.Build.0 = WinRT_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|WinRT.Deploy.0 = WinRT_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|WinRT_ARM.ActiveCfg = WinRT_ARM_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|WinRT_ARM.Build.0 = WinRT_ARM_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Development|WinRT_ARM.Deploy.0 = WinRT_ARM_Development_Program|Win32
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Client|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Client|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Client|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Client|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Client|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Client|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Server|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Server|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Server|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Server|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Server|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping Server|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Shipping|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Client|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Client|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Client|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Client|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Client|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Client|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Server|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Server|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Server|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Server|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Server|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test Server|WinRT_ARM.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test|IOS.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test|Mac.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test|Win32.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test|Win64.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test|WinRT.ActiveCfg = Development_Program|x64
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E}.Test|WinRT_ARM.ActiveCfg = Development_Program|x64
 		{088F8156-834A-40A6-9F01-29225953B066}.Debug Client|IOS.ActiveCfg = Development_Program|x64
 		{088F8156-834A-40A6-9F01-29225953B066}.Debug Client|Mac.ActiveCfg = Development_Program|x64
 		{088F8156-834A-40A6-9F01-29225953B066}.Debug Client|Win32.ActiveCfg = Development_Program|x64
@@ -4647,39 +4510,38 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{3A1B67F3-D623-4686-8B5F-821D629E12D5} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{D8EA5D98-B22F-43E1-A202-8314F906682D} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{67C7F857-72DC-4BBE-AC1F-58F69DF83252} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{F89C3C26-FD0C-4A9C-9D9B-CF36B4A1F84D} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{4675B497-122C-4A2A-8C12-146D584B8AAA} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{E7FF1907-CF9B-4A0B-A8F4-C264C4A81E9D} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{C4C58F31-24A6-4F0F-96AB-EB4DA9D526FB} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{6D5EEC1C-BEFC-4219-A4A3-E10D8BDA2947} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{CBDA84E1-75F2-4D2E-8086-47022724945E} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{4A26EA7B-A50B-4250-9574-7597D1017EBE} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{19477ACA-E346-461D-B159-3B3289A64814} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{C432E29B-6F7A-4425-984C-C3801FC8CE9E} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{3F2E35FE-5DEE-43D2-B356-840C266C9BF5} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{62734E26-5C86-42F1-8FB9-95E9FB5BC73E} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{088F8156-834A-40A6-9F01-29225953B066} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{A35B0261-D868-475E-A098-EB14CE6DC89F} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{1D67A316-7EEC-4C07-83E3-BBD9C67AD129} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{586471A8-BA8A-4101-B160-EEF0E5A8144D} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{5D7D66E8-8C76-4AF9-B3EC-2EF03421D730} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{DAEDEC3D-6FE8-4A24-92BF-FA08BB892E49} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{2DA5397A-F93F-41E0-A1AD-B220D40FD739} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{461BB9A9-EEDA-4E54-8944-A7E09F53EC5A} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{A5CA2153-90B2-42E4-9547-341C28A7726A} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{7396B6A7-D5C0-42A2-A96C-7021F36AD2D5} = {57A13979-68D4-4AEB-B320-A690C19365B3}
-		{32E3A47E-359A-4F78-AE6C-703B87DE0B97} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{90FF4220-1CAE-4CCA-BBF6-7AAAED069F03} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{E1F1261F-DA95-41BD-80C1-60FBE0D37D22} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{EC395254-405B-4030-92CE-E346CC50848D} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{16778681-DAB8-46A4-89F6-927796467995} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{8AA00D65-0954-4A27-AC0D-FB8B1106120F} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{6F6F8E5B-53CA-4C9F-A696-96AA9B8FB128} = {7396B6A7-D5C0-42A2-A96C-7021F36AD2D5}
-		{637BD73E-DAD1-4ADF-8F9D-BF7FBF4A57F9} = {7DF5F429-AA89-4413-9391-9A8296D4E59F}
-		{FDAF163C-FB3A-4E0B-9CBA-D67638BF3485} = {B4BD4400-A8A3-4A7F-A594-5D12479E976E}
+		{3A1B67F3-D623-4686-8B5F-821D629E12D5} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{D8EA5D98-B22F-43E1-A202-8314F906682D} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{67C7F857-72DC-4BBE-AC1F-58F69DF83252} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{F89C3C26-FD0C-4A9C-9D9B-CF36B4A1F84D} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{4675B497-122C-4A2A-8C12-146D584B8AAA} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{E7FF1907-CF9B-4A0B-A8F4-C264C4A81E9D} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{C4C58F31-24A6-4F0F-96AB-EB4DA9D526FB} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{6D5EEC1C-BEFC-4219-A4A3-E10D8BDA2947} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{CBDA84E1-75F2-4D2E-8086-47022724945E} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{4A26EA7B-A50B-4250-9574-7597D1017EBE} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{19477ACA-E346-461D-B159-3B3289A64814} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{C432E29B-6F7A-4425-984C-C3801FC8CE9E} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{3F2E35FE-5DEE-43D2-B356-840C266C9BF5} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{088F8156-834A-40A6-9F01-29225953B066} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{FD7C5E1A-CFE4-4FD5-A525-1EB1599A39AC} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{A35B0261-D868-475E-A098-EB14CE6DC89F} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{1D67A316-7EEC-4C07-83E3-BBD9C67AD129} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{586471A8-BA8A-4101-B160-EEF0E5A8144D} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{5D7D66E8-8C76-4AF9-B3EC-2EF03421D730} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{DAEDEC3D-6FE8-4A24-92BF-FA08BB892E49} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{2DA5397A-F93F-41E0-A1AD-B220D40FD739} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{461BB9A9-EEDA-4E54-8944-A7E09F53EC5A} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{A5CA2153-90B2-42E4-9547-341C28A7726A} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{B11BE841-36D9-4F00-90A8-5CF6A7DE01CB} = {E9377B6A-1C2C-4EDB-8585-C0326C99909E}
+		{32E3A47E-359A-4F78-AE6C-703B87DE0B97} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{90FF4220-1CAE-4CCA-BBF6-7AAAED069F03} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{E1F1261F-DA95-41BD-80C1-60FBE0D37D22} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{EC395254-405B-4030-92CE-E346CC50848D} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{16778681-DAB8-46A4-89F6-927796467995} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{8AA00D65-0954-4A27-AC0D-FB8B1106120F} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{6F6F8E5B-53CA-4C9F-A696-96AA9B8FB128} = {B11BE841-36D9-4F00-90A8-5CF6A7DE01CB}
+		{637BD73E-DAD1-4ADF-8F9D-BF7FBF4A57F9} = {5EFB6400-A81F-4F00-A6C4-0206B42E9B3E}
+		{FDAF163C-FB3A-4E0B-9CBA-D67638BF3485} = {146A34F2-CC4A-4594-9FDD-B4FB7E0A6254}
 	EndGlobalSection
 EndGlobal

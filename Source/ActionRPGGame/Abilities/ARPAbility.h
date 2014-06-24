@@ -16,10 +16,10 @@ class AARPAbility : public AActor, public IIARActionState
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Casting Speed")
 		float CastingSpeed;
 
-	virtual void Tick(float DeltaSeconds) OVERRIDE;
+	virtual void Tick(float DeltaSeconds) override;
 
 	/* [client] OVERIDE from IIARActionState */
-	virtual void InputPressed() OVERRIDE;
+	virtual void InputPressed() override;
 
 	/*[Server]*/
 	UFUNCTION(Server, Reliable, WithValidation)

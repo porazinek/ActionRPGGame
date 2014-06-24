@@ -9,10 +9,10 @@ class AARHUD : public AHUD
 	GENERATED_UCLASS_BODY()
 
 public:
-	virtual void DrawHUD() OVERRIDE;
+	virtual void DrawHUD() override;
 
 	TSharedPtr<class SARHUDWidget> HUDWidget;
-	virtual void BeginPlay() OVERRIDE;
+	virtual void BeginPlay() override;
 
 	UPROPERTY(BlueprintReadWrite, Category = "HUD|Inventory")
 		bool DrawInventoryWidget;

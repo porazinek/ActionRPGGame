@@ -88,7 +88,7 @@ void UAREquipmentComponent::SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet)
 
 void UAREquipmentComponent::OnRep_Inventory()
 {
-	IsInventoryChanged = true;
+	//IsInventoryChanged = true;
 }
 
 //terrible sorting but:

@@ -45,6 +45,14 @@ public:
 	
 	//prolly no longer needed.
 	void SwapItemPosition(FARItemInfo& Item, int32 NewIndex);
+
+	UFUNCTION(Client, Reliable)
+		void ClientSetInventoryChanged();
+
+	void SetInventoryChanged();
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSetInventoryChanged();
+	UPROPERTY(Replicated)
 	bool IsInventoryChanged;
 };
 

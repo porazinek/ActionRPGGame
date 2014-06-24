@@ -16,7 +16,7 @@ class UARActionStateComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 
-	virtual void InitializeComponent() OVERRIDE;
+		virtual void InitializeComponent() override;
 
 	UPROPERTY(Replicated)
 	bool BlankRep;

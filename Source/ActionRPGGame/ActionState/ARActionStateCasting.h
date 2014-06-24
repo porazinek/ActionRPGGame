@@ -18,12 +18,12 @@ class UARActionStateCasting : public UARActionState
 {
 	GENERATED_UCLASS_BODY()
 
-	virtual void Tick(float DeltaTime) OVERRIDE;
+		virtual void Tick(float DeltaTime) override;
 
-	virtual void BeginState(UARActionState* PrevState) OVERRIDE;
-	virtual void EndState() OVERRIDE;
-	virtual void BeginActionSequence() OVERRIDE;
-	virtual void EndActionSequence() OVERRIDE;
+	virtual void BeginState(UARActionState* PrevState) override;
+	virtual void EndState() override;
+	virtual void BeginActionSequence() override;
+	virtual void EndActionSequence() override;
 
 	void FireAction();
 

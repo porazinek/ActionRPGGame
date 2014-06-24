@@ -16,14 +16,14 @@ public:
 	UPROPERTY(Replicated)
 	class AARPlayerController* TargetController;
 
-	UPROPERTY()
-		bool IsInventoryChanged;
+	//UPROPERTY(Replicated)
+	//	bool IsInventoryChanged;
 
 	//UDataTable* ChestItemDataTable;
 
 
-	virtual void InitializeComponent() OVERRIDE;
-	virtual void BeginDestroy() OVERRIDE;
+	virtual void InitializeComponent() override;
+	virtual void BeginDestroy() override;
 	//this is placeholder. inventory should use different data struct
 	//to componesante for myriads of possible item types, not just armor in this case.
 	//It doesn't even allow to keep weapons!

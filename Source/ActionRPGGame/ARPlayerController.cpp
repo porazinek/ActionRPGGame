@@ -16,7 +16,7 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 {
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;
-
+	IsInventoryChanged = false;
 	if (PlayerCameraManager)
 	{
 		PlayerCameraManager->ViewPitchMax = 70.0f;
@@ -51,7 +51,7 @@ void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProp
 
 	DOREPLIFETIME_CONDITION(AARPlayerController, InventoryObj, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, InventorySmall, COND_OwnerOnly);
-
+	DOREPLIFETIME_CONDITION(AARPlayerController, IsInventoryChanged, COND_OwnerOnly);
 }
 void AARPlayerController::OnRep_InventoryChanged()
 {
@@ -63,6 +63,7 @@ void AARPlayerController::AddItemToInventory(FInventorySlot Item)
 	if (Role < ROLE_Authority)
 	{
 		ServerAddItemToInventory(Item);
+		//IsInventoryChanged = true;
 	}
 	else
 	{
@@ -75,7 +76,7 @@ void AARPlayerController::AddItemToInventory(FInventorySlot Item)
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
-					//OnRep_InventoryChanged();
+					//ClientSetInventoryChanged();
 					return;
 				}
 			}
@@ -119,9 +120,13 @@ void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 Sl
 							oldItem.ItemID = oldItemTemp.ItemID;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							ClientSetInventoryChanged();
+							//OnRep_InventoryChanged();
 							return;
 						}
 					}
+					IsInventoryChanged = true;
+					//OnRep_InventoryChanged();
 					return;
 				}
 				if (item.ItemID == "-1" && item.SlotID == SlotID)
@@ -129,7 +134,8 @@ void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 Sl
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
-					RemoveItemFromInventory(Item.ItemID, Item.SlotID);
+					ClientSetInventoryChanged();
+					//RemoveItemFromInventory(Item.ItemID, Item.SlotID);
 					//OnRep_InventoryChanged();
 					return;
 				}
@@ -175,7 +181,7 @@ bool AARPlayerController::RemoveItemFromInventory(FName ItemID, int32 SlotID)
 				item.ItemID = "-1";
 				item.ItemSlot = EItemSlot::Item_Inventory;
 				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
-				//OnRep_InventoryChanged();
+				ClientSetInventoryChanged();
 				return true;
 			}
 		}
@@ -208,5 +214,30 @@ void AARPlayerController::SwapItemPosition(FARItemInfo& Item, int32 NewIndex)
 	FARItemInfo& oldItem = Inventory[NewIndex]; //find item that is on NewIndex.
 
 	Inventory.Swap(NewIndex, index);
-	OnRep_InventoryChanged();
+	//OnRep_InventoryChanged();
+}
+
+void AARPlayerController::ClientSetInventoryChanged_Implementation()
+{
+	IsInventoryChanged = true;
+}
+
+void AARPlayerController::SetInventoryChanged()
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerSetInventoryChanged();
+	}
+	else
+	{
+		IsInventoryChanged = false;
+	}
+}
+void AARPlayerController::ServerSetInventoryChanged_Implementation()
+{
+	SetInventoryChanged();
+}
+bool AARPlayerController::ServerSetInventoryChanged_Validate()
+{
+	return true;
 }

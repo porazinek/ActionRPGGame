@@ -121,11 +121,12 @@ void SARInventoryWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	if (pPlayerController)
 	{
 		const AARCharacter* const pChar = Cast<AARCharacter>(pPlayerController->GetPawn());
+		//there is issue with replication and inventory updates!
 		if (pPlayerController->IsInventoryChanged)
 		{
 			SyncInventory();
 			TileView->RequestListRefresh();
-			pPlayerController->IsInventoryChanged = false;
+			pPlayerController->SetInventoryChanged();
 		}
 	}
 }

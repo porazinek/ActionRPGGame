@@ -10,7 +10,7 @@ class UAREditorEngine : public UUnrealEdEngine
 	GENERATED_UCLASS_BODY()
 
 
-	virtual void Init(IEngineLoop* InEngineLoop) OVERRIDE;
+		virtual void Init(IEngineLoop* InEngineLoop) override;
 };
 
 

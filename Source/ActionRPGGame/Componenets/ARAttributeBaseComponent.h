@@ -27,7 +27,7 @@ class UARAttributeBaseComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 
-		virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) OVERRIDE;
+		virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 	UPROPERTY(Replicated, RepRetry, BlueprintReadOnly, Category = "Effect")
 		FActivePeriodicEffects ActivePeriodicEffects;

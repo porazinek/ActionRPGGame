@@ -12,7 +12,7 @@ class UARAttributeComponent : public UARAttributeBaseComponent
 {
 	GENERATED_UCLASS_BODY()
 
-		virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) OVERRIDE;
+		virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_Health, Category = "Derived Attribute")
 		float Health;

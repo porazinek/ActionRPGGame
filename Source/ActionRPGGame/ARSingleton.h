@@ -15,7 +15,7 @@ public:
 	static UARSingleton& Get();
 	FStreamableManager AssetLoader;
 
-	virtual bool Tick(float DeltaSeconds) OVERRIDE;
+	virtual bool Tick(float DeltaSeconds) override;
 };
 
 

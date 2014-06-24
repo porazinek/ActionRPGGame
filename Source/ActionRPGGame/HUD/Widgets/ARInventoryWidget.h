@@ -21,7 +21,7 @@ public:
 	SLATE_END_ARGS()
 public:
 	void Construct(const FArguments& InArgs);
-	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) OVERRIDE;
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	void SetInventoryVisibility(EVisibility VisIn);
 protected:
 

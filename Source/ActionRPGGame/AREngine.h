@@ -8,7 +8,7 @@ class UAREngine : public UGameEngine
 {
 	GENERATED_UCLASS_BODY()
 public:
-	virtual void Init(IEngineLoop* InEngineLoop) OVERRIDE;
+	virtual void Init(IEngineLoop* InEngineLoop) override;
 };
 
 

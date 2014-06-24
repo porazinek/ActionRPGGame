@@ -10,6 +10,8 @@
 #include "Items/ARWeapon.h"
 #include "ARPlayerController.h"
 
+//#include "Slate.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "ARCharacter.h"
@@ -52,13 +54,13 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	Attributes = PCIP.CreateDefaultSubobject<UARAttributeComponent>(this, TEXT("Attributes"));
 	Attributes->Activate();
 	Attributes->bAutoRegister = true;
-	Attributes->GetNetAddressable();
+	//Attributes->
 	Attributes->SetIsReplicated(true);
 
 	Equipment = PCIP.CreateDefaultSubobject<UAREquipmentComponent>(this, TEXT("Equipment"));
 	Equipment->Activate();
 	Equipment->bAutoRegister = true;
-	Equipment->GetNetAddressable();
+	//Equipment->GetNetAddressable();
 	Equipment->SetIsReplicated(true);
 
 

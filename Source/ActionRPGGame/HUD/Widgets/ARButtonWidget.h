@@ -26,7 +26,7 @@ public:
 	/////Needed for every widget
 	/////Builds this widget and any of it's children
 	void Construct(const FArguments& InArgs);
-	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) OVERRIDE;
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 
 	~SARButtonWidget();
 

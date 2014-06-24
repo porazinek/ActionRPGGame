@@ -21,10 +21,10 @@ class UARActionStateActive : public UARActionState
 	virtual void Tick(float DeltaTime);
 
 
-	virtual void BeginState(UARActionState* PrevState) OVERRIDE;
-	virtual void EndState() OVERRIDE;
-	virtual void BeginActionSequence() OVERRIDE;
-	virtual void EndActionSequence() OVERRIDE;
+	virtual void BeginState(UARActionState* PrevState) override;
+	virtual void EndState() override;
+	virtual void BeginActionSequence() override;
+	virtual void EndActionSequence() override;
 };
 
 

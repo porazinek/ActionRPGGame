@@ -3,7 +3,7 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Types/ARStructTypes.h"
-
+#include "Slate.h"
 #include "ARCharacter.generated.h"
 
 UCLASS(config = Game)
@@ -11,10 +11,10 @@ class AARCharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 	
-	virtual void PostInitializeComponents() OVERRIDE;
+		virtual void PostInitializeComponents() override;
 	//virtual void BeginPlay() OVERRIDE;
-	virtual void PossessedBy(class AController* NewController) OVERRIDE;
-	virtual void OnRep_Controller() OVERRIDE;
+	virtual void PossessedBy(class AController* NewController) override;
+	virtual void OnRep_Controller() override;
 	//UPROPERTY()
 		//TArray<FEmptyStruct> TestArray;
 
@@ -98,7 +98,7 @@ protected:
 
 protected:
 	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
+	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
 	//UPROPERTY(EditAnywhere, Category = CameraOffsets)

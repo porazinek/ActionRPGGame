@@ -1,7 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "AREnumTypes.h"
-
+#include "Slate.h"
 #include "ARStructTypes.generated.h"
 
 //it probably will be better to store these informations in DataTable

@@ -52,7 +52,7 @@ class UAREffectType : public UObject
 	/*
 		Get World from EffectTarget
 	*/
-	virtual class UWorld* GetWorld() const OVERRIDE;
+	virtual class UWorld* GetWorld() const override;
 };
 
 

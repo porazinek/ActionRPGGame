@@ -10,6 +10,7 @@
 #include "ARInventoryItemWidget.h"
 #include "ARCharacterSheetWidget.h"
 #include "ARActionBarWidget.h"
+#include "ARAbilityInventoryWidget.h"
 
 #include "ARHUDWidget.h"
 
@@ -68,8 +69,28 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
 					[
 						SNew(SBox)
+						.HeightOverride(56)
+						.WidthOverride(500)
 						[
 							SNew(SARActionBarWidget)
+							.OwnerHUD(OwnerHUD)
+							.MyPC(MyPC)
+						]
+					]
+				]
+			+ SHorizontalBox::Slot()
+				.AutoWidth()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SBox)
+						.HeightOverride(300)
+						.WidthOverride(500)
+						[
+							SNew(SARAbilityInventoryWidget)
 							.OwnerHUD(OwnerHUD)
 							.MyPC(MyPC)
 						]

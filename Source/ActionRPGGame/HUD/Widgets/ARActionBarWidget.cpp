@@ -27,6 +27,8 @@ void SARActionBarWidget::Construct(const FArguments& InArgs)
 				SAssignNew(AbilityTile, STileView<TSharedPtr<FAbilityInfo>>)
 				.ListItemsSource(&Abilities)
 				.OnGenerateTile(this, &SARActionBarWidget::MakeTileViewWidget)
+				.ItemHeight(50)
+				.ItemWidth(50)
 			]
 		];
 }
@@ -52,6 +54,7 @@ void SARActionBarWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	if (MyPC->UpdateActionBarOne)
 	{
 		SyncAbilities();
+		AbilityTile->RequestListRefresh();
 		MyPC->UpdateActionBarOne = false;
 	}
 }
@@ -65,6 +68,7 @@ TSharedRef<ITableRow> SARActionBarWidget::MakeTileViewWidget(TSharedPtr<FAbility
 			.Content()
 			[
 				SNew(SARActionItemWidget)
+				.CurrentAbility(AssetItem)
 			];
 		return ReturnRow;
 	}

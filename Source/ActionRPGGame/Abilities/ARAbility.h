@@ -3,10 +3,10 @@
 
 #include "../ActionState/IARActionState.h"
 
-#include "ARPAbility.generated.h"
+#include "ARAbility.generated.h"
 
 UCLASS(hidecategories = (Input, Movement, Collision, Rendering, "Utilities|Transformation"), MinimalAPI, Blueprintable, notplaceable)
-class AARPAbility : public AActor, public IIARActionState
+class AARAbility : public AActor, public IIARActionState
 {
 	GENERATED_UCLASS_BODY()
 

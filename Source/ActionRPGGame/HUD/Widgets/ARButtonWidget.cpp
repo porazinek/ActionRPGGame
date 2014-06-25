@@ -19,10 +19,6 @@ SARButtonWidget::~SARButtonWidget()
 }
 void SARButtonWidget::Construct(const FArguments& InArgs)
 {
-	OwnerHUD = InArgs._OwnerHUD;
-	MyPC = InArgs._MyPC;
-	Character = InArgs._Character;
-	SyncInventory();
 	ChildSlot
 		[
 			SNew(SVerticalBox)

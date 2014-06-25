@@ -310,7 +310,7 @@ public:
 		FName AbilityName;
 
 	UPROPERTY()
-		TWeakObjectPtr<class AARbility> Ability;
+		TWeakObjectPtr<class AARAbility> Ability;
 };
 
 USTRUCT(BlueprintType)

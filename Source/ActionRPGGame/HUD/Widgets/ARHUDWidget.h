@@ -12,8 +12,6 @@ public:
 	SLATE_BEGIN_ARGS(SARHUDWidget)
 	{}
 	/*See private declaration of OwnerHUD below.*/
-
-	SLATE_ARGUMENT(TSharedPtr<FEmptyStruct>, SingleItem)
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARHUD>, OwnerHUD)
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)

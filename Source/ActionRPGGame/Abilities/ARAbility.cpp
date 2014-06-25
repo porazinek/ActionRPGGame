@@ -7,9 +7,9 @@
 
 #include "Net/UnrealNetwork.h"
 
-#include "ARPAbility.h"
+#include "ARAbility.h"
 
-AARPAbility::AARPAbility(const class FPostConstructInitializeProperties& PCIP)
+AARAbility::AARAbility(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 	bReplicates = true;
@@ -27,15 +27,15 @@ AARPAbility::AARPAbility(const class FPostConstructInitializeProperties& PCIP)
 	ActionState->SetNetAddressable();
 	ActionState->SetIsReplicated(true);
 }
-void AARPAbility::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
+void AARAbility::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AARPAbility, BlankRep);
-	DOREPLIFETIME(AARPAbility, CastingSpeed);
+	DOREPLIFETIME(AARAbility, BlankRep);
+	DOREPLIFETIME(AARAbility, CastingSpeed);
 }
 
-void AARPAbility::Tick(float DeltaSeconds)
+void AARAbility::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	ActionState->TickMe(DeltaSeconds*CastingSpeed);
@@ -72,7 +72,7 @@ void AARPAbility::Tick(float DeltaSeconds)
 
 }
 
-void AARPAbility::InputPressed()
+void AARAbility::InputPressed()
 {
 
 	//PrimaryActorTick.bStartWithTickEnabled = true;
@@ -101,7 +101,7 @@ void AARPAbility::InputPressed()
 		//PrimaryActorTick.RegisterTickFunction(GetLevel());
 	}
 }
-void AARPAbility::StartAction()
+void AARAbility::StartAction()
 {
 	//PrimaryActorTick.SetTickFunctionEnable(true);
 	//PrimaryActorTick.RegisterTickFunction(GetLevel());
@@ -109,12 +109,12 @@ void AARPAbility::StartAction()
 	ActionState->StartAction();
 }
 
-void AARPAbility::ServerStartAction_Implementation()
+void AARAbility::ServerStartAction_Implementation()
 {
 	StartAction();
 }
 
-bool AARPAbility::ServerStartAction_Validate()
+bool AARAbility::ServerStartAction_Validate()
 {
 	return true;
 }

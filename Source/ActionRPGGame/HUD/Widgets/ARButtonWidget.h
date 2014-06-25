@@ -13,8 +13,6 @@ class SARButtonWidget : public SCompoundWidget
 	SLATE_BEGIN_ARGS(SARButtonWidget)
 	{}
 	/*See private declaration of OwnerHUD below.*/
-		SLATE_ARGUMENT(TWeakObjectPtr<class AARHUD>, OwnerHUD)
-
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARCharacter>, Character)
 		//SLATE_ARGUMENT(TArray<FARItemInfo>, Items)

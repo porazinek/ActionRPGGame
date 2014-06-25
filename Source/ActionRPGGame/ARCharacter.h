@@ -43,20 +43,20 @@ class AARCharacter : public ACharacter
 
 	/////TESTING ONLY
 	UPROPERTY(EditAnywhere, Category = "Abilities")
-		TSubclassOf<class AARPAbility> AbilityToUse;
+		TSubclassOf<class AARAbility> AbilityToUse;
 
 	UFUNCTION()
 		void SpawnDefaultAbility();
 	UPROPERTY(Replicated)
-	class AARPAbility* AbilityInInventory;
+	class AARAbility* AbilityInInventory;
 
 
-	void EquipAbility(class AARPAbility* AbilityIn);
+	void EquipAbility(class AARAbility* AbilityIn);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerEquipAbility(class AARPAbility* AbilityIn);
+		void ServerEquipAbility(class AARAbility* AbilityIn);
 
-	void SetCurrentAbility(class AARPAbility* AbilityIn);
+	void SetCurrentAbility(class AARAbility* AbilityIn);
 
 	/*[Server] - fire after actions has been initialized*/
 	UFUNCTION(BlueprintImplementableEvent)
@@ -83,7 +83,7 @@ protected:
 	void MoveRight(float Value);
 
 	UPROPERTY(BlueprintReadOnly, Transient, ReplicatedUsing = OnRep_ActionButtonOne, Category = "Ability Bar")
-		class AARPAbility* ActionButtonOne;
+		class AARAbility* ActionButtonOne;
 	UFUNCTION()
 		void OnRep_ActionButtonOne();
 	UFUNCTION()

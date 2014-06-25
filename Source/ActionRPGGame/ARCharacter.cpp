@@ -2,7 +2,7 @@
 
 #include "ActionRPGGame.h"
 
-#include "Abilities/ARPAbility.h"
+#include "Abilities/ARAbility.h"
 #include "ActionState/IARActionState.h"
 #include "ActionState/ARActionStateComponent.h"
 #include "Componenets/ARAttributeComponent.h"
@@ -110,7 +110,7 @@ void AARCharacter::SpawnDefaultAbility()
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.Owner = this;
 		SpawnInfo.Instigator = this;
-		AARPAbility* abilityTemp = GetWorld()->SpawnActor<AARPAbility>(AbilityToUse, SpawnInfo);
+		AARAbility* abilityTemp = GetWorld()->SpawnActor<AARAbility>(AbilityToUse, SpawnInfo);
 		AbilityInInventory = abilityTemp;
 		if (AbilityInInventory)
 		{
@@ -133,7 +133,7 @@ void AARCharacter::PossessedBy(class AController* NewController)
 }
 
 
-void AARCharacter::EquipAbility(class AARPAbility* AbilityIn)
+void AARCharacter::EquipAbility(class AARAbility* AbilityIn)
 {
 	if (AbilityIn)
 	{
@@ -148,17 +148,17 @@ void AARCharacter::EquipAbility(class AARPAbility* AbilityIn)
 	}
 }
 
-void AARCharacter::ServerEquipAbility_Implementation(class AARPAbility* AbilityIn)
+void AARCharacter::ServerEquipAbility_Implementation(class AARAbility* AbilityIn)
 {
 	EquipAbility(AbilityIn);
 }
 
-bool AARCharacter::ServerEquipAbility_Validate(class AARPAbility* AbilityIn)
+bool AARCharacter::ServerEquipAbility_Validate(class AARAbility* AbilityIn)
 {
 	return true;
 }
 
-void AARCharacter::SetCurrentAbility(class AARPAbility* AbilityIn)
+void AARCharacter::SetCurrentAbility(class AARAbility* AbilityIn)
 {
 	ActionButtonOne = AbilityIn;
 }

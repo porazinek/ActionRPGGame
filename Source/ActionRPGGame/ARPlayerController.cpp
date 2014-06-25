@@ -5,6 +5,7 @@
 #include "Componenets/AREquipmentComponent.h"
 #include "ARCharacter.h"
 #include "Items/ARWeapon.h"
+#include "Abilities/ARAbility.h"
 //#include "../Camera/PlayerCameraManager.h"
 
 #include "Net/UnrealNetwork.h"
@@ -19,6 +20,15 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	CharacterSheetVisibility = EVisibility::Collapsed;
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;
+	UpdateActionBarOne = false;
+	for (int8 i = 0; i < 5; i++)
+	{
+		FAbilityInfo ab;
+		ab.SlotID = i;
+		ab.Ability = nullptr;
+		ActionBarOne.Add(ab);
+	}
+
 	IsInventoryChanged = false;
 	if (PlayerCameraManager)
 	{
@@ -78,17 +88,86 @@ void AARPlayerController::SetCharacterSheetVisibility()
 		CharacterSheetVisibility = EVisibility::Collapsed;
 	}
 }
-void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
+
+void AARPlayerController::AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	if (Role < ROLE_Authority)
+	{
+		ServerAddAbilityToActionBar(AbilityIn, SlotID);
+	}
+	else
+	{
+		if (ActionBarOne.Num() <= 5)
+		{
+			//for (FAbilityInfo& ability : OwningController->AbilityInventory)
+			//{
+			//if (ability.AbilityName == AbilityIn.AbilityName)
+			//{
+			for (FAbilityInfo& abilityBar : ActionBarOne)
+			{
+				if (abilityBar.SlotID == SlotID)
+				{
+					if (abilityBar.Ability.IsValid())
+					{
+						abilityBar.Ability->Destroy();
+						abilityBar.Ability.Reset();
+					}
 
-	DOREPLIFETIME_CONDITION(AARPlayerController, Inventory, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AARPlayerController, MaxInventorySize, COND_OwnerOnly);
+					if (!AbilityIn.AbilityType)
+						return;
 
-	DOREPLIFETIME_CONDITION(AARPlayerController, InventoryObj, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AARPlayerController, InventorySmall, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AARPlayerController, IsInventoryChanged, COND_OwnerOnly);
+					FActorSpawnParameters SpawnInfo;
+					SpawnInfo.bNoCollisionFail = true;
+
+					AARAbility* tempAbi = GetWorld()->SpawnActor<AARAbility>(AbilityIn.AbilityType, SpawnInfo);
+					tempAbi->SetOwner(GetPawn());
+
+					abilityBar.AbilityName = AbilityIn.AbilityName;
+					abilityBar.Ability = tempAbi;
+				}
+			}
+			//}
+			//}
+		}
+	}
 }
+void AARPlayerController::ServerAddAbilityToActionBar_Implementation(FAbilityInfo AbilityIn, int32 SlotID)
+{
+	AddAbilityToActionBar(AbilityIn, SlotID);
+}
+
+bool AARPlayerController::ServerAddAbilityToActionBar_Validate(FAbilityInfo AbilityIn, int32 SlotID)
+{
+	return true;
+}
+
+bool AARPlayerController::AddAbilityToInventory(FAbilityInfo AbilityIn)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerAddAbilityToInventory(AbilityIn);
+	}
+	else
+	{
+		//for testing purposes we will just add abilities directly.
+		//in reality it should query Data Table and pull ability from here
+		//so we wouldn't even need to send entire struct just ID of ability
+		//and construct correct struct on server.
+		AbilityInventory.Add(AbilityIn);
+
+		return false;
+	}
+	return false;
+}
+void AARPlayerController::ServerAddAbilityToInventory_Implementation(FAbilityInfo AbilityIn)
+{
+	AddAbilityToInventory(AbilityIn);
+}
+bool AARPlayerController::ServerAddAbilityToInventory_Validate(FAbilityInfo AbilityIn)
+{
+	return true;
+}
+
 void AARPlayerController::OnRep_InventoryChanged()
 {
 	IsInventoryChanged = true;
@@ -276,4 +355,21 @@ void AARPlayerController::ServerSetInventoryChanged_Implementation()
 bool AARPlayerController::ServerSetInventoryChanged_Validate()
 {
 	return true;
+}
+void AARPlayerController::OnRep_ActionBarOne()
+{
+	UpdateActionBarOne = true;
+}
+void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AARPlayerController, Inventory, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AARPlayerController, MaxInventorySize, COND_OwnerOnly);
+
+	DOREPLIFETIME_CONDITION(AARPlayerController, InventoryObj, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AARPlayerController, InventorySmall, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AARPlayerController, IsInventoryChanged, COND_OwnerOnly);
+
+	DOREPLIFETIME_CONDITION(AARPlayerController, ActionBarOne, COND_OwnerOnly);
 }

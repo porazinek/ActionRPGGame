@@ -27,6 +27,8 @@ class AARCharacter : public ACharacter
 		TSubobjectPtr<class UARAttributeComponent> Attributes;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
 		TSubobjectPtr<class UAREquipmentComponent> Equipment;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+		TSubobjectPtr<class UARAbilityComponent> Abilities;
 
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
 		TSubobjectPtr<class USkeletalMeshComponent> HeadMesh;

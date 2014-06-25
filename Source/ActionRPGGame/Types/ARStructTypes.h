@@ -306,10 +306,13 @@ public:
 	UPROPERTY()
 		int8 SlotID;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
 		FName AbilityName;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
+		TSubclassOf<class AARAbility> AbilityType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
 		TWeakObjectPtr<class AARAbility> Ability;
 };
 

@@ -18,12 +18,32 @@ public:
 	/* Input **/
 	virtual void SetupInputComponent() override;
 
-	/* Inventory Visibility **/
+	/* GUI Input **/
 	void SetInventoryVisibility();
 	EVisibility InventoryVisibility;
 
 	void SetCharacterSheetVisibility();
 	EVisibility CharacterSheetVisibility;
+
+	/* Ability Inventory - Spellbook, mele action bla bla, got the point **/
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+		TArray <FAbilityInfo> AbilityInventory;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ActionBarOne)
+		TArray<FAbilityInfo> ActionBarOne;
+	UFUNCTION()
+		void OnRep_ActionBarOne();
+	bool UpdateActionBarOne;
+
+	bool AddAbilityToInventory(FAbilityInfo AbilityIn);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddAbilityToInventory(FAbilityInfo AbilityIn);
+
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+		void AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID);
 
 	/* Inventory **/
 	UPROPERTY(ReplicatedUsing=OnRep_InventoryChanged)

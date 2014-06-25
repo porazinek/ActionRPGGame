@@ -35,6 +35,7 @@ void SARInventoryWidget::Construct(const FArguments& InArgs)
 		];
 }
 
+
 TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 

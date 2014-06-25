@@ -7,6 +7,8 @@
 #include "ActionState/ARActionStateComponent.h"
 #include "Componenets/ARAttributeComponent.h"
 #include "Componenets/AREquipmentComponent.h"
+#include "Componenets/ARAbilityComponent.h"
+
 #include "Items/ARWeapon.h"
 #include "ARPlayerController.h"
 
@@ -63,6 +65,11 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	//Equipment->GetNetAddressable();
 	Equipment->SetIsReplicated(true);
 
+	Abilities = PCIP.CreateDefaultSubobject<UARAbilityComponent>(this, TEXT("Abilities"));
+	Abilities->Activate();
+	Abilities->bAutoRegister = true;
+	//Equipment->GetNetAddressable();
+	Abilities->SetIsReplicated(true);
 
 	HeadMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HeadMesh"));
 	HeadMesh->AttachParent = Mesh;
@@ -124,12 +131,18 @@ void AARCharacter::OnRep_Controller()
 	Super::OnRep_Controller();
 	Equipment->TargetCharacter = this;
 	Equipment->TargetController = Cast<AARPlayerController>(GetController());
+
+	Abilities->OwningCharacter = this;
+	Abilities->OwningController = Cast<AARPlayerController>(GetController());
 }
 void AARCharacter::PossessedBy(class AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	Equipment->TargetCharacter = this;
 	Equipment->TargetController = Cast<AARPlayerController>(GetController());
+
+	Abilities->OwningCharacter = this;
+	Abilities->OwningController = Cast<AARPlayerController>(GetController());
 }
 
 

@@ -7,5 +7,6 @@
 AARPlayerCameraManager::AARPlayerCameraManager(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-
+	ViewPitchMin = -70.0f;
+	ViewPitchMax = 70.0f;
 }

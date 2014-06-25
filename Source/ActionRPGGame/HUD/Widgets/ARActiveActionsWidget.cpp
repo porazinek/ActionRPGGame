@@ -13,9 +13,8 @@ void SARActiveActionsWidget::Construct(const FArguments& InArgs)
 {
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
-	InventoryVisibility = EVisibility::Visible;
-	ChildSlot
-		[
+	//ChildSlot
+	//	[
 
-		];
+	//	];
 }

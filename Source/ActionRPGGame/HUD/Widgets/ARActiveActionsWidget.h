@@ -6,10 +6,10 @@
 
 #include "Slate.h"
 
-class SARHUDWidget : public SCompoundWidget
+class SARActiveActionsWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SARHUDWidget)
+	SLATE_BEGIN_ARGS(SARActiveActionsWidget)
 	{}
 	/*See private declaration of OwnerHUD below.*/
 
@@ -26,10 +26,6 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-	EVisibility InventoryVisibility;
-	EVisibility GetInventoryVisibility() const;
-
-
 	TWeakObjectPtr<class AARHUD> OwnerHUD;
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;

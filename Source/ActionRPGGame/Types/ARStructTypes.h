@@ -20,38 +20,6 @@ const FString FootItemDataAssetPath = "/Game/Blueprints/Data/FootData.FootData";
 const FString WeaponItemDataAssetPath = "/Game/Blueprints/Data/WeaponData.WeaponData";
 static UDataTable* ChestItemDataTable;
 
-USTRUCT()
-struct FEmptyStruct
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY()
-		FName TestName;
-
-	UPROPERTY()
-		int32 TestIndex;
-
-	bool operator==(const FEmptyStruct& Other) const
-	{
-		return TestIndex == Other.TestIndex;
-	};
-
-	inline bool operator!= (const FEmptyStruct& Other) const
-	{
-		return TestIndex != Other.TestIndex;
-	};
-
-	FEmptyStruct& operator=(const FEmptyStruct& Other)
-	{
-		if (*this != Other)
-		{
-			TestName = Other.TestName;
-			TestIndex = Other.TestIndex;
-		}
-		return *this;
-	};
-};
-
 USTRUCT(BlueprintType)
 struct FAttribute
 {
@@ -328,6 +296,21 @@ struct FPeriodicEffect
 		IsEffectActive(false),
 		EffectName("Invalid")
 	{ }
+};
+
+USTRUCT(BlueprintType)
+struct FAbilityInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY()
+		int8 SlotID;
+
+	UPROPERTY()
+		FName AbilityName;
+
+	UPROPERTY()
+		TWeakObjectPtr<class AARbility> Ability;
 };
 
 USTRUCT(BlueprintType)

@@ -15,8 +15,6 @@ class AARCharacter : public ACharacter
 	//virtual void BeginPlay() OVERRIDE;
 	virtual void PossessedBy(class AController* NewController) override;
 	virtual void OnRep_Controller() override;
-	//UPROPERTY()
-		//TArray<FEmptyStruct> TestArray;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 		TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -42,6 +40,7 @@ class AARCharacter : public ACharacter
 		TSubobjectPtr<class USkeletalMeshComponent> HandsMesh;
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
 		TSubobjectPtr<class USkeletalMeshComponent> FootMesh;
+
 	/////TESTING ONLY
 	UPROPERTY(EditAnywhere, Category = "Abilities")
 		TSubclassOf<class AARPAbility> AbilityToUse;
@@ -58,10 +57,6 @@ class AARCharacter : public ACharacter
 		void ServerEquipAbility(class AARPAbility* AbilityIn);
 
 	void SetCurrentAbility(class AARPAbility* AbilityIn);
-
-
-	void PickupItem();
-
 
 	/*[Server] - fire after actions has been initialized*/
 	UFUNCTION(BlueprintImplementableEvent)
@@ -94,17 +89,12 @@ protected:
 	UFUNCTION()
 		void InputActionButtonOne();
 
+	void PickupItem();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
-	//UPROPERTY(EditAnywhere, Category = CameraOffsets)
-	//	FVector LowOffset;
-	//UPROPERTY(EditAnywhere, Category = CameraOffsets)
-	//	FVector MidOffset;
-	//UPROPERTY(EditAnywhere, Category = CameraOffsets)
-	//	FVector HighOffset;
-	//virtual void CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult) OVERRIDE;
 };
 

@@ -22,13 +22,20 @@ public:
 	/////Needed for every widget
 	/////Builds this widget and any of it's children
 	void Construct(const FArguments& InArgs);
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 
 private:
 	TWeakObjectPtr<class AARHUD> OwnerHUD;
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;
 
-	TWeakObjectPtr<class AARAbility> Ability;
+	void SyncAbilities();
+
+	TArray<TSharedPtr<FAbilityInfo>> Abilities;
+
+	TSharedPtr<STileView<TSharedPtr<FAbilityInfo>>> AbilityTile;
+	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FAbilityInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+
 };
 
 

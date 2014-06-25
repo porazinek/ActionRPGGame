@@ -15,6 +15,8 @@ public:
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARHUD>, OwnerHUD)
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
+
+		SLATE_ARGUMENT(TSharedPtr<FAbilityInfo>, CurrentAbility)
 	SLATE_END_ARGS()
 
 public:
@@ -29,6 +31,10 @@ private:
 	TWeakObjectPtr<class AARPlayerController> MyPC;
 
 	TWeakObjectPtr<class AARAbility> Ability;
+
+	TSharedPtr<FAbilityInfo> CurrentAbility;
+
+	FText GetCurrentCooldown() const;
 };
 
 

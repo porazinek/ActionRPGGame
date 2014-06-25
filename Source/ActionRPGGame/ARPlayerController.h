@@ -17,6 +17,7 @@ public:
 
 	/* Input **/
 	virtual void SetupInputComponent() override;
+	void InputActionButtonOne();
 
 	/* GUI Input **/
 	void SetInventoryVisibility();
@@ -27,9 +28,11 @@ public:
 
 	/* Ability Inventory - Spellbook, mele action bla bla, got the point **/
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_AbilityInventory, Category = "Abilities")
 		TArray <FAbilityInfo> AbilityInventory;
-
+	UFUNCTION()
+		void OnRep_AbilityInventory();
+		bool UpdateAbilityInventory;
 	UPROPERTY(ReplicatedUsing = OnRep_ActionBarOne)
 		TArray<FAbilityInfo> ActionBarOne;
 	UFUNCTION()

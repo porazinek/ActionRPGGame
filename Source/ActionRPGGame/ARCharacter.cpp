@@ -206,7 +206,7 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
 	//Action Bar
-	InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARCharacter::InputActionButtonOne);
+	//InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARCharacter::InputActionButtonOne);
 
 	InputComponent->BindAction("PickupItem", IE_Pressed, this, &AARCharacter::PickupItem);
 

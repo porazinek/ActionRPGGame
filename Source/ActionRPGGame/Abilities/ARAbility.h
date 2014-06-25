@@ -36,7 +36,7 @@ class AARAbility : public AActor, public IIARActionState
 		Besides that, real state of ability is not directly accessible on client anyway.
 		It's purerly server-side.
 	*/
-protected:
+public:
 	/*[Client Prediction]*/
 	UPROPERTY(BlueprintReadOnly, Category = "Ability")
 		float CurrentCastTime;

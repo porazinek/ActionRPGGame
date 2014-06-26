@@ -126,7 +126,7 @@ void UAREquipmentComponent::PickupItem()
 	}
 	else
 	{
-		FHitResult HitResult = UARTraceStatics::GetHitResult(1000.0f, "PickItem", TargetCharacter, false, false);
+		FHitResult HitResult = UARTraceStatics::GetHitResult(1000.0f, "PickItem", TargetCharacter, false, false, EARTraceType::Trace_UI);
 
 		if (HitResult.GetActor())
 		{

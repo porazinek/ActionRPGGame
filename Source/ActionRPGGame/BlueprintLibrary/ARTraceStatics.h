@@ -23,10 +23,10 @@ class UARTraceStatics : public UBlueprintFunctionLibrary
 		static FVector GetStartLocation(FName SocketName, APawn* InitiatedBy);
 
 	UFUNCTION(BlueprintPure, Category = "AR|Trace")
-		static FHitResult RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy);
+		static FHitResult RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy, TEnumAsByte<EARTraceType> TraceType);
 
 	UFUNCTION(BlueprintCallable, Category = "AR|Trace")
-		static FHitResult GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket);
+		static FHitResult GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType);
 };
 
 

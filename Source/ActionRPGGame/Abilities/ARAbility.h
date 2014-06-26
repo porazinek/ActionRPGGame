@@ -13,6 +13,11 @@ class AARAbility : public AActor, public IIARActionState
 	UPROPERTY(Replicated)
 	bool BlankRep;
 
+	/* Currently Active weapon, must have any of these tags.
+	If it doesn, then this ability can't be used **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
+	FGameplayTagContainer WeaponRequiredTags;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Casting Speed")
 		float CastingSpeed;
 

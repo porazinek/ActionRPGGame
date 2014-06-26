@@ -89,7 +89,7 @@ FVector UARTraceStatics::GetStartLocation(FName SocketName, APawn* InitiatedBy)
 	return Origin;
 }
 
-FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy)
+FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy, TEnumAsByte<EARTraceType> TraceType)
 {
 	FHitResult Hit(ForceInit);
 
@@ -99,18 +99,32 @@ FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector
 	TraceParams.bTraceAsyncScene = false;
 	TraceParams.bReturnPhysicalMaterial = true;
 
-	bool traceResult = InitiatedBy->GetWorld()->LineTraceSingle(Hit, StartTrace, EndTrace, ECollisionChannel::ECC_WorldDynamic, TraceParams);
-
+	switch (TraceType)
+	{
+	case EARTraceType::Trace_Weapon:
+	{
+		bool traceResult = InitiatedBy->GetWorld()->LineTraceSingle(Hit, StartTrace, EndTrace, COLLISION_WEAPON_CHANNEL, TraceParams);
+		return Hit;
+	}
+	case EARTraceType::Trace_UI:
+	{
+		bool traceResult = InitiatedBy->GetWorld()->LineTraceSingle(Hit, StartTrace, EndTrace, COLLISION_GUI_CHANNEL, TraceParams);
+		return Hit;
+	}
+	default:
+		return Hit;
+	}
+	//bool traceResult = InitiatedBy->GetWorld()->LineTraceSingle(Hit, StartTrace, EndTrace, ECollisionChannel::ECC_WorldDynamic, TraceParams);
 	return Hit;
 }
 
-FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket)
+FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType)
 {
 	const FVector ShootDir = GetCameraAim(InitiatedBy);
 
 	FVector StartTrace = GetCameraDamageStartLocation(ShootDir, InitiatedBy);
 	const FVector EndTrace = (StartTrace + ShootDir * Range);
-	FHitResult Impact = RangedTrace(StartTrace, EndTrace, InitiatedBy);
+	FHitResult Impact = RangedTrace(StartTrace, EndTrace, InitiatedBy, TraceType);
 	if (DrawDebug)
 	{
 		DrawDebugLine(InitiatedBy->GetWorld(), StartTrace, EndTrace, FColor::Black, true, 10.0f, 0.0f, 1.0f);
@@ -120,7 +134,7 @@ FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* 
 		if (UseStartSocket)
 		{
 			FVector Origin = GetStartLocation(StartSocket, InitiatedBy);
-			FHitResult hitResult = RangedTrace(Origin, Impact.ImpactPoint, InitiatedBy); //Origin + impactDir*range);
+			FHitResult hitResult = RangedTrace(Origin, Impact.ImpactPoint, InitiatedBy, TraceType); //Origin + impactDir*range);
 			if (DrawDebug)
 			{
 				DrawDebugLine(InitiatedBy->GetWorld(), Origin, Impact.ImpactPoint, FColor::Blue, true, 10.0f, 0.0f, 1.0f);

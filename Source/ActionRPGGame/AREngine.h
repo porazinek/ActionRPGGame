@@ -13,3 +13,8 @@ public:
 
 
 
+/* Config so i won' forget to add it to DefaultEngine.ini
+GameEngine=/Script/ActionRPGGame.AREngine
+EditorEngine=/Script/UnrealEd.EditorEngine
+UnrealEdEngine=/Script/ActionRPGGame.AREditorEngine
+*/

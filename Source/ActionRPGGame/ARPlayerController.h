@@ -18,7 +18,7 @@ public:
 	/* Input **/
 	virtual void SetupInputComponent() override;
 	void InputActionButtonOne();
-
+	void InputActionButtonTwo();
 	/* GUI Input **/
 	void SetInventoryVisibility();
 	EVisibility InventoryVisibility;

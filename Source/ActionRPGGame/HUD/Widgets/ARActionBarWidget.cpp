@@ -37,6 +37,17 @@ void SARActionBarWidget::SyncAbilities()
 	if (!MyPC.IsValid())
 		return;
 
+	//const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(MyPC->GetPawn());
+
+	//if (!MyChar.IsValid())
+	//	return;
+	//
+	//Abilities.Empty(MyChar->Abilities->ActionBarOne.Num());
+	//for (const FAbilityInfo& AbilityIn : MyChar->Abilities->ActionBarOne)
+	//{
+	//	Abilities.Add(MakeShareable(new FAbilityInfo(AbilityIn)));
+	//}
+
 	Abilities.Empty(MyPC->ActionBarOne.Num());
 	for (const FAbilityInfo& AbilityIn : MyPC->ActionBarOne)
 	{
@@ -51,6 +62,16 @@ void SARActionBarWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	if (!MyPC.IsValid())
 		return;
 
+	//const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(MyPC->GetPawn());
+
+	//if (!MyChar.IsValid())
+	//	return;
+	//if (MyChar->Abilities->UpdateActionBarOne)
+	//{
+	//	SyncAbilities();
+	//	AbilityTile->RequestListRefresh();
+	//	MyChar->Abilities->UpdateActionBarOne = false;
+	//}
 	if (MyPC->UpdateActionBarOne)
 	{
 		SyncAbilities();
@@ -68,7 +89,9 @@ TSharedRef<ITableRow> SARActionBarWidget::MakeTileViewWidget(TSharedPtr<FAbility
 			.Content()
 			[
 				SNew(SARActionItemWidget)
+				.MyPC(MyPC)
 				.CurrentAbility(AssetItem)
+				.SlotType(EARAbilitySlot::Ability_ActionBar)
 			];
 		return ReturnRow;
 	}

@@ -2,5 +2,5 @@
 
 #include "ActionRPGGame.h"
 
-
+DEFINE_LOG_CATEGORY(AR);
 IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, ActionRPGGame, "ActionRPGGame");

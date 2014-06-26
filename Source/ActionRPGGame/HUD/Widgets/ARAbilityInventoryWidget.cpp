@@ -62,13 +62,15 @@ void SARAbilityInventoryWidget::Tick(const FGeometry& AllottedGeometry, const do
 
 TSharedRef<ITableRow> SARAbilityInventoryWidget::MakeTileViewWidget(TSharedPtr<FAbilityInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
-
 	if (AssetItem.IsValid())
 	{
 		TSharedRef< STableRow<TSharedPtr<FAbilityInfo> >> ReturnRow = SNew(STableRow<TSharedPtr<FAbilityInfo>>, OwnerTable)
 			.Content()
 			[
 				SNew(SARActionItemWidget)
+				.MyPC(MyPC)
+				.CurrentAbility(AssetItem)
+				.SlotType(EARAbilitySlot::Ability_Inventory)
 			];
 		return ReturnRow;
 	}

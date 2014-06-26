@@ -13,6 +13,23 @@ enum EAttrOp
 	Attr_Set
 };
 
+UENUM()
+enum EARTraceType
+{
+	Trace_Weapon,
+	Trace_UI,
+
+	Trace_MAX
+};
+
+UENUM()
+enum EARAbilitySlot
+{
+	Ability_Inventory,
+	Ability_ActionBar,
+	Ability_MAX
+};
+
 UENUM(BlueprintType)
 enum EItemSlot
 {

@@ -67,8 +67,20 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ShowCharacterSheet", IE_Pressed, this, &AARPlayerController::SetCharacterSheetVisibility);
 
 	InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARPlayerController::InputActionButtonOne);
+	InputComponent->BindAction("ActionButtonTwo", IE_Pressed, this, &AARPlayerController::InputActionButtonTwo);
 }
 void AARPlayerController::InputActionButtonOne()
+{
+	if (ActionBarOne[0].Ability.IsValid())
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[0].Ability.Get());
+		if (actionInterface)
+		{
+			actionInterface->InputPressed();
+		}
+	}
+}
+void AARPlayerController::InputActionButtonTwo()
 {
 	if (ActionBarOne[1].Ability.IsValid())
 	{
@@ -79,7 +91,6 @@ void AARPlayerController::InputActionButtonOne()
 		}
 	}
 }
-
 void AARPlayerController::SetInventoryVisibility()
 {
 	if (InventoryVisibility == EVisibility::Collapsed)

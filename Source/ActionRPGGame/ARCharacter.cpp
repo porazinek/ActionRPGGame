@@ -70,7 +70,7 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	Abilities->bAutoRegister = true;
 	//Equipment->GetNetAddressable();
 	Abilities->SetIsReplicated(true);
-
+	
 	HeadMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HeadMesh"));
 	HeadMesh->AttachParent = Mesh;
 	HeadMesh->SetMasterPoseComponent(Mesh);
@@ -268,9 +268,9 @@ void AARCharacter::MoveRight(float Value)
 }
 void AARCharacter::InputActionButtonOne()
 {
-	if (ActionButtonOne)
+	if (Abilities->ActionBarOne[1].Ability.IsValid())
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionButtonOne);
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Abilities->ActionBarOne[1].Ability.Get());
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();

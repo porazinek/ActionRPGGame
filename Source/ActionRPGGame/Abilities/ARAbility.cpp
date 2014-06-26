@@ -72,6 +72,11 @@ void AARAbility::Tick(float DeltaSeconds)
 
 }
 
+void AARAbility::Initialize()
+{
+
+}
+
 void AARAbility::InputPressed()
 {
 
@@ -97,28 +102,37 @@ void AARAbility::InputPressed()
 		}
 		
 		IsBeingUsed = true;
-		//PrimaryActorTick.SetTickFunctionEnable(true);
-		//PrimaryActorTick.RegisterTickFunction(GetLevel());
 	}
 }
 void AARAbility::StartAction()
 {
-	//PrimaryActorTick.SetTickFunctionEnable(true);
-	//PrimaryActorTick.RegisterTickFunction(GetLevel());
+	// 1. We need to check if player have right weapon equiped.
+	// 2. We need to check if player have weapon at all for that matter ;).
+	//    Abilities can't be used without weapon. Even bare hands are weapon in context of system.
+	// 3. Then we need to check if player have resources needed to fire ability.
+	// 4. We probably want to do it on client and on server. 
+	// 5. On client because player can get message quicker than waiting for server to response.
+	// 6. Though server have full authority.
 	Execute_ServerOnActionStart(this);
 	ActionState->StartAction();
 }
-
 void AARAbility::ServerStartAction_Implementation()
 {
 	StartAction();
 }
-
 bool AARAbility::ServerStartAction_Validate()
 {
 	return true;
 }
 
+bool AARAbility::CheckWeapon()
+{
+	return false;
+}
+bool AARAbility::CheckResourceCost()
+{
+	return false;
+}
 //void AARPAbility::SpawnPeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType)
 //{
 //	if (Role < ROLE_Authority)

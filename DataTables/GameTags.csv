@@ -1,0 +1,11 @@
+,Tag,CategoryText
+0,Damage.Burning,
+1,Damage.Poison,
+2,Damage.Ice,
+3,Cooldown.Global,
+4,Cooldown.TestAbility,
+5,ResouceCost.Mana.TestAbility,
+6,Weapon.Staff,
+7,Weapon.MagicFocus,
+8,Weapon.Sword,
+9,Weapon.MachineGun,

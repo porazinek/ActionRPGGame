@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../ActionState/IARActionState.h"
+#include "../Types/ARStructTypes.h"
 
 #include "ARAbility.generated.h"
 
@@ -9,6 +10,11 @@ UCLASS(hidecategories = (Input, Movement, Collision, Rendering, "Utilities|Trans
 class AARAbility : public AActor, public IIARActionState
 {
 	GENERATED_UCLASS_BODY()
+public:
+	virtual void Tick(float DeltaSeconds) override;
+
+	//Mainly used on server. To assign Owner properties;
+	virtual void Initialize();
 
 	UPROPERTY(Replicated)
 	bool BlankRep;
@@ -16,7 +22,7 @@ class AARAbility : public AActor, public IIARActionState
 	/* Currently Active weapon, must have any of these tags.
 	If it doesn, then this ability can't be used **/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
-	FGameplayTagContainer WeaponRequiredTags;
+		FGameplayTagContainer WeaponRequiredTags;
 
 	UPROPERTY(EditAnywhere, Category = "GUI")
 		FSlateBrush AbilityIcon;
@@ -24,7 +30,22 @@ class AARAbility : public AActor, public IIARActionState
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Casting Speed")
 		float CastingSpeed;
 
-	virtual void Tick(float DeltaSeconds) override;
+	UPROPERTY(EditAnywhere, Category = "Cost")
+		TArray<FAttribute> ResourceCost;
+
+	UPROPERTY()
+	class AARCharacter* OwningCharacter;
+	UPROPERTY()
+	class AARPlayerController* OwiningController;
+	UPROPERTY()
+	class UARAttributeComponent* OwnerAttributes;
+	UPROPERTY()
+	class UAREquipmentComponent* OwnerEquipment;
+
+	/* Checks if ability can be used with current weapon */
+	bool CheckWeapon();
+	/* Checks if owner have enough resources to use this ability */
+	bool CheckResourceCost();
 
 	/* [client] OVERIDE from IIARActionState */
 	virtual void InputPressed() override;

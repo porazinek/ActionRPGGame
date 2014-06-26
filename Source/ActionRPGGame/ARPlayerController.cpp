@@ -148,6 +148,7 @@ void AARPlayerController::AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 Sl
 					AARAbility* tempAbi = GetWorld()->SpawnActor<AARAbility>(AbilityIn.AbilityType, SpawnInfo);
 					tempAbi->SetOwner(GetPawn());
 
+					abilityBar.AbilityType = AbilityIn.AbilityType;
 					abilityBar.AbilityName = AbilityIn.AbilityName;
 					abilityBar.Ability = tempAbi;
 				}

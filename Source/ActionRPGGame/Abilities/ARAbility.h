@@ -18,6 +18,9 @@ class AARAbility : public AActor, public IIARActionState
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer WeaponRequiredTags;
 
+	UPROPERTY(EditAnywhere, Category = "GUI")
+		FSlateBrush AbilityIcon;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Casting Speed")
 		float CastingSpeed;
 

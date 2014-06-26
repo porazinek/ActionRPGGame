@@ -11,13 +11,47 @@
 
 #include "ARActionItemWidget.h"
 
-
+SARActionItemWidget::~SARActionItemWidget()
+{
+	if (Ability.IsValid())
+	{
+		Ability->Destroy();
+		Ability.Reset();
+	}
+}
 void SARActionItemWidget::Construct(const FArguments& InArgs)
 {
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
 	CurrentAbility = InArgs._CurrentAbility;
 	SlotType = InArgs._SlotType;
+
+	if (MyPC.IsValid())
+	{
+		if (Ability.IsValid())
+		{
+			Ability->Destroy();
+			Ability.Reset();
+		}
+
+		if (CurrentAbility.IsValid())
+		{
+			if (CurrentAbility->AbilityType)
+			{
+				FActorSpawnParameters SpawnInfo;
+				SpawnInfo.bNoCollisionFail = true;
+				SpawnInfo.Owner = MyPC->GetPawn();
+				Ability = MyPC->GetWorld()->SpawnActor<AARAbility>(CurrentAbility->AbilityType, SpawnInfo);
+				Ability->SetOwner(MyPC->GetPawn());
+				Ability->Instigator = MyPC->GetPawn();
+				//ItemInSlot->ItemID = InventoryItemObj->ItemID;
+			}
+		}
+		//else if (CurrentAbility->Ability.IsValid())
+		//{
+		//	Ability = CurrentAbility->Ability;
+		//}
+	}
 
 	ChildSlot
 		[
@@ -28,6 +62,13 @@ void SARActionItemWidget::Construct(const FArguments& InArgs)
 				SNew(SOverlay)
 				+ SOverlay::Slot()
 				[
+					SNew(SImage)
+					.Image(this, &SARActionItemWidget::GetAbilityIcon)
+					//SNew(STextBlock)
+					//.Text(FText::FromName("Buton"))
+				]
+				+ SOverlay::Slot()
+				[
 					SNew(STextBlock)
 					.ShadowColorAndOpacity(FLinearColor::Black)
 					.ColorAndOpacity(FLinearColor::White)
@@ -35,11 +76,7 @@ void SARActionItemWidget::Construct(const FArguments& InArgs)
 					.Font(FSlateFontInfo("Veranda", 16))
 					.Text(this, &SARActionItemWidget::GetCurrentCooldown)
 				]
-				+ SOverlay::Slot()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromName("Buton"))
-					]
+
 			]
 		];
 }
@@ -56,6 +93,17 @@ FText SARActionItemWidget::GetCurrentCooldown() const
 	return FText::FromName("");
 }
 
+const FSlateBrush* SARActionItemWidget::GetAbilityIcon() const
+{
+	//FSlateBrush* icon = NULL;
+	//AbilityIcon = NULL;
+	if (Ability.IsValid())
+	{
+		return &Ability->AbilityIcon;
+	}
+
+	return nullptr;
+}
 
 //Mouse Input
 void SARActionItemWidget::OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)

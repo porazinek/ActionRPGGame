@@ -26,7 +26,8 @@ public:
 	/////Needed for every widget
 	/////Builds this widget and any of it's children
 	void Construct(const FArguments& InArgs);
-
+	//Destruct -;-
+	~SARActionItemWidget();
 	//Mouse Input
 	virtual void OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
 	virtual void OnDragLeave(const FDragDropEvent& DragDropEvent) override;
@@ -45,13 +46,17 @@ private:
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;
 
-	TWeakObjectPtr<class AARAbility> Ability;
-
+	//Ability currently equiped. Synced with server.
 	TSharedPtr<FAbilityInfo> CurrentAbility;
 
 	EARAbilitySlot SlotType;
 
+	//cosmetics only.
+	TWeakObjectPtr<class AARAbility> Ability;
+
 	FText GetCurrentCooldown() const;
+
+	const FSlateBrush* GetAbilityIcon() const;
 };
 
 class FAbilityDragDrop : public FDragDropOperation

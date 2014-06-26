@@ -17,6 +17,7 @@ SARInventoryItemWidget::~SARInventoryItemWidget()
 	if (ItemInSlot.IsValid())
 	{
 		ItemInSlot->Destroy();
+		ItemInSlot.Reset();
 	}
 }
 void SARInventoryItemWidget::Construct(const FArguments& InArgs)
@@ -74,14 +75,12 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 
 const FSlateBrush* SARInventoryItemWidget::GetImage() const
 {
-	FSlateBrush* image = NULL;
-
 	if (ItemInSlot.IsValid())
 	{
-		image = &ItemInSlot->ItemIcon;
+		return &ItemInSlot->ItemIcon;
 	}
 	//should return default image.
-	return image;
+	return nullptr;
 }
 FText SARInventoryItemWidget::GetItemText() const
 {

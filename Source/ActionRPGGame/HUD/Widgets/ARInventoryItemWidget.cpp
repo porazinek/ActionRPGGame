@@ -180,6 +180,24 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			
 		}
 	}
+	if (this->EquipmentSlot == EEquipmentSlot::Item_RightHandOne)
+	{
+		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
+		if (PlayerController.IsValid() && Operation.IsValid())
+		{
+			int32 tempSlotID = this->InventoryItemObj->SlotID;
+			Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+
+			Operation->LastItemSlot->ItemInSlot.Reset();
+			Operation->LastItemSlot->InventoryItemObj.Reset();
+			InventoryItemObj = Operation->PickedItem;
+			ItemInSlot = Operation->InventoryItemObj;
+			PlayerController->AddRightHandWeapon(*Operation->PickedItem, tempSlotID);
+			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItemObj->ItemID, Operation->LastItemSlot->InventoryItemObj->SlotID);
+			return FReply::Handled();
+
+		}
+	}
 	if (this->EquipmentSlot == EEquipmentSlot::Item_Inventory)
 	{
 		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();

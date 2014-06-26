@@ -83,9 +83,12 @@ public:
 	/* [Server] - Add weapon to equiped weapons list **/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerAddLeftHandWeapon(FName ItemName);
+	int32 MaxEquipedWeapons;
+
 	/*
 		These weapons are active and can be used by Player.
 	**/
+	//Left Hand Weapon
 	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
 		class AARWeapon* ActiveLeftHandWeapon;
 	UPROPERTY()
@@ -94,28 +97,31 @@ public:
 		FName LeftWeaponSocket;
 	UFUNCTION()
 		void OnRep_AtiveLeftHandWeapon();
-
-	UPROPERTY()
-		class AARWeapon* ActiveRightHandWeapon;
-
-	int32 MaxEquipedWeapons;
-
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerSwapLeftWeapon();
-
 	void SwapLeftWeapon();
-
 	void EquipLeftWeapon(FInventorySlot Weapon);
-
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerEquipLeftWeapon(const FInventorySlot Weapon);
-
 	void SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
-
-	void SwapRightWeapon();
-
 	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
 
+	//Right Hand Weapon
+	UPROPERTY(ReplicatedUsing = OnRep_ActiveRightHandWeapon)
+	class AARWeapon* ActiveRightHandWeapon;
+	UPROPERTY()
+		FInventorySlot ActiveRightHandWeaponStruct;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+		FName RightWeaponSocket;
+	UFUNCTION()
+		void OnRep_ActiveRightHandWeapon();
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSwapRightWeapon();
+	void SwapRightWeapon();
+	void EquipRightWeapon(FInventorySlot Weapon);
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//	void ServerEquipLeftWeapon(const FInventorySlot Weapon);
+	void SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
 	/* Other Equipment Handling **/
 
 	/**[Server] - central function to change item */

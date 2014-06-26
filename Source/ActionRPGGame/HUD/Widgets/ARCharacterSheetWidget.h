@@ -35,6 +35,9 @@ private:
 	void SyncLeftHandWeapons();
 
 	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> RightWeapon;
+	TSharedRef<ITableRow> MakeRightHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TArray<TSharedPtr<FInventorySlot>> RightHandWeapons;
+	void SyncRightHandWeapons();
 	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> EquipedItems;
 };
 

@@ -16,7 +16,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 	MyPC = InArgs._MyPC;
 	
 	SyncLeftHandWeapons();
-
+	SyncRightHandWeapons();
 	ChildSlot
 		[
 			SNew(SGridPanel)
@@ -41,6 +41,27 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 				]
 			]
+				+ SGridPanel::Slot(1, 2)
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					[
+						SNew(SOverlay)
+						+ SOverlay::Slot()
+						[
+							SNew(SBox)
+							.HeightOverride(56)
+							.WidthOverride(250)
+							[
+								SAssignNew(RightWeapon, STileView<TSharedPtr<FInventorySlot>>)
+								.ListItemsSource(&RightHandWeapons)
+								.OnGenerateTile(this, &SARCharacterSheetWidget::MakeRightHandWeaponWidget)
+								.ItemHeight(50)
+								.ItemWidth(50)
+							]
+						]
+					]
+				]
 			//+ SGridPanel::Slot(1, 1)
 			//.HAlign(HAlign_Right)
 			//[
@@ -149,7 +170,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 			//				]
 			//			]
 			//	]
-			+ SGridPanel::Slot(1, 2)
+			+ SGridPanel::Slot(1, 3)
 				.HAlign(HAlign_Right)
 				[
 					SNew(SOverlay)
@@ -176,7 +197,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							]
 						]
 				]
-			+ SGridPanel::Slot(2, 2)
+			+ SGridPanel::Slot(2, 3)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -202,7 +223,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							]
 						]
 				]
-			+ SGridPanel::Slot(3, 2)
+			+ SGridPanel::Slot(3, 3)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -228,7 +249,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							]
 						]
 				]
-			+ SGridPanel::Slot(4, 2)
+			+ SGridPanel::Slot(4, 3)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -254,7 +275,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							]
 						]
 				]
-			+ SGridPanel::Slot(5, 2)
+			+ SGridPanel::Slot(5, 3)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -280,7 +301,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							]
 						]
 				]
-			+ SGridPanel::Slot(6, 2)
+			+ SGridPanel::Slot(6, 3)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -319,6 +340,12 @@ void SARCharacterSheetWidget::Tick(const FGeometry& AllottedGeometry, const doub
 		LeftWeapon->RequestListRefresh();
 		MyPC->LeftHandWeaponsUpdated = false;
 	}
+	if (MyPC->RightHandWeaponsUpdated)
+	{
+		SyncRightHandWeapons();
+		RightWeapon->RequestListRefresh();
+		MyPC->RightHandWeaponsUpdated = false;
+	}
 }
 
 TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
@@ -348,6 +375,38 @@ void SARCharacterSheetWidget::SyncLeftHandWeapons()
 		for (const FInventorySlot& InventoryItem : MyPC->LeftHandWeapons)
 		{
 			LeftHandWeapons.Add(MakeShareable(new FInventorySlot(InventoryItem)));
+		}
+	}
+}
+
+
+TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
+{
+	if (AssetItem.IsValid())
+	{
+		TSharedRef< STableRow<TWeakObjectPtr<class UObject> >> ReturnRow = SNew(STableRow<TWeakObjectPtr<class UObject>>, OwnerTable)
+			.Content()
+			[
+				SNew(SARInventoryItemWidget)
+				.InventoryItemObj(AssetItem)
+				.PlayerController(MyPC)
+				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
+				.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
+				.SlotName(FText::FromName("RHand"))
+			];
+		return ReturnRow;
+	}
+	TSharedPtr< STableRow<TSharedPtr<FARItemInfo>> > TableRowWidget;
+	return TableRowWidget.ToSharedRef();
+}
+void SARCharacterSheetWidget::SyncRightHandWeapons()
+{
+	if (MyPC.IsValid())
+	{
+		RightHandWeapons.Empty(MyPC->RightHandWeapons.Num());
+		for (const FInventorySlot& InventoryItem : MyPC->RightHandWeapons)
+		{
+			RightHandWeapons.Add(MakeShareable(new FInventorySlot(InventoryItem)));
 		}
 	}
 }

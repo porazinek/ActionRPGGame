@@ -27,6 +27,7 @@ public:
 	EVisibility CharacterSheetVisibility;
 
 	/* Character Sheet **/
+	//Left Hand Weapon
 	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.
 		TArray<FInventorySlot> LeftHandWeapons;
 	UFUNCTION()
@@ -36,8 +37,17 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerAddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
-	UPROPERTY()
+	//Right Hand Weapon
+	UPROPERTY(ReplicatedUsing = OnRep_RightHandWeapons)
 		TArray<FInventorySlot> RightHandWeapons;
+	UFUNCTION()
+		void OnRep_RightHandWeapons();
+	bool RightHandWeaponsUpdated;
+	void AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
+
+	//Equiped Items
 	UPROPERTY()
 		TArray<FInventorySlot> EquippedItems;
 

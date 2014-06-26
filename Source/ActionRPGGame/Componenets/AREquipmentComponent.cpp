@@ -51,7 +51,7 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 	//DOREPLIFETIME(UAREquipmentComponent, InventoryData);
 
 	DOREPLIFETIME(UAREquipmentComponent, ActiveLeftHandWeapon);
-
+	DOREPLIFETIME(UAREquipmentComponent, ActiveRightHandWeapon);
 
 	DOREPLIFETIME(UAREquipmentComponent, ChestItem);
 }
@@ -60,7 +60,10 @@ void UAREquipmentComponent::OnRep_AtiveLeftHandWeapon()
 {
 	SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 }
-
+void UAREquipmentComponent::OnRep_ActiveRightHandWeapon()
+{
+	SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
+}
 void UAREquipmentComponent::OnRep_ChestItem()
 {
 	//if (ChestItem.ItemMesh.IsValid())
@@ -559,7 +562,59 @@ void UAREquipmentComponent::SetLeftWeapon(FInventorySlot Weapon, class AARWeapon
 	}
 }
 
+void UAREquipmentComponent::ServerSwapRightWeapon_Implementation()
+{
+	SwapRightWeapon();
+}
+bool UAREquipmentComponent::ServerSwapRightWeapon_Validate()
+{
+	return true;
+}
 void UAREquipmentComponent::SwapRightWeapon()
 {
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerSwapRightWeapon();
+	}
+	else
+	{
+		for (FInventorySlot& weapon : TargetController->RightHandWeapons)
+		{
+			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveRightHandWeaponStruct.ItemID)
+			{
+				ActiveRightHandWeaponStruct = weapon;
+				SetRightWeapon(ActiveRightHandWeaponStruct, ActiveRightHandWeapon);
+				return;
+			}
+		}
+	}
+}
+void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon)
+{
+	if (PrevWeapon)
+	{
+		PrevWeapon->Destroy();
+	}
 
+	FString usless;
+	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
+
+	if (data)
+	{
+		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+		if (!gen)
+			return;
+
+		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+		//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.bNoCollisionFail = true;
+		SpawnInfo.Owner = MyChar;
+		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		weaponBase->SetOwner(MyChar);
+		weaponBase->Instigator = MyChar;
+		weaponBase->WeaponOwner = MyChar;
+		ActiveRightHandWeapon = weaponBase;
+		SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
+	}
 }

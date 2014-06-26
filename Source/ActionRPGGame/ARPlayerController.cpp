@@ -57,6 +57,16 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	}
 	LeftHandWeaponsUpdated = false;
 
+	for (int32 i = 0; i < 4; i++)
+	{
+		FInventorySlot in;
+		in.SlotID = i;
+		in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+		in.ItemSlot = EItemSlot::Item_Weapon;
+		RightHandWeapons.Add(in);
+	}
+	RightHandWeaponsUpdated = false;
+
 	PlayerCameraManagerClass = AARPlayerCameraManager::StaticClass();
 
 	//Inventory.AddZeroed(MaxInventorySize);
@@ -397,6 +407,35 @@ bool AARPlayerController::ServerAddLeftHandWeapon_Validate(FInventorySlot Weapon
 	return true;
 }
 
+void AARPlayerController::AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerAddRightHandWeapon(Weapon, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& weapon : RightHandWeapons)
+		{
+			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+			{
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				return;
+			}
+		}
+	}
+}
+void AARPlayerController::ServerAddRightHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
+{
+	AddRightHandWeapon(Weapon, SlotID);
+}
+bool AARPlayerController::ServerAddRightHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+{
+	return true;
+}
+
 void AARPlayerController::OnRep_ActionBarOne()
 {
 	UpdateActionBarOne = true;
@@ -409,7 +448,10 @@ void AARPlayerController::OnRep_LeftHandWeapons()
 {
 	LeftHandWeaponsUpdated = true;
 }
-
+void AARPlayerController::OnRep_RightHandWeapons()
+{
+	RightHandWeaponsUpdated = true;
+}
 void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -423,4 +465,5 @@ void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProp
 	DOREPLIFETIME_CONDITION(AARPlayerController, ActionBarOne, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(AARPlayerController, LeftHandWeapons, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AARPlayerController, RightHandWeapons, COND_OwnerOnly);
 }

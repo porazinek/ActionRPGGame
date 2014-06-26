@@ -24,10 +24,9 @@ public:
 	void Construct(const FArguments& InArgs);
 
 private:
-	EVisibility InventoryVisibility;
 	EVisibility GetInventoryVisibility() const;
-
-
+	EVisibility GetAbilityInventoryVisibility() const;
+	EVisibility GetCharacterSheetVisibility() const;
 	TWeakObjectPtr<class AARHUD> OwnerHUD;
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;

@@ -19,12 +19,11 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 {
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
-	InventoryVisibility = EVisibility::Visible;
+
 	ChildSlot
 		[
-			SNew(SHorizontalBox)
-			+ SHorizontalBox::Slot()
-			.AutoWidth()
+			SNew(SOverlay)
+			+ SOverlay::Slot()
 			.HAlign(HAlign_Left)
 			.VAlign(VAlign_Top)
 			[
@@ -45,13 +44,14 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 				]
 			]
 			//Character Sheet;
-			+ SHorizontalBox::Slot()
-				.AutoWidth()
-				.HAlign(HAlign_Right)
-				.VAlign(VAlign_Bottom)
+			+ SOverlay::Slot()
+				.HAlign(HAlign_Left)
+				.VAlign(VAlign_Top)
+				.Padding(FMargin(300, 0, 0, 0))
 				[
 					SNew(SBorder) //add visibility check
 					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					.Visibility(this, &SARHUDWidget::GetCharacterSheetVisibility)
 					[
 						SNew(SBox)
 						[
@@ -60,9 +60,8 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						]
 					]
 				]
-			+ SHorizontalBox::Slot()
-				.AutoWidth()
-				.HAlign(HAlign_Right)
+			+ SOverlay::Slot()
+				.HAlign(HAlign_Center)
 				.VAlign(VAlign_Bottom)
 				[
 					SNew(SBorder) //add visibility check
@@ -78,13 +77,13 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						]
 					]
 				]
-			+ SHorizontalBox::Slot()
-				.AutoWidth()
+			+ SOverlay::Slot()
 				.HAlign(HAlign_Right)
 				.VAlign(VAlign_Top)
 				[
 					SNew(SBorder) //add visibility check
 					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					.Visibility(this, &SARHUDWidget::GetAbilityInventoryVisibility)
 					[
 						SNew(SBox)
 						.HeightOverride(300)
@@ -104,6 +103,23 @@ EVisibility SARHUDWidget::GetInventoryVisibility() const
 	if (MyPC.IsValid())
 	{
 		return MyPC->InventoryVisibility;
+	}
+	return EVisibility::Collapsed;
+}
+
+EVisibility SARHUDWidget::GetAbilityInventoryVisibility() const
+{
+	if (MyPC.IsValid())
+	{
+		return MyPC->AbilityInventoryVisibility;
+	}
+	return EVisibility::Collapsed;
+}
+EVisibility SARHUDWidget::GetCharacterSheetVisibility() const
+{
+	if (MyPC.IsValid())
+	{
+		return MyPC->CharacterSheetVisibility;
 	}
 	return EVisibility::Collapsed;
 }

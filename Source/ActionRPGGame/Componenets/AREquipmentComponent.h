@@ -16,12 +16,6 @@ public:
 	UPROPERTY(Replicated)
 	class AARPlayerController* TargetController;
 
-	//UPROPERTY(Replicated)
-	//	bool IsInventoryChanged;
-
-	//UDataTable* ChestItemDataTable;
-
-
 	virtual void InitializeComponent() override;
 	virtual void BeginDestroy() override;
 	//this is placeholder. inventory should use different data struct
@@ -88,7 +82,7 @@ public:
 	/*
 		These weapons are active and can be used by Player.
 	**/
-	//Left Hand Weapon
+	//Left Hand Weapon - clean it up a bit.
 	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
 		class AARWeapon* ActiveLeftHandWeapon;
 	UPROPERTY()

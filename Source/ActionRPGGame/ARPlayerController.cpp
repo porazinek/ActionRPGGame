@@ -18,6 +18,8 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 
 	InventoryVisibility = EVisibility::Collapsed;
 	CharacterSheetVisibility = EVisibility::Collapsed;
+	AbilityInventoryVisibility = EVisibility::Collapsed;
+
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;
 	UpdateActionBarOne = false;
@@ -79,6 +81,7 @@ void AARPlayerController::SetupInputComponent()
 	//GUI input
 	InputComponent->BindAction("ShowInventory", IE_Pressed, this, &AARPlayerController::SetInventoryVisibility);
 	InputComponent->BindAction("ShowCharacterSheet", IE_Pressed, this, &AARPlayerController::SetCharacterSheetVisibility);
+	InputComponent->BindAction("ShowAbilityInventory", IE_Pressed, this, &AARPlayerController::SetAbilityInventoryVisibility);
 
 	InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARPlayerController::InputActionButtonOne);
 	InputComponent->BindAction("ActionButtonTwo", IE_Pressed, this, &AARPlayerController::InputActionButtonTwo);
@@ -126,6 +129,18 @@ void AARPlayerController::SetCharacterSheetVisibility()
 	else
 	{
 		CharacterSheetVisibility = EVisibility::Collapsed;
+	}
+}
+
+void AARPlayerController::SetAbilityInventoryVisibility()
+{
+	if (AbilityInventoryVisibility == EVisibility::Collapsed)
+	{
+		AbilityInventoryVisibility = EVisibility::Visible;
+	}
+	else
+	{
+		AbilityInventoryVisibility = EVisibility::Collapsed;
 	}
 }
 

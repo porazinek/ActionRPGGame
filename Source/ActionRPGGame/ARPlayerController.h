@@ -26,6 +26,9 @@ public:
 	void SetCharacterSheetVisibility();
 	EVisibility CharacterSheetVisibility;
 
+	void SetAbilityInventoryVisibility();
+	EVisibility AbilityInventoryVisibility;
+
 	/* Character Sheet **/
 	//Left Hand Weapon
 	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.

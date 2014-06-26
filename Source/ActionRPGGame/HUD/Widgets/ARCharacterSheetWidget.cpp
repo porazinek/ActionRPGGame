@@ -21,6 +21,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SGridPanel)
 			+ SGridPanel::Slot(1, 1)
+			.ColumnSpan(6)
 			[
 				SNew(SBorder) //add visibility check
 				.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
@@ -29,8 +30,8 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 					+ SOverlay::Slot()
 						[
 							SNew(SBox)
-							.HeightOverride(56)
-							.WidthOverride(250)
+							.HeightOverride(52)
+							.WidthOverride(210)
 							[
 								SAssignNew(LeftWeapon, STileView<TSharedPtr<FInventorySlot>>)
 								.ListItemsSource(&LeftHandWeapons)
@@ -42,6 +43,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 				]
 			]
 				+ SGridPanel::Slot(1, 2)
+					.ColumnSpan(6)
 				[
 					SNew(SBorder) //add visibility check
 					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
@@ -50,8 +52,8 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						+ SOverlay::Slot()
 						[
 							SNew(SBox)
-							.HeightOverride(56)
-							.WidthOverride(250)
+							.HeightOverride(52)
+							.WidthOverride(210)
 							[
 								SAssignNew(RightWeapon, STileView<TSharedPtr<FInventorySlot>>)
 								.ListItemsSource(&RightHandWeapons)
@@ -62,116 +64,8 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 					]
 				]
-			//+ SGridPanel::Slot(1, 1)
-			//.HAlign(HAlign_Right)
-			//[
-			//	SNew(SBorder) //add visibility check
-			//	.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-			//	[
-			//		SNew(SOverlay)
-			//		+ SOverlay::Slot()
-			//		[
-			//			SNew(STextBlock)
-			//			.Text(FText::FromString(FString("LHand1")))
-			//		]
-			//		+ SOverlay::Slot()
-			//			[
-			//				SNew(SBox)
-			//				.WidthOverride(50)
-			//				.HeightOverride(50)
-			//				[
-			//					SNew(SARInventoryItemWidget)
-			//					.SlotType(EItemSlot::Item_Weapon)
-			//					.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
-			//					.PlayerController(MyPC)
-			//					.SlotName(FText::FromName("LHand"))
-			//				]
-			//			]
-			//	]
-			//]
-			//+ SGridPanel::Slot(2, 1)
-			//	.HAlign(HAlign_Right)
-			//	[
-			//		SNew(SOverlay)
-			//		+ SOverlay::Slot()
-			//		[
-			//			SNew(STextBlock)
-			//			.Text(FText::FromString(FString("LHand2")))
-			//		]
-			//		+ SOverlay::Slot()
-			//			[
-			//				SNew(SBorder) //add visibility check
-			//				.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-			//				[
-			//					SNew(SBox)
-			//					.WidthOverride(50)
-			//					.HeightOverride(50)
-			//					[
-			//						SNew(SARInventoryItemWidget)
-			//						.SlotType(EItemSlot::Item_Weapon)
-			//						.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
-			//						.PlayerController(MyPC)
-			//						.SlotName(FText::FromName("LHand"))
-			//					]
-			//				]
-			//			]
-			//	]
-			//+ SGridPanel::Slot(3, 1)
-			//	.HAlign(HAlign_Right)
-			//	[
-			//		SNew(SOverlay)
-			//		+ SOverlay::Slot()
-			//		[
-			//			SNew(STextBlock)
-			//			.Text(FText::FromString(FString("LHand3")))
-			//		]
-			//		+ SOverlay::Slot()
-			//			[
-			//				SNew(SBorder) //add visibility check
-			//				.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-			//				[
-			//					SNew(SBox)
-			//					.WidthOverride(50)
-			//					.HeightOverride(50)
-			//					[
-			//						SNew(SARInventoryItemWidget)
-			//						.SlotType(EItemSlot::Item_Weapon)
-			//						.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
-			//						.PlayerController(MyPC)
-			//						.SlotName(FText::FromName("LHand"))
-			//					]
-			//				]
-			//			]
-			//	]
-			//+ SGridPanel::Slot(4, 1)
-			//	.HAlign(HAlign_Right)
-			//	[
-			//		SNew(SOverlay)
-			//		+ SOverlay::Slot()
-			//		[
-			//			SNew(STextBlock)
-			//			.Text(FText::FromString(FString("LHand4")))
-			//		]
-			//		+ SOverlay::Slot()
-			//			[
-			//				SNew(SBorder) //add visibility check
-			//				.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-			//				[
-			//					SNew(SBox)
-			//					.WidthOverride(50)
-			//					.HeightOverride(50)
-			//					[
-			//						SNew(SARInventoryItemWidget)
-			//						.SlotType(EItemSlot::Item_Weapon)
-			//						.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
-			//						.PlayerController(MyPC)
-			//						.SlotName(FText::FromName("LHand"))
-			//					]
-			//				]
-			//			]
-			//	]
 			+ SGridPanel::Slot(1, 3)
-				.HAlign(HAlign_Right)
+				.HAlign(HAlign_Left)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -198,6 +92,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 				]
 			+ SGridPanel::Slot(2, 3)
+				.HAlign(HAlign_Left)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -224,6 +119,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 				]
 			+ SGridPanel::Slot(3, 3)
+				.HAlign(HAlign_Left)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -250,6 +146,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 				]
 			+ SGridPanel::Slot(4, 3)
+				.HAlign(HAlign_Left)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -276,6 +173,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 				]
 			+ SGridPanel::Slot(5, 3)
+				.HAlign(HAlign_Left)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
@@ -302,6 +200,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 						]
 				]
 			+ SGridPanel::Slot(6, 3)
+				.HAlign(HAlign_Left)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()

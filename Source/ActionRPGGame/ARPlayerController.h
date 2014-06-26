@@ -27,7 +27,19 @@ public:
 	EVisibility CharacterSheetVisibility;
 
 	/* Character Sheet **/
+	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.
+		TArray<FInventorySlot> LeftHandWeapons;
+	UFUNCTION()
+		void OnRep_LeftHandWeapons();
+	bool LeftHandWeaponsUpdated;
+	void AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
+	UPROPERTY()
+		TArray<FInventorySlot> RightHandWeapons;
+	UPROPERTY()
+		TArray<FInventorySlot> EquippedItems;
 
 	/* Ability Inventory - Spellbook, mele action bla bla, got the point **/
 
@@ -52,12 +64,6 @@ public:
 		void ServerAddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID);
 
 	/* Inventory **/
-	UPROPERTY(ReplicatedUsing=OnRep_InventoryChanged)
-		TArray<FARItemInfo> Inventory;
-
-	UPROPERTY(ReplicatedUsing = OnRep_InventoryChanged)
-		TArray<UObject*> InventoryObj;
-
 	UPROPERTY(ReplicatedUsing = OnRep_InventoryChanged)
 		TArray<FInventorySlot> InventorySmall;
 	
@@ -79,9 +85,6 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerRemoveItemFromInventory(FName ItemID, int32 SlotID);
 	
-	//prolly no longer needed.
-	void SwapItemPosition(FARItemInfo& Item, int32 NewIndex);
-
 	UFUNCTION(Client, Reliable)
 		void ClientSetInventoryChanged();
 

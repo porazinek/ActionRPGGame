@@ -36,7 +36,6 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 		PlayerCameraManager->ViewPitchMax = 70.0f;
 	}
 	MaxInventorySize = 4;
-	Inventory.Reserve(MaxInventorySize);
 	InventorySmall.Reserve(MaxInventorySize);
 	for (int32 i = 0; i < MaxInventorySize; i++)
 	{
@@ -47,12 +46,17 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 		slot.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
 		InventorySmall.Add(slot);
 	};
-	for (int32 i = 0; i < MaxInventorySize; i++)
+	//initialize slots for left hand weapon.
+	for (int32 i = 0; i < 4; i++)
 	{
-		FARItemInfo item;
-		item.ItemID = i;
-		Inventory.Add(item);
+		FInventorySlot in;
+		in.SlotID = i;
+		in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+		in.ItemSlot = EItemSlot::Item_Weapon;
+		LeftHandWeapons.Add(in);
 	}
+	LeftHandWeaponsUpdated = false;
+
 	PlayerCameraManagerClass = AARPlayerCameraManager::StaticClass();
 
 	//Inventory.AddZeroed(MaxInventorySize);
@@ -339,27 +343,6 @@ bool AARPlayerController::ServerRemoveItemFromInventory_Validate(FName ItemID, i
 {
 	return true;
 }
-
-void AARPlayerController::SwapItemPosition(FARItemInfo& Item, int32 NewIndex)
-{
-	int32 index = 0;
-	for (FARItemInfo& item : Inventory)
-	{
-		if (item.ItemID == Item.ItemID)
-		{
-			index = 0;
-			break;
-		}
-		index++;
-	}
-	int32 OldIndex = Inventory.Find(Item); //find index of old item.
-
-	FARItemInfo& oldItem = Inventory[NewIndex]; //find item that is on NewIndex.
-
-	Inventory.Swap(NewIndex, index);
-	//OnRep_InventoryChanged();
-}
-
 void AARPlayerController::ClientSetInventoryChanged_Implementation()
 {
 	IsInventoryChanged = true;
@@ -384,6 +367,36 @@ bool AARPlayerController::ServerSetInventoryChanged_Validate()
 {
 	return true;
 }
+
+void AARPlayerController::AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerAddLeftHandWeapon(Weapon, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& weapon : LeftHandWeapons)
+		{
+			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+			{
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				return;
+			}
+		}
+	}
+}
+void AARPlayerController::ServerAddLeftHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
+{
+	AddLeftHandWeapon(Weapon, SlotID);
+}
+bool AARPlayerController::ServerAddLeftHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+{
+	return true;
+}
+
 void AARPlayerController::OnRep_ActionBarOne()
 {
 	UpdateActionBarOne = true;
@@ -392,17 +405,22 @@ void AARPlayerController::OnRep_AbilityInventory()
 {
 	UpdateAbilityInventory = true;
 }
+void AARPlayerController::OnRep_LeftHandWeapons()
+{
+	LeftHandWeaponsUpdated = true;
+}
+
 void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(AARPlayerController, Inventory, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, MaxInventorySize, COND_OwnerOnly);
 
-	DOREPLIFETIME_CONDITION(AARPlayerController, InventoryObj, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, InventorySmall, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, IsInventoryChanged, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(AARPlayerController, AbilityInventory, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, ActionBarOne, COND_OwnerOnly);
+
+	DOREPLIFETIME_CONDITION(AARPlayerController, LeftHandWeapons, COND_OwnerOnly);
 }

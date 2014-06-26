@@ -85,6 +85,11 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 					SNew(SImage)
 					.Image(this, &SARInventoryItemWidget::GetImage)
 				]
+				+ SOverlay::Slot()
+					[
+						SNew(STextBlock)
+						.Text(SlotName)
+					]
 			]
 		];
 }
@@ -162,22 +167,17 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
 		{
-			TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
-
-			if (MyChar.IsValid())
-			{
-				int32 tempSlotID = Operation->PickedItem->SlotID;
+				int32 tempSlotID = this->InventoryItemObj->SlotID;
 				Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
 
 				Operation->LastItemSlot->ItemInSlot.Reset();
 				Operation->LastItemSlot->InventoryItemObj.Reset();
 				InventoryItemObj = Operation->PickedItem;
 				ItemInSlot = Operation->InventoryItemObj;
-				MyChar->Equipment->ChangeItem(*Operation->PickedItem, tempSlotID);
-
+				PlayerController->AddLeftHandWeapon(*Operation->PickedItem, tempSlotID);
 				//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItemObj->ItemID, Operation->LastItemSlot->InventoryItemObj->SlotID);
 				return FReply::Handled();
-			}
+			
 		}
 	}
 	if (this->EquipmentSlot == EEquipmentSlot::Item_Inventory)

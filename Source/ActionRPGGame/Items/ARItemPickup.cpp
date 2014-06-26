@@ -34,7 +34,7 @@ void AARItemPickup::GiveAllItemsTo(class AARPlayerController* PickupInstigator)
 
 	//probably need to change. Item pickip shouldn't check for it. Just pass items to
 	//controller directly and controller will take care of checking and returning bool.
-	if (PickupInstigator->Inventory.Num() <= PickupInstigator->MaxInventorySize)
+	if (PickupInstigator->InventorySmall.Num() <= PickupInstigator->MaxInventorySize)
 	{
 		//for (FPickupItem& itemPickup : ItemPickups)
 		for (auto it = ItemPickups.CreateIterator(); it; ++it)

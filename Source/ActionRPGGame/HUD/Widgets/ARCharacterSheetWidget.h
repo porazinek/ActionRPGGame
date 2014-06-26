@@ -22,12 +22,20 @@ public:
 	/////Needed for every widget
 	/////Builds this widget and any of it's children
 	void Construct(const FArguments& InArgs);
-
+	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 private:
 
 	TWeakObjectPtr<class AARHUD> OwnerHUD;
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;
+
+	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> LeftWeapon;
+	TSharedRef<ITableRow> MakeLeftHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TArray<TSharedPtr<FInventorySlot>> LeftHandWeapons;
+	void SyncLeftHandWeapons();
+
+	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> RightWeapon;
+	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> EquipedItems;
 };
 
 

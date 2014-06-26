@@ -30,6 +30,7 @@ public:
 public:
 	void Construct(const FArguments& InArgs);
 	~SARInventoryItemWidget();
+
 	//Mouse input
 	virtual void OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
 	virtual void OnDragLeave(const FDragDropEvent& DragDropEvent) override;

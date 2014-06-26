@@ -153,18 +153,7 @@ void UAREquipmentComponent::AddItemToInventory(FInventorySlot NewItem)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		//add item on server
 		ServerAddItemToInventory(NewItem);
-
-		//add item on client
-		//comsetics. Server have authrative list of items.
-		if (TargetController)
-		{
-			if (TargetController->Inventory.Num() > 0)
-			{
-				float ten = 10;
-			}
-		}
 	}
 	else
 	{
@@ -216,27 +205,6 @@ void UAREquipmentComponent::ServerAddItemToInventory_Implementation(FInventorySl
 				TargetController->AddItemToInventory(NewItem);
 			}
 		}
-		//if (ItemSlot == EItemSlot::Item_Chest)
-		//{
-		//UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ChestItemDataAssetPath, NULL, LOAD_None, NULL));
-
-		//if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
-		//{
-		//	for (FARItemInfo& item : ItemDataAsset->Items)
-		//	{
-		//		if (item.ItemID == ItemID)
-		//		{
-		//			FInventorySlot it;
-		//			it.ItemID = item.ItemID;
-		//			it.ItemSlot = item.ItemSlot;
-
-		//			//TargetController->InventorySmall.Add(it);
-		//			TargetController->AddItemToInventory(it);
-		//			//TargetController->Inventory.Add(item);
-		//			break;
-		//		}
-		//	}
-		//}
 	}
 }
 bool UAREquipmentComponent::ServerAddItemToInventory_Validate(FInventorySlot NewItem)
@@ -314,9 +282,6 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 		default:
 			break;
 		}
-
-		//case EItemSlot::Item_Chest:
-
 	}
 }
 
@@ -496,7 +461,7 @@ void UAREquipmentComponent::AddLeftHandWeapon(FName ItemName)
 		{
 			if (weapon.ItemID == ItemName)
 			{
-				LeftHandWeaponsShared.Add(weapon);
+				LeftHandWeapons.Add(weapon);
 				return;
 			}
 		}
@@ -519,12 +484,20 @@ void UAREquipmentComponent::SwapLeftWeapon()
 	}
 	else
 	{
-		const int32 CurrentWeaponIndex = LeftHandWeaponsShared.IndexOfByKey(ActiveLeftHandWeaponStruct);
-		//EquippedItems.RemoveSingle(ActiveLeftHandWeaponStruct);
-		FInventorySlot weapon = LeftHandWeaponsShared[(CurrentWeaponIndex + 1) % LeftHandWeaponsShared.Num()];
-		ActiveLeftHandWeaponStruct = weapon;
-		//EquippedItems.Add(ActiveLeftHandWeapon);
-		EquipLeftWeapon(weapon);
+		for (FInventorySlot& weapon : TargetController->LeftHandWeapons)
+		{
+			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveLeftHandWeaponStruct.ItemID)
+			{
+				ActiveLeftHandWeaponStruct = weapon;
+				EquipLeftWeapon(ActiveLeftHandWeaponStruct);
+				return;
+			}
+		}
+		//const int32 CurrentWeaponIndex = TargetController->LeftHandWeapons.IndexOfByKey(ActiveLeftHandWeaponStruct);
+		////EquippedItems.RemoveSingle(ActiveLeftHandWeaponStruct);
+		//ActiveLeftHandWeaponStruct = TargetController->LeftHandWeapons[(CurrentWeaponIndex + 1) % TargetController->LeftHandWeapons.Num()];
+		////EquippedItems.Add(ActiveLeftHandWeapon);
+		//EquipLeftWeapon(ActiveLeftHandWeaponStruct);
 	}
 }
 void UAREquipmentComponent::ServerSwapLeftWeapon_Implementation()

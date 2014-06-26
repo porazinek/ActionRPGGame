@@ -70,11 +70,12 @@ public:
 		To make these weapons active.
 	*/
 	UPROPERTY() //not sure but I think we shouldn't really replicate this back.
-		TArray<class AARWeapon*> LeftHandWeapons;
-	TArray<FInventorySlot> LeftHandWeaponsShared;
+		TArray<FInventorySlot> LeftHandWeapons;
 
 	UPROPERTY()
-		TArray<class AARWeapon*> RightHandWeapons;
+		TArray<FInventorySlot> RightHandWeapons;
+
+	int32 MaxWeapons;
 
 	/* [Server][Client] - Add weapon to equiped weapons list**/
 	UFUNCTION()

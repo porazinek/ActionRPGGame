@@ -15,4 +15,7 @@ void UAREditorEngine::Init(IEngineLoop* InEngineLoop)
 	Super::Init(InEngineLoop);
 	FString table = "DataTable'/Game/Blueprints/Data/ChestItemData.ChestItemData'";
 	ChestItemDataTable = LoadObject<UDataTable>(NULL, *table, NULL, LOAD_None, NULL);
+
+	FString Weapons = "DataTable'/Game/Blueprints/Data/WeaponItemData.WeaponItemData'";
+	WeaponItemDataTable = LoadObject<UDataTable>(NULL, *Weapons, NULL, LOAD_None, NULL);
 }

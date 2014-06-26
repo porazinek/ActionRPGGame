@@ -71,7 +71,7 @@ public:
 	*/
 	UPROPERTY() //not sure but I think we shouldn't really replicate this back.
 		TArray<class AARWeapon*> LeftHandWeapons;
-		TArray<FARItemInfo> LeftHandWeaponsShared;
+	TArray<FInventorySlot> LeftHandWeaponsShared;
 
 	UPROPERTY()
 		TArray<class AARWeapon*> RightHandWeapons;
@@ -88,7 +88,7 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
 		class AARWeapon* ActiveLeftHandWeapon;
 	UPROPERTY()
-		FARItemInfo ActiveLeftHandWeaponStruct;
+		FInventorySlot ActiveLeftHandWeaponStruct;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FName LeftWeaponSocket;
 	UFUNCTION()
@@ -104,12 +104,12 @@ public:
 
 	void SwapLeftWeapon();
 
-	void EquipLeftWeapon(FARItemInfo Weapon);
+	void EquipLeftWeapon(FInventorySlot Weapon);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerEquipLeftWeapon(const FARItemInfo Weapon);
+		void ServerEquipLeftWeapon(const FInventorySlot Weapon);
 
-	void SetLeftWeapon(FARItemInfo Weapon, class AARWeapon* PrevWeapon);
+	void SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
 
 	void SwapRightWeapon();
 

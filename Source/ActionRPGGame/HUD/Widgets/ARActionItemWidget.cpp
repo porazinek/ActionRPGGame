@@ -44,13 +44,8 @@ void SARActionItemWidget::Construct(const FArguments& InArgs)
 				Ability = MyPC->GetWorld()->SpawnActor<AARAbility>(CurrentAbility->AbilityType, SpawnInfo);
 				Ability->SetOwner(MyPC->GetPawn());
 				Ability->Instigator = MyPC->GetPawn();
-				//ItemInSlot->ItemID = InventoryItemObj->ItemID;
 			}
 		}
-		//else if (CurrentAbility->Ability.IsValid())
-		//{
-		//	Ability = CurrentAbility->Ability;
-		//}
 	}
 
 	ChildSlot

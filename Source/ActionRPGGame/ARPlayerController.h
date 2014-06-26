@@ -26,6 +26,9 @@ public:
 	void SetCharacterSheetVisibility();
 	EVisibility CharacterSheetVisibility;
 
+	/* Character Sheet **/
+
+
 	/* Ability Inventory - Spellbook, mele action bla bla, got the point **/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_AbilityInventory, Category = "Abilities")

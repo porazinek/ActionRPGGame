@@ -18,7 +18,10 @@ const FString HandsItemDataAssetPath = "/Game/Blueprints/Data/HandsData.HandsDat
 const FString LegItemDataAssetPath = "/Game/Blueprints/Data/LegsData.LegsData";
 const FString FootItemDataAssetPath = "/Game/Blueprints/Data/FootData.FootData";
 const FString WeaponItemDataAssetPath = "/Game/Blueprints/Data/WeaponData.WeaponData";
+
+//this is probably not the best idea around.
 static UDataTable* ChestItemDataTable;
+static UDataTable* WeaponItemDataTable;
 
 USTRUCT(BlueprintType)
 struct FAttribute

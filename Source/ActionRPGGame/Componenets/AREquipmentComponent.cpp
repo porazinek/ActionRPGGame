@@ -207,6 +207,15 @@ void UAREquipmentComponent::ServerAddItemToInventory_Implementation(FInventorySl
 				TargetController->AddItemToInventory(NewItem);
 			}
 		}
+		if (NewItem.ItemSlot == EItemSlot::Item_Weapon)
+		{
+			FString usless;
+			FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(NewItem.ItemID, usless);
+			if (data)
+			{
+				TargetController->AddItemToInventory(NewItem);
+			}
+		}
 		//if (ItemSlot == EItemSlot::Item_Chest)
 		//{
 		//UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ChestItemDataAssetPath, NULL, LOAD_None, NULL));
@@ -253,7 +262,6 @@ void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName Socke
 	}
 }
 
-
 void UAREquipmentComponent::ServerChangeItem_Implementation(FInventorySlot ItemIn, int32 OldItemSlotID)
 {
 	ChangeItem(ItemIn, OldItemSlotID);
@@ -285,14 +293,30 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 				TargetController->AddItemToInventoryOnSlot(tempItem, OldItemSlotID);
 			}
 		}
-		//case EItemSlot::Item_Chest:
-		if (ChangeChestItem(ItemIn))
+		switch (ItemIn.EEquipmentSlot)
 		{
-			if (!itemRemoved)
+		case EEquipmentSlot::Item_Chest:
+		{
+			if (ChangeChestItem(ItemIn))
 			{
-				TargetController->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+				if (!itemRemoved)
+				{
+					TargetController->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+					break;
+				}
 			}
+			break;
 		}
+		case EEquipmentSlot::Item_LeftHandOne:
+		{
+			AddLeftHandWeapon(ItemIn.ItemID);
+		}
+		default:
+			break;
+		}
+
+		//case EItemSlot::Item_Chest:
+
 	}
 }
 
@@ -322,6 +346,7 @@ bool UAREquipmentComponent::ServerUnEquipItem_Validate(FInventorySlot ItemIn)
 {
 	return true;
 }
+
 void UAREquipmentComponent::ServerChangeChestItem_Implementation(FInventorySlot ItemIn)
 {
 	ChangeChestItem(ItemIn);
@@ -330,7 +355,6 @@ bool UAREquipmentComponent::ServerChangeChestItem_Validate(FInventorySlot ItemIn
 {
 	return true;
 }
-
 bool UAREquipmentComponent::ChangeChestItem(FInventorySlot ItemIn)
 {
 	FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
@@ -391,7 +415,6 @@ bool UAREquipmentComponent::ChangeChestItem(FInventorySlot ItemIn)
 	}
 	return false;
 }
-
 void UAREquipmentComponent::DoAsyncChestChange()
 {
 	if (ChestMeshToLoad.ResolveObject() != nullptr)
@@ -469,9 +492,9 @@ void UAREquipmentComponent::AddLeftHandWeapon(FName ItemName)
 	}
 	else
 	{
-		for (FARItemInfo& weapon : TargetController->Inventory)
+		for (FInventorySlot& weapon : TargetController->InventorySmall)
 		{
-			if (weapon.ItemName == ItemName)
+			if (weapon.ItemID == ItemName)
 			{
 				LeftHandWeaponsShared.Add(weapon);
 				return;
@@ -479,7 +502,6 @@ void UAREquipmentComponent::AddLeftHandWeapon(FName ItemName)
 		}
 	}
 }
-
 void UAREquipmentComponent::ServerAddLeftHandWeapon_Implementation(FName ItemName)
 {
 	AddLeftHandWeapon(ItemName);
@@ -491,21 +513,20 @@ bool UAREquipmentComponent::ServerAddLeftHandWeapon_Validate(FName ItemName)
 
 void UAREquipmentComponent::SwapLeftWeapon()
 {
-	//if (GetOwnerRole() < ROLE_Authority)
-	//{
-	//	ServerSwapLeftWeapon();
-	//}
-	//else
-	//{
-	//	const int32 CurrentWeaponIndex = LeftHandWeaponsShared.IndexOfByKey(ActiveLeftHandWeaponStruct);
-	//	EquippedItems.RemoveSingle(ActiveLeftHandWeaponStruct);
-	//	FARItemInfo weapon = LeftHandWeaponsShared[(CurrentWeaponIndex + 1) % LeftHandWeaponsShared.Num()];
-	//	ActiveLeftHandWeaponStruct = weapon;
-	//	EquippedItems.Add(ActiveLeftHandWeapon);
-	//	EquipLeftWeapon(weapon);
-	//}
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerSwapLeftWeapon();
+	}
+	else
+	{
+		const int32 CurrentWeaponIndex = LeftHandWeaponsShared.IndexOfByKey(ActiveLeftHandWeaponStruct);
+		//EquippedItems.RemoveSingle(ActiveLeftHandWeaponStruct);
+		FInventorySlot weapon = LeftHandWeaponsShared[(CurrentWeaponIndex + 1) % LeftHandWeaponsShared.Num()];
+		ActiveLeftHandWeaponStruct = weapon;
+		//EquippedItems.Add(ActiveLeftHandWeapon);
+		EquipLeftWeapon(weapon);
+	}
 }
-
 void UAREquipmentComponent::ServerSwapLeftWeapon_Implementation()
 {
 	SwapLeftWeapon();
@@ -515,7 +536,7 @@ bool UAREquipmentComponent::ServerSwapLeftWeapon_Validate()
 	return true;
 }
 
-void UAREquipmentComponent::EquipLeftWeapon(FARItemInfo Weapon)
+void UAREquipmentComponent::EquipLeftWeapon(FInventorySlot Weapon)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -526,33 +547,43 @@ void UAREquipmentComponent::EquipLeftWeapon(FARItemInfo Weapon)
 		SetLeftWeapon(Weapon, ActiveLeftHandWeapon);
 	}
 }
-
-void UAREquipmentComponent::ServerEquipLeftWeapon_Implementation(FARItemInfo Weapon)
+void UAREquipmentComponent::ServerEquipLeftWeapon_Implementation(FInventorySlot Weapon)
 {
 	EquipLeftWeapon(Weapon);
 }
-bool UAREquipmentComponent::ServerEquipLeftWeapon_Validate(FARItemInfo Weapon)
+bool UAREquipmentComponent::ServerEquipLeftWeapon_Validate(FInventorySlot Weapon)
 {
 	return true;
 }
 
-void UAREquipmentComponent::SetLeftWeapon(FARItemInfo Weapon, class AARWeapon* PrevWeapon)
+void UAREquipmentComponent::SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon)
 {
 	if (PrevWeapon)
 	{
 		PrevWeapon->Destroy();
 	}
-	AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-	//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
-	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.bNoCollisionFail = true;
-	SpawnInfo.Owner = MyChar;
-	AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(Weapon.ItemType, SpawnInfo);
-	weaponBase->SetOwner(MyChar);
-	weaponBase->Instigator = MyChar;
-	weaponBase->WeaponOwner = MyChar;
-	ActiveLeftHandWeapon = weaponBase;
-	SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
+
+	FString usless;
+	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
+
+	if (data)
+	{
+		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+		if (!gen)
+			return;
+
+		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+		//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.bNoCollisionFail = true;
+		SpawnInfo.Owner = MyChar;
+		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		weaponBase->SetOwner(MyChar);
+		weaponBase->Instigator = MyChar;
+		weaponBase->WeaponOwner = MyChar;
+		ActiveLeftHandWeapon = weaponBase;
+		SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
+	}
 }
 
 void UAREquipmentComponent::SwapRightWeapon()

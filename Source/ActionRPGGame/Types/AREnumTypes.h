@@ -39,10 +39,8 @@ enum EItemSlot
 	Item_Hands,
 	Item_Legs,
 	Item_Foot,
-	Item_MainHand,
-	Item_OffHand,
 	Item_TwoHanded, //takes both hands.
-	Item_Weapon, //either hand.
+	Item_Weapon,  //either hand.
 	Item_Inventory,
 	Item_Blank, //special slot. This item exist only as data. It doesn't have object or mesh attached. Only texture.
 	Item_MAX //keep it last;

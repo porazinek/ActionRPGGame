@@ -18,6 +18,10 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	//WeaponMesh->SetNetAddressable();
 	//WeaponMesh->SetIsReplicated(true);
 
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
+
 	WeaponState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
 
 	WeaponState->SetNetAddressable();
@@ -26,6 +30,11 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;
 	bReplicates = true;
+}
+void AARWeapon::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	WeaponState->TickMe(DeltaSeconds);
 }
 
 void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const

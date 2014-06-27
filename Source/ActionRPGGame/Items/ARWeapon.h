@@ -9,6 +9,7 @@ class AARWeapon : public AARItem, public IIARActionState
 {
 	GENERATED_UCLASS_BODY()
 public:
+	virtual void Tick(float DeltaSeconds) override;
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
 	//	USkeletalMeshComponent* WeaponMesh;
 

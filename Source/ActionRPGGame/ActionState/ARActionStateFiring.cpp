@@ -11,31 +11,37 @@ UARActionStateFiring::UARActionStateFiring(const class FPostConstructInitializeP
 {
 	FireStarted = false;
 	IsFirstFire = true;
+	CurrentIntervalTime = 0;
 }
 
 void UARActionStateFiring::Tick(float DeltaTime)
 {
 	if (FireStarted)
 	{
-		if (IsFirstFire)
-			GetOuterUARActionStateComponent()->CastBegin();
+		//if (IsFirstFire)
+		//{
+		//	IsFirstFire = false;
+		//	GetOuterUARActionStateComponent()->CastBegin();
+		//}
 
 		CurrentIntervalTime += DeltaTime;
 		if (CurrentIntervalTime >= GetOuterUARActionStateComponent()->IntervalTime)
 		{
 			GetOuterUARActionStateComponent()->ActionInterval();
 			IsFirstFire = false;
-			CurrentCastTime = 0;
+			CurrentIntervalTime = 0;
 		}
 	}
 }
 void UARActionStateFiring::BeginState(UARActionState* PrevState)
 {
+	GetOuterUARActionStateComponent()->CastBegin();
 	FireStarted = true;
 }
 void UARActionStateFiring::EndState()
 {
 	FireStarted = false;
+	CurrentIntervalTime = 0;
 }
 
 void UARActionStateFiring::BeginActionSequence()

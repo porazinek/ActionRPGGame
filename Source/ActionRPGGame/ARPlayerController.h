@@ -31,6 +31,12 @@ public:
 	*/
 	void InputFireLeftWeapon();
 	void InputFireRightWeapon();
+	void InputStopFireLeftWeapon();
+	void InputStopFireRightWeapon();
+
+	void InputTempAddWeapons();
+
+	void InputSwapRightWeapon();
 	/* GUI Input **/
 	void SetInventoryVisibility();
 	EVisibility InventoryVisibility;

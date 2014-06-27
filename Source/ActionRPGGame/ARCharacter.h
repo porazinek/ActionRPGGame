@@ -75,8 +75,9 @@ class AARCharacter : public ACharacter
 	//ok, it's not really an input per se, as it is not bound in character class input
 	//but it going trough input from PlayerController.
 	void InputFireLeftWeapon();
-	void InpitFireRightWeapon();
-
+	void InputFireRightWeapon();
+	void InputStopFireLeftWeapon();
+	void InputStopFireRightWeapon();
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling
 protected:

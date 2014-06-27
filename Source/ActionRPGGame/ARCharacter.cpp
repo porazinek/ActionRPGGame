@@ -211,8 +211,8 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("PickupItem", IE_Pressed, this, &AARCharacter::PickupItem);
 
 	//Add weapon switch for left and right hand.
-	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
-	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARCharacter::InputSwapRightWeapon);
+	//InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
+	//InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARCharacter::InputSwapRightWeapon);
 }
 
 void AARCharacter::MoveForward(float Value)
@@ -311,7 +311,7 @@ void AARCharacter::InputFireLeftWeapon()
 		}
 	}
 }
-void AARCharacter::InpitFireRightWeapon()
+void AARCharacter::InputFireRightWeapon()
 {
 	if (Equipment->ActiveRightHandWeapon)
 	{
@@ -319,6 +319,28 @@ void AARCharacter::InpitFireRightWeapon()
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();
+		}
+	}
+}
+void AARCharacter::InputStopFireLeftWeapon()
+{
+	if (Equipment->ActiveLeftHandWeapon)
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
+		if (actionInterface)
+		{
+			actionInterface->InputReleased();
+		}
+	}
+}
+void AARCharacter::InputStopFireRightWeapon()
+{
+	if (Equipment->ActiveRightHandWeapon)
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveRightHandWeapon);
+		if (actionInterface)
+		{
+			actionInterface->InputReleased();
 		}
 	}
 }

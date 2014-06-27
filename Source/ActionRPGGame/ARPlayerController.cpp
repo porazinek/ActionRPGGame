@@ -93,7 +93,25 @@ void AARPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("FireLeftWeapon", IE_Pressed, this, &AARPlayerController::InputFireLeftWeapon);
 	InputComponent->BindAction("FireRightWeapon", IE_Pressed, this, &AARPlayerController::InputFireRightWeapon);
+	InputComponent->BindAction("FireLeftWeapon", IE_Released, this, &AARPlayerController::InputStopFireLeftWeapon);
+	InputComponent->BindAction("FireRightWeapon", IE_Released, this, &AARPlayerController::InputStopFireRightWeapon);
+
+	//InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
+	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARPlayerController::InputSwapRightWeapon);
+	InputComponent->BindAction("AddWeapons", IE_Pressed, this, &AARPlayerController::InputTempAddWeapons);
 }
+void AARPlayerController::InputTempAddWeapons()
+{
+	FInventorySlot wep1;
+	wep1.ItemID = "RedWeapon";
+	wep1.ItemSlot = EItemSlot::Item_Weapon;
+	AddItemToInventory(wep1);
+	FInventorySlot wep2;
+	wep2.ItemID = "TestWeapon";
+	wep2.ItemSlot = EItemSlot::Item_Weapon;
+	AddItemToInventory(wep2);
+}
+
 void AARPlayerController::InputActionButtonOne()
 {
 	if (ActionBarOne[0].Ability.IsValid())
@@ -127,10 +145,31 @@ void AARPlayerController::InputFireRightWeapon()
 {
 	if (ARCharacter)
 	{
-		ARCharacter->InpitFireRightWeapon();
+		ARCharacter->InputFireRightWeapon();
+	}
+}
+void AARPlayerController::InputStopFireLeftWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputStopFireLeftWeapon();
+	}
+}
+void AARPlayerController::InputStopFireRightWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputStopFireRightWeapon();
 	}
 }
 
+void AARPlayerController::InputSwapRightWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputSwapRightWeapon();
+	}
+}
 void AARPlayerController::SetInventoryVisibility()
 {
 	if (InventoryVisibility == EVisibility::Collapsed)
@@ -271,6 +310,7 @@ void AARPlayerController::AddItemToInventory(FInventorySlot Item)
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
+					IsInventoryChanged = true;
 					//ClientSetInventoryChanged();
 					return;
 				}
@@ -315,6 +355,7 @@ void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 Sl
 							oldItem.ItemID = oldItemTemp.ItemID;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							IsInventoryChanged = true;
 							ClientSetInventoryChanged();
 							//OnRep_InventoryChanged();
 							return;
@@ -329,6 +370,7 @@ void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 Sl
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
+					IsInventoryChanged = true;
 					ClientSetInventoryChanged();
 					//RemoveItemFromInventory(Item.ItemID, Item.SlotID);
 					//OnRep_InventoryChanged();
@@ -376,6 +418,7 @@ bool AARPlayerController::RemoveItemFromInventory(FName ItemID, int32 SlotID)
 				item.ItemID = "-1";
 				item.ItemSlot = EItemSlot::Item_Inventory;
 				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
+				IsInventoryChanged = true;
 				ClientSetInventoryChanged();
 				return true;
 			}

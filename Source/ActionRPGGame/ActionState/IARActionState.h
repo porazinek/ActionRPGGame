@@ -36,4 +36,5 @@ class IIARActionState
 	/*[Client]*/
 	UFUNCTION()
 		virtual void InputReleased();
+
 };

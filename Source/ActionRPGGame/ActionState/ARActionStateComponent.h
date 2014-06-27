@@ -52,10 +52,20 @@ class UARActionStateComponent : public UActorComponent
 	*/
 	void GotoState(class UARActionState* NextState);
 
+	inline void GotoActiveState()
+	{
+		GotoState(ActiveState);
+	}
+
 	/*
 		[server] Begin Sequence of CurrentState.	
 	*/
 	virtual void BeginActionSequence();
+
+	/*
+		[server] Ends Sequence of CurrentState.
+	*/
+	virtual void EndActionSequence();
 	/*
 		[server] State can call this function to fire action.
 	*/
@@ -88,8 +98,12 @@ class UARActionStateComponent : public UActorComponent
 	UFUNCTION()
 		virtual void StartAction();
 	UFUNCTION(Server, Reliable, WithValidation)
-		virtual void ServerStartAction();
+		virtual void ServerStartAction(); 
 
+	/* Usually called when input has been released */
+	virtual void StopAction();
+	UFUNCTION(Server, Reliable, WithValidation)
+		virtual void ServerStopAction();
 	/*
 		These are used to call Delegates from withing states.
 		You can overridem to add more funcionality. 

@@ -13,3 +13,8 @@ void IIARActionState::InputPressed()
 {
 
 }
+
+void IIARActionState::InputReleased()
+{
+
+}

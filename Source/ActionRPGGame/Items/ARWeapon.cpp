@@ -4,6 +4,7 @@
 
 #include "Net/UnrealNetwork.h"
 #include "../ARCharacter.h"
+#include "../ActionState/ARActionStateComponent.h"
 #include "ARWeapon.h"
 
 AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
@@ -16,6 +17,12 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponMesh->AttachParent = ArrowComp;
 	//WeaponMesh->SetNetAddressable();
 	//WeaponMesh->SetIsReplicated(true);
+
+	WeaponState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
+
+	WeaponState->SetNetAddressable();
+	WeaponState->SetIsReplicated(true);
+
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;
 	bReplicates = true;
@@ -60,4 +67,57 @@ void AARWeapon::AttachWeapon()
 			UseWeaponMesh->SetHiddenInGame(false);
 		}
 	}
+}
+
+void AARWeapon::InputPressed()
+{
+
+	//PrimaryActorTick.bStartWithTickEnabled = true;
+	if (Role < ROLE_Authority)
+	{
+		ServerStartAction();
+	}
+	else
+	{
+		StartAction(); //we are on server, we just call normal version.
+	}
+}
+//does do anything for now, but it will be needed for fireting stop ;).
+void AARWeapon::InputReleased()
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerStopAction();
+	}
+	else
+	{
+		StopAction();
+	}
+}
+void AARWeapon::StartAction()
+{
+	Execute_ServerOnActionStart(this);
+	WeaponState->StartAction();
+}
+void AARWeapon::ServerStartAction_Implementation()
+{
+	StartAction();
+}
+bool AARWeapon::ServerStartAction_Validate()
+{
+	return true;
+}
+
+void AARWeapon::StopAction()
+{
+	Execute_ServerOnActionStop(this);
+	WeaponState->StopAction();
+}
+void AARWeapon::ServerStopAction_Implementation()
+{
+	StopAction();
+}
+bool AARWeapon::ServerStopAction_Validate()
+{
+	return true;
 }

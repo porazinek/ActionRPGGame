@@ -49,7 +49,7 @@ public:
 
 	/* [client] OVERIDE from IIARActionState */
 	virtual void InputPressed() override;
-
+	virtual void InputReleased() override;
 	/*[Server]*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerStartAction();

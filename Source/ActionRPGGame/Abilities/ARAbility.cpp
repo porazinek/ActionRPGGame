@@ -104,6 +104,10 @@ void AARAbility::InputPressed()
 		IsBeingUsed = true;
 	}
 }
+void AARAbility::InputReleased()
+{
+
+}
 void AARAbility::StartAction()
 {
 	// 1. We need to check if player have right weapon equiped.

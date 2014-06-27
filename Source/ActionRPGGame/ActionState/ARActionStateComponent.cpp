@@ -86,6 +86,13 @@ void UARActionStateComponent::BeginActionSequence()
 		CurrentState->BeginActionSequence();
 	}
 }
+void UARActionStateComponent::EndActionSequence()
+{
+	if (CurrentState)
+	{
+		CurrentState->EndActionSequence();
+	}
+}
 
 void UARActionStateComponent::FireAction()
 {
@@ -110,6 +117,26 @@ void UARActionStateComponent::ServerStartAction_Implementation()
 	BeginActionSequence();
 }
 bool UARActionStateComponent::ServerStartAction_Validate()
+{
+	return true;
+}
+
+void UARActionStateComponent::StopAction()
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerStopAction();
+	}
+	else
+	{
+		EndActionSequence();
+	}
+}
+void UARActionStateComponent::ServerStopAction_Implementation()
+{
+	StopAction();
+}
+bool UARActionStateComponent::ServerStopAction_Validate()
 {
 	return true;
 }

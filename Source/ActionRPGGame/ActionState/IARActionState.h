@@ -20,6 +20,8 @@ class IIARActionState
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void ServerOnActionStart();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void ServerOnActionStop();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void ClientOnActionStart();
 	/*[Server]*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
@@ -31,4 +33,7 @@ class IIARActionState
 	/*[Client]*/
 	UFUNCTION()
 		virtual void InputPressed();
+	/*[Client]*/
+	UFUNCTION()
+		virtual void InputReleased();
 };

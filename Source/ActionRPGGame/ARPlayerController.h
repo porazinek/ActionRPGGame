@@ -12,13 +12,25 @@ UCLASS()
 class AARPlayerController : public APlayerController
 {
 	GENERATED_UCLASS_BODY()
+private:
+	UPROPERTY()
+	class AARCharacter* ARCharacter;
 public:
-	//virtual void PostInitializeComponents() OVERRIDE;
+
+	virtual void SetPawn(APawn* InPawn) override;
 
 	/* Input **/
 	virtual void SetupInputComponent() override;
 	void InputActionButtonOne();
 	void InputActionButtonTwo();
+
+	/* 
+		Route weapon fire trough Controller
+		Will be useful, when later there will be multiple pawns.
+		Like vechicles, so we can just use the same binding to fire vechicle actions.
+	*/
+	void InputFireLeftWeapon();
+	void InputFireRightWeapon();
 	/* GUI Input **/
 	void SetInventoryVisibility();
 	EVisibility InventoryVisibility;

@@ -28,7 +28,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_Inventory, Category = "Inventory")
 		TArray<FARItemInfo> Inventory;
-	
+
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 		TArray<class AARItem*> EquippedItems;
 
@@ -47,7 +47,7 @@ public:
 	void PickupItem();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerPickupItem();
+		void ServerPickupItem();
 
 	UFUNCTION()
 		TArray<FARItemInfo> GetItems();
@@ -62,7 +62,7 @@ public:
 		These weapons are equiped in character sheet,
 		but are not active. Player can choose from these weapons in combat.
 		To make these weapons active.
-	*/
+		*/
 	UPROPERTY() //not sure but I think we shouldn't really replicate this back.
 		TArray<FInventorySlot> LeftHandWeapons;
 
@@ -81,10 +81,10 @@ public:
 
 	/*
 		These weapons are active and can be used by Player.
-	**/
-	//Left Hand Weapon - clean it up a bit.
+		**/
+	//Left Hand Weapon
 	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
-		class AARWeapon* ActiveLeftHandWeapon;
+	class AARWeapon* ActiveLeftHandWeapon;
 	UPROPERTY()
 		FInventorySlot ActiveLeftHandWeaponStruct;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
@@ -94,11 +94,8 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerSwapLeftWeapon();
 	void SwapLeftWeapon();
-	void EquipLeftWeapon(FInventorySlot Weapon);
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerEquipLeftWeapon(const FInventorySlot Weapon);
 	void SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
-	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
+
 
 	//Right Hand Weapon
 	UPROPERTY(ReplicatedUsing = OnRep_ActiveRightHandWeapon)
@@ -112,10 +109,11 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerSwapRightWeapon();
 	void SwapRightWeapon();
-	void EquipRightWeapon(FInventorySlot Weapon);
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//	void ServerEquipLeftWeapon(const FInventorySlot Weapon);
 	void SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
+
+	//Weapon general
+	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
+
 	/* Other Equipment Handling **/
 
 	/**[Server] - central function to change item */

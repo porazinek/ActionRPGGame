@@ -6,7 +6,6 @@
 #include "ARCharacter.h"
 #include "Items/ARWeapon.h"
 #include "Abilities/ARAbility.h"
-//#include "../Camera/PlayerCameraManager.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -74,6 +73,12 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	//Inventory.AddZeroed(MaxInventorySize);
 }
 
+void AARPlayerController::SetPawn(APawn* InPawn)
+{
+	Super::SetPawn(InPawn);
+	ARCharacter = Cast<AARCharacter>(InPawn);
+}
+
 void AARPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -85,6 +90,9 @@ void AARPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARPlayerController::InputActionButtonOne);
 	InputComponent->BindAction("ActionButtonTwo", IE_Pressed, this, &AARPlayerController::InputActionButtonTwo);
+
+	InputComponent->BindAction("FireLeftWeapon", IE_Pressed, this, &AARPlayerController::InputFireLeftWeapon);
+	InputComponent->BindAction("FireRightWeapon", IE_Pressed, this, &AARPlayerController::InputFireRightWeapon);
 }
 void AARPlayerController::InputActionButtonOne()
 {
@@ -108,6 +116,21 @@ void AARPlayerController::InputActionButtonTwo()
 		}
 	}
 }
+void AARPlayerController::InputFireLeftWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputFireLeftWeapon();
+	}
+}
+void AARPlayerController::InputFireRightWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InpitFireRightWeapon();
+	}
+}
+
 void AARPlayerController::SetInventoryVisibility()
 {
 	if (InventoryVisibility == EVisibility::Collapsed)

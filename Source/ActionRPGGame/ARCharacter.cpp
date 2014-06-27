@@ -299,11 +299,26 @@ void AARCharacter::InputSwapRightWeapon()
 	Equipment->SwapRightWeapon();
 }
 
-void AARCharacter::ServerSwapLeftWeapon_Implementation()
-{
 
-}
-bool AARCharacter::ServerSwapLeftWeapon_Validate()
+void AARCharacter::InputFireLeftWeapon()
 {
-	return true;
+	if (Equipment->ActiveLeftHandWeapon)
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
+		if (actionInterface)
+		{
+			actionInterface->InputPressed();
+		}
+	}
+}
+void AARCharacter::InpitFireRightWeapon()
+{
+	if (Equipment->ActiveRightHandWeapon)
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveRightHandWeapon);
+		if (actionInterface)
+		{
+			actionInterface->InputPressed();
+		}
+	}
 }

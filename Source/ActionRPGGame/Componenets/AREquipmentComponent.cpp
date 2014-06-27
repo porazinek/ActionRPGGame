@@ -492,15 +492,10 @@ void UAREquipmentComponent::SwapLeftWeapon()
 			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveLeftHandWeaponStruct.ItemID)
 			{
 				ActiveLeftHandWeaponStruct = weapon;
-				EquipLeftWeapon(ActiveLeftHandWeaponStruct);
+				SetLeftWeapon(ActiveLeftHandWeaponStruct, ActiveLeftHandWeapon);
 				return;
 			}
 		}
-		//const int32 CurrentWeaponIndex = TargetController->LeftHandWeapons.IndexOfByKey(ActiveLeftHandWeaponStruct);
-		////EquippedItems.RemoveSingle(ActiveLeftHandWeaponStruct);
-		//ActiveLeftHandWeaponStruct = TargetController->LeftHandWeapons[(CurrentWeaponIndex + 1) % TargetController->LeftHandWeapons.Num()];
-		////EquippedItems.Add(ActiveLeftHandWeapon);
-		//EquipLeftWeapon(ActiveLeftHandWeaponStruct);
 	}
 }
 void UAREquipmentComponent::ServerSwapLeftWeapon_Implementation()
@@ -508,26 +503,6 @@ void UAREquipmentComponent::ServerSwapLeftWeapon_Implementation()
 	SwapLeftWeapon();
 }
 bool UAREquipmentComponent::ServerSwapLeftWeapon_Validate()
-{
-	return true;
-}
-
-void UAREquipmentComponent::EquipLeftWeapon(FInventorySlot Weapon)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerEquipLeftWeapon(Weapon);
-	}
-	else
-	{
-		SetLeftWeapon(Weapon, ActiveLeftHandWeapon);
-	}
-}
-void UAREquipmentComponent::ServerEquipLeftWeapon_Implementation(FInventorySlot Weapon)
-{
-	EquipLeftWeapon(Weapon);
-}
-bool UAREquipmentComponent::ServerEquipLeftWeapon_Validate(FInventorySlot Weapon)
 {
 	return true;
 }

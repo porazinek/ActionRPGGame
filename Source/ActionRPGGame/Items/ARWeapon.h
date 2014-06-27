@@ -1,10 +1,11 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "ARItem.h"
+#include "../ActionState/IARActionState.h"
 #include "ARWeapon.generated.h"
 
 UCLASS(minimalapi)
-class AARWeapon : public AARItem
+class AARWeapon : public AARItem, public IIARActionState
 {
 	GENERATED_UCLASS_BODY()
 public:
@@ -26,9 +27,29 @@ public:
 		TSubobjectPtr<USkeletalMeshComponent> WeaponMesh;
 
 	TSubobjectPtr<UArrowComponent> ArrowComp;
-
 	void AttachWeapon();
+	/* Weapon State (fire) - ActionState interface and component implementation **/
 
+	/* [client] OVERIDE from IIARActionState */
+	UFUNCTION()
+	virtual void InputPressed() override;
+	UFUNCTION()
+	virtual void InputReleased() override;
+
+	/*[Server]*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerStartAction();
+	/*[Authorative]*/
+	virtual void StartAction();
+
+	/*[Server]*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerStopAction();
+	/*[Authorative]*/
+	virtual void StopAction();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+		TSubobjectPtr<class UARActionStateComponent> WeaponState;
 };
 
 

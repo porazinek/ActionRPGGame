@@ -67,13 +67,15 @@ class AARCharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnCharacterInitialize();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerSwapLeftWeapon();
-
 	/**[Input]*/
 	void InputSwapLeftWeapon();
 
 	void InputSwapRightWeapon();
+
+	//ok, it's not really an input per se, as it is not bound in character class input
+	//but it going trough input from PlayerController.
+	void InputFireLeftWeapon();
+	void InpitFireRightWeapon();
 
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling

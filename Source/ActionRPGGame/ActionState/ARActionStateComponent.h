@@ -145,6 +145,10 @@ class UARActionStateComponent : public UActorComponent
 	/*[Server] - called when cooldown ends */
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Action State")
 		FOnCooldownEnded OnCooldownEnded;
+
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Ability|FX")
+	void SpawnTrailEffect(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName, APawn* Causer);
 };
 
 

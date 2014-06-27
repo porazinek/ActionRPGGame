@@ -2,10 +2,11 @@
 #pragma once
 #include "ARItem.h"
 #include "../ActionState/IARActionState.h"
+#include "../Interfaces/IARFXEffect.h"
 #include "ARWeapon.generated.h"
 
 UCLASS(minimalapi)
-class AARWeapon : public AARItem, public IIARActionState
+class AARWeapon : public AARItem, public IIARActionState, public IIARFXEffect
 {
 	GENERATED_UCLASS_BODY()
 public:
@@ -17,15 +18,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer OwnedTags;
 
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner)
+	UPROPERTY(Replicated)
 	class AARCharacter* WeaponOwner;
 
-	UFUNCTION()
-		void OnRep_WeaponOwner();
-	void SetWeaponOwner(AARCharacter* NewOwner);
+	//UFUNCTION()
+	//	void OnRep_WeaponOwner();
+	//void SetWeaponOwner(AARCharacter* NewOwner);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponMesh)
 		TSubobjectPtr<USkeletalMeshComponent> WeaponMesh;
+
 
 	TSubobjectPtr<UArrowComponent> ArrowComp;
 	void AttachWeapon();
@@ -51,6 +53,11 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 		TSubobjectPtr<class UARActionStateComponent> WeaponState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FX Effects")
+		TSubobjectPtr<class UARFXEffectComponent> FXEffect;
+	//UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Ability|FX")
+	//void SpawnTrailEffect(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName);
 };
 
 

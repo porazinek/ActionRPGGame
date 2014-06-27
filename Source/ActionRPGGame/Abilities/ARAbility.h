@@ -87,6 +87,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 		TSubobjectPtr<class UARActionStateComponent> ActionState;
 
+	/* Cosmetics */
+	UPROPERTY(EditAnywhere, Category = "Cosmetics")
+		UParticleSystem* TrailFX;
 };
 
 

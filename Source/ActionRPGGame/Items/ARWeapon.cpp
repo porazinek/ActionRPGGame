@@ -5,6 +5,8 @@
 #include "Net/UnrealNetwork.h"
 #include "../ARCharacter.h"
 #include "../ActionState/ARActionStateComponent.h"
+#include "../FXEffects/ARFXEffectComponent.h"
+
 #include "ARWeapon.h"
 
 AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
@@ -27,6 +29,8 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponState->SetNetAddressable();
 	WeaponState->SetIsReplicated(true);
 
+	FXEffect = PCIP.CreateDefaultSubobject<UARFXEffectComponent>(this, TEXT("FXEffects"));
+
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;
 	bReplicates = true;
@@ -35,6 +39,7 @@ void AARWeapon::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	WeaponState->TickMe(DeltaSeconds);
+
 }
 
 void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
@@ -44,16 +49,16 @@ void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & O
 	DOREPLIFETIME(AARWeapon, WeaponOwner);
 }
 
-void AARWeapon::OnRep_WeaponOwner()
-{
-	if (WeaponOwner)
-		SetWeaponOwner(WeaponOwner);
-}
-void AARWeapon::SetWeaponOwner(AARCharacter* NewOwner)
-{
-	WeaponOwner = NewOwner;
-	SetOwner(NewOwner);
-}
+//void AARWeapon::OnRep_WeaponOwner()
+//{
+//	if (WeaponOwner)
+//		SetWeaponOwner(WeaponOwner);
+//}
+//void AARWeapon::SetWeaponOwner(AARCharacter* NewOwner)
+//{
+//	WeaponOwner = NewOwner;
+//	SetOwner(NewOwner);
+//}
 void AARWeapon::AttachWeapon()
 {
 	if (WeaponOwner)
@@ -84,6 +89,8 @@ void AARWeapon::InputPressed()
 	//PrimaryActorTick.bStartWithTickEnabled = true;
 	if (Role < ROLE_Authority)
 	{
+		Execute_ServerOnActionStart(this);
+		WeaponState->StartAction();
 		ServerStartAction();
 	}
 	else
@@ -96,6 +103,7 @@ void AARWeapon::InputReleased()
 {
 	if (Role < ROLE_Authority)
 	{
+		WeaponState->StopAction();
 		ServerStopAction();
 	}
 	else
@@ -130,3 +138,22 @@ bool AARWeapon::ServerStopAction_Validate()
 {
 	return true;
 }
+
+//void AARWeapon::SpawnTrailEffect_Implementation(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName)
+//{
+//	AARCharacter* tempOwner = Cast<AARCharacter>(GetOwner());
+//	FVector Origin = UARTraceStatics::GetStartLocation(SocketName, tempOwner);
+//	if (target.GetActor())
+//	{
+//		if (trailFX)
+//		{
+//			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), trailFX, Origin);
+//			if (TrailPSC)
+//			{
+//				const FVector AdjustedDir = (target.ImpactPoint - Origin).SafeNormal();
+//				FVector ParticleSpeed = AdjustedDir * trailSpeed;
+//				TrailPSC->SetVectorParameter(trailSpeedParam, ParticleSpeed);
+//			}
+//		}
+//	}
+//}

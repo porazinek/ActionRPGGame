@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
+#include "../ARCharacter.h"
 
 #include "ARFXEffectComponent.h"
 
@@ -31,4 +32,24 @@ void UARFXEffectComponent::SpawnTrailEffect_Implementation(UParticleSystem* trai
 			}
 		}
 	}
+}
+
+void UARFXEffectComponent::AttachEffectToTarget_Implementation(UParticleSystem* FXIn, FHitResult Target, FName AttachSocket, APawn* Causer)
+{
+	if (!Target.GetActor() && !FXIn)
+		return;
+
+	AARCharacter* hitTarget = Cast<AARCharacter>(Target.GetActor());
+	if (!hitTarget)
+		return;
+
+	UParticleSystemComponent* AttachedPSC = UGameplayStatics::SpawnEmitterAttached(FXIn, hitTarget->Mesh, AttachSocket);
+}
+
+void UARFXEffectComponent::SpawnEffectOnHitLoc_Implementation(UParticleSystem* FXIn, FHitResult HitLocation, APawn* Causer)
+{
+	if (!HitLocation.GetActor() && !FXIn)
+		return;
+
+	UParticleSystemComponent* ImpactPSC = UGameplayStatics::SpawnEmitterAtLocation(HitLocation.GetActor(), FXIn, HitLocation.ImpactPoint);
 }

@@ -55,12 +55,18 @@ protected:
 	void SetFloatValue(float InValue, FName AttributeName);
 
 public:
+	/*
+		Final point of changing attributes. All attribute changes should be at some point routed
+		to this function.
+	*/
 	void ChangeAttribute(float ModValue, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
 protected:
 	void SetAttributeModified(float ModValue, FName AttributeName);
 	void GetAttributeModified();
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_ModifiedAttribute, Category="Attributes")
 	FAttributeModified ModifiedAttribute;
+	UFUNCTION()
+		void OnRep_ModifiedAttribute();
 
 private:
 	float AttributeOp(float ModValue, float AttrValueIn, TEnumAsByte<EAttrOp> OpType);

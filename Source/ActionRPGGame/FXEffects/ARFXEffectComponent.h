@@ -13,6 +13,12 @@ class UARFXEffectComponent : public UActorComponent
 public:
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Ability|FX")
 		void SpawnTrailEffect(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName, APawn* Causer);
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "FX|Statics")
+		void AttachEffectToTarget(UParticleSystem* FXIn, FHitResult Target, FName AttachSocket, APawn* Causer);
+
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "FX|Statics")
+		void SpawnEffectOnHitLoc(UParticleSystem* FXIn, FHitResult HitLocation, APawn* Causer);
 };
 
 

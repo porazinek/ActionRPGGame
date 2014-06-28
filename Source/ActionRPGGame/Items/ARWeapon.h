@@ -56,8 +56,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FX Effects")
 		TSubobjectPtr<class UARFXEffectComponent> FXEffect;
-	//UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Ability|FX")
-	//void SpawnTrailEffect(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FX Effects")
+		TSubobjectPtr<class UARActionHitTrace> TraceHit;
 };
 
 

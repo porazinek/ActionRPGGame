@@ -30,6 +30,7 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponState->SetIsReplicated(true);
 
 	FXEffect = PCIP.CreateDefaultSubobject<UARFXEffectComponent>(this, TEXT("FXEffects"));
+	TraceHit = PCIP.CreateDefaultSubobject<UARActionHitTrace>(this, TEXT("TraceHit"));
 
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;
@@ -138,22 +139,3 @@ bool AARWeapon::ServerStopAction_Validate()
 {
 	return true;
 }
-
-//void AARWeapon::SpawnTrailEffect_Implementation(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName)
-//{
-//	AARCharacter* tempOwner = Cast<AARCharacter>(GetOwner());
-//	FVector Origin = UARTraceStatics::GetStartLocation(SocketName, tempOwner);
-//	if (target.GetActor())
-//	{
-//		if (trailFX)
-//		{
-//			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), trailFX, Origin);
-//			if (TrailPSC)
-//			{
-//				const FVector AdjustedDir = (target.ImpactPoint - Origin).SafeNormal();
-//				FVector ParticleSpeed = AdjustedDir * trailSpeed;
-//				TrailPSC->SetVectorParameter(trailSpeedParam, ParticleSpeed);
-//			}
-//		}
-//	}
-//}

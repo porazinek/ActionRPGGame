@@ -2,6 +2,7 @@
 #pragma once
 #include "AREnumTypes.h"
 #include "Slate.h"
+#include "ARAttributeTypes.h"
 #include "ARStructTypes.generated.h"
 
 //it probably will be better to store these informations in DataTable
@@ -23,19 +24,7 @@ const FString WeaponItemDataAssetPath = "/Game/Blueprints/Data/WeaponData.Weapon
 static UDataTable* ChestItemDataTable;
 static UDataTable* WeaponItemDataTable;
 
-USTRUCT(BlueprintType)
-struct FAttribute
-{
-	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute")
-		FName AttributeName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute")
-		float ModValue;
-
-	FAttribute() {};
-};
 
 USTRUCT(BlueprintType)
 struct FItemAttribute : public FAttribute

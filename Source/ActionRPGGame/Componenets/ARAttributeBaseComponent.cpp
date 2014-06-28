@@ -25,7 +25,10 @@ void UARAttributeBaseComponent::GetLifetimeReplicatedProps(TArray< class FLifeti
 	DOREPLIFETIME(UARAttributeBaseComponent, ActivePeriodicEffects);
 	DOREPLIFETIME(UARAttributeBaseComponent, ModifiedAttribute);
 }
-
+void UARAttributeBaseComponent::OnRep_ModifiedAttribute()
+{
+	GetAttributeModified();
+}
 void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);

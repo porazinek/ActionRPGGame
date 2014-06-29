@@ -17,6 +17,9 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
 		static void ChangeAttribute(AActor* Target, AActor* CausedBy, float ModVal, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
+		static void ApplyPointAttributeChange(AActor* DamageTarget, float AttributeMod, FName AttributeName, TEnumAsByte<EAttrOp> AttributeOperation, FVector HitFromLocation, FHitResult HitInfo, AController* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType);
 };
 
 

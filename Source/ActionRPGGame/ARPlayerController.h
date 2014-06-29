@@ -16,7 +16,13 @@ private:
 	UPROPERTY()
 	class AARCharacter* ARCharacter;
 public:
-
+	/*
+	Hook for controller. Controller doesn't have any attributes per se,
+	but attribute component also implements notifications and events,
+	and we'd like to access them from owning conroller as well.
+	*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+		TSubobjectPtr<class UARAttributeBaseComponent> Attributes;
 	virtual void SetPawn(APawn* InPawn) override;
 
 	/* Input **/

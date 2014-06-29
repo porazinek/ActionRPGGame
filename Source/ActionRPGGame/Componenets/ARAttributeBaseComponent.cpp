@@ -6,6 +6,8 @@
 #include "../Types/AREnumTypes.h"
 #include "../Effects/AREffectPeriodic.h"
 
+#include "../ARPlayerCameraManager.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "ARAttributeBaseComponent.h"
@@ -24,6 +26,7 @@ void UARAttributeBaseComponent::GetLifetimeReplicatedProps(TArray< class FLifeti
 
 	DOREPLIFETIME(UARAttributeBaseComponent, ActivePeriodicEffects);
 	DOREPLIFETIME(UARAttributeBaseComponent, ModifiedAttribute);
+	DOREPLIFETIME_CONDITION(UARAttributeBaseComponent, ChangedAttribute, COND_OwnerOnly);
 }
 void UARAttributeBaseComponent::OnRep_ModifiedAttribute()
 {
@@ -152,14 +155,42 @@ void UARAttributeBaseComponent::SetIntValue(int32 InValue, FName AttributeName)
 
 }
 
-void UARAttributeBaseComponent::ChangeAttribute(float ModValue, FName AttributeName, TEnumAsByte<EAttrOp> OpType)
+void UARAttributeBaseComponent::ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float attrValue = GetFloatValue(AttributeName);
-	ModifiedAttribute.ActuallDamage = ModValue;
-	ModifiedAttribute.AttributeName = AttributeName;
-	SetFloatValue(AttributeOp(ModValue, attrValue, OpType), AttributeName);
-	SetAttributeModified(ModValue, AttributeName);
+	if (AttributeEvent.IsOfType(FPointAttributeChangeEvent::ClassID))
+	{
+		FPointAttributeChangeEvent* const Point = (FPointAttributeChangeEvent*)&AttributeEvent;
+		SetFloatValue(AttributeOp(Point->AttributeMod.ModValue, GetFloatValue(Point->AttributeMod.AttributeName), Point->AttributeMod.OperationType), Point->AttributeMod.AttributeName);
+		UDamageType* Damage = nullptr;
+		if (Point->DamageTypeClass)
+		{
+			Damage = ConstructObject<UDamageType>(Point->DamageTypeClass);
+		}
+		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+
+		if (attr)
+		{
+			attr->InstigatedAttributeChange(Point->AttributeMod, GetOwner(), DamageCauser, Damage);
+		}
+		OnPointAttributeChange.Broadcast(Point->AttributeMod, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
+	}
+	else if (AttributeEvent.IsOfType(FRadialAttributeChangeEvent::ClassID))
+	{
+		FRadialAttributeChangeEvent* const Radial = (FRadialAttributeChangeEvent*)&AttributeEvent;
+	}
 }
+
+void UARAttributeBaseComponent::InstigatedAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, UDamageType* DamageType)
+{
+	ChangedAttribute.Attribute = Attribute;
+	ChangedAttribute.ChangeCauser = DamageCauser;
+	ChangedAttribute.ChangeTarget = DamageTarget;
+	//ChangedAttribute.ChangeInstigator = this;
+	ChangedAttribute.DamageType = DamageType;
+
+	OnAttributeChanged.Broadcast(ChangedAttribute);
+}
+
 void UARAttributeBaseComponent::SetAttributeModified(float ModValue, FName AttributeName)
 {
 	FAttributeModified ModedAttribute;

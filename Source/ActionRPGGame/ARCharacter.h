@@ -16,6 +16,8 @@ class AARCharacter : public ACharacter
 	virtual void PossessedBy(class AController* NewController) override;
 	virtual void OnRep_Controller() override;
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 		TSubobjectPtr<class USpringArmComponent> CameraBoom;
 

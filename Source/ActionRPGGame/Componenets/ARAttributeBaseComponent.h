@@ -8,7 +8,9 @@
 //these will need to transfer some properties around.
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeModified, FAttributeModified, ModifiedAttribute);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChanged, FAttributeChanged, AttributeChanged);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeChange, FAttribute, Attribute, class AController*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
 /*
 	Despite the name, AttributeBaseComponent DO NOT hold any attributes.
 	Attributes should be defined in component derived from this class.
@@ -17,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeModified, FAttributeModi
 	inheritance hierachy makes things much easier.
 
 	Access to attribute properties is done trough Unreal code reflection system.
-*/
+	*/
 
 //forward declarations
 class AAREffectPeriodic;
@@ -26,8 +28,8 @@ UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStrea
 class UARAttributeBaseComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
-
-		virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+public:
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 	UPROPERTY(Replicated, RepRetry, BlueprintReadOnly, Category = "Effect")
 		FActivePeriodicEffects ActivePeriodicEffects;
@@ -40,9 +42,14 @@ class UARAttributeBaseComponent : public UActorComponent
 
 	void RemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 
-		UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-			FOnAttributeModified OnAttributeModified;
-	
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnAttributeModified OnAttributeModified;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnAttributeModified OnAttributeChanged;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnPointAttributeChange OnPointAttributeChange;
 protected:
 	/* [Server] - I mean you really should call it ony server */
 	/* Get Attribute (UProperty), from component class */
@@ -58,13 +65,24 @@ public:
 	/*
 		Final point of changing attributes. All attribute changes should be at some point routed
 		to this function.
+		This function shouldn't ever implement things like armor reduction or other math formulas.
+		That is what Effects are for. Or weapons. Or whatever.
 	*/
-	void ChangeAttribute(float ModValue, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
+	virtual void ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser);
+
+	virtual void InstigatedAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, UDamageType* DamageType);
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Attribute")
+		FAttributeChanged ChangedAttribute;
+
+	//UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+	//	FOnAttributeChanged OnAttributeChanged;
+
 protected:
 	void SetAttributeModified(float ModValue, FName AttributeName);
 	void GetAttributeModified();
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_ModifiedAttribute, Category="Attributes")
-	FAttributeModified ModifiedAttribute;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_ModifiedAttribute, Category = "Attributes")
+		FAttributeModified ModifiedAttribute;
 	UFUNCTION()
 		void OnRep_ModifiedAttribute();
 

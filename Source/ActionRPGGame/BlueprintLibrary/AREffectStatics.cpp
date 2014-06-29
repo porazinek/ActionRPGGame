@@ -61,5 +61,24 @@ void UAREffectStatics::ChangeAttribute(AActor* Target, AActor* CausedBy, float M
 	//and the replicated and broadcasted using delegate. (also broadcasted for server as well).
 
 
-	attrComp->ChangeAttribute(ModVal, AttributeName, OpType);
+	//attrComp->ChangeAttribute(ModVal, AttributeName, OpType);
+}
+
+void UAREffectStatics::ApplyPointAttributeChange(AActor* DamageTarget, float AttributeMod, FName AttributeName, TEnumAsByte<EAttrOp> AttributeOperation, FVector HitFromLocation, FHitResult HitInfo, AController* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType)
+{
+	if (!DamageTarget)
+		return;
+
+	TWeakObjectPtr<UARAttributeBaseComponent> attrComp = DamageTarget->FindComponentByClass<UARAttributeBaseComponent>();
+
+	if (!attrComp.IsValid())
+		return;
+
+	FAttribute Attribute;
+	Attribute.AttributeName = AttributeName;
+	Attribute.ModValue = AttributeMod;
+	Attribute.OperationType = AttributeOperation;
+
+	FPointAttributeChangeEvent AttributeEvent(Attribute, HitInfo, HitFromLocation, DamageType);
+	attrComp->ChangeAttribute(AttributeEvent, EventInstigator, Causer);
 }

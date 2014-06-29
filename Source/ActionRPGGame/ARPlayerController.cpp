@@ -6,7 +6,7 @@
 #include "ARCharacter.h"
 #include "Items/ARWeapon.h"
 #include "Abilities/ARAbility.h"
-
+#include "../Componenets/ARAttributeBaseComponent.h"
 #include "Net/UnrealNetwork.h"
 
 #include "ARPlayerController.h"
@@ -18,6 +18,10 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	InventoryVisibility = EVisibility::Collapsed;
 	CharacterSheetVisibility = EVisibility::Collapsed;
 	AbilityInventoryVisibility = EVisibility::Collapsed;
+
+	Attributes = PCIP.CreateDefaultSubobject<UARAttributeBaseComponent>(this, TEXT("Attributes"));
+	Attributes->SetIsReplicated(true);
+	Attributes->SetNetAddressable();
 
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;

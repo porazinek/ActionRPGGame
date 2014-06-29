@@ -4,3 +4,4 @@
 4. Expose damage raw damage done to UI for floating combat text drawing.
 5. Add hit reactions - best replicated to all clients, cosmetic effect, unreliable (it doesn't add anything except flavor).
 6. Make multicast delegates (events), which will notify about what attribute has been modified, by who, and by what.
+7. Extend default damage structs.

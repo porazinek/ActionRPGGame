@@ -57,20 +57,6 @@ struct FItemAttribute : public FAttribute
 };
 
 USTRUCT(BlueprintType)
-struct FAttributeModified
-{
-	GENERATED_USTRUCT_BODY()
-
-		UPROPERTY(BlueprintReadOnly, Category="Attribute")
-		FName AttributeName;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
-		float ActuallDamage;
-
-	FAttributeModified() {};
-};
-
-USTRUCT(BlueprintType)
 struct FAttributeDamage
 {
 	GENERATED_USTRUCT_BODY()

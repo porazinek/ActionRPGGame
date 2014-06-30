@@ -16,6 +16,11 @@ class UARAttributeComponent : public UARAttributeBaseComponent
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_Health, Category = "Derived Attribute")
 		float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Derived Attribute")
+		float Armor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = "Derived Attribute")
+		float AttackPower;
+
 	UFUNCTION()
 		void OnRep_Health();
 

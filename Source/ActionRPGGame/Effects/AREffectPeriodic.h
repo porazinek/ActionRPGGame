@@ -29,6 +29,9 @@ class AAREffectPeriodic : public AActor
 	UPROPERTY(Transient)
 	float CurrentPeriodDuration;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Target")
+		AActor* EffectCauser;
+
 	UFUNCTION()
 		void Initialze();
 
@@ -36,6 +39,8 @@ class AAREffectPeriodic : public AActor
 		void OnEffectPeriod();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Effect")
 		void OnEffectEnd();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Effect")
+		void OnEffectInitialized();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerActivate();

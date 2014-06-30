@@ -90,8 +90,8 @@ void AARWeapon::InputPressed()
 	//PrimaryActorTick.bStartWithTickEnabled = true;
 	if (Role < ROLE_Authority)
 	{
-		Execute_ServerOnActionStart(this);
-		WeaponState->StartAction();
+		//Execute_ServerOnActionStart(this);
+		//WeaponState->StartAction();
 		ServerStartAction();
 	}
 	else
@@ -104,7 +104,7 @@ void AARWeapon::InputReleased()
 {
 	if (Role < ROLE_Authority)
 	{
-		WeaponState->StopAction();
+		//WeaponState->StopAction();
 		ServerStopAction();
 	}
 	else

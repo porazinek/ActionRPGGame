@@ -9,8 +9,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeModified, FAttributeModified, ModifiedAttribute);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChanged, FAttributeChanged, AttributeChanged);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeChange, FAttribute, Attribute, class AController*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInstigatorCausedDamage, FAttributeChanged, AttributeChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeChange, FAttribute, Attribute, class AActor*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
 /*
 	Despite the name, AttributeBaseComponent DO NOT hold any attributes.
 	Attributes should be defined in component derived from this class.
@@ -46,12 +46,14 @@ public:
 		FOnAttributeModified OnAttributeModified;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnAttributeModified OnAttributeChanged;
+		FOnAttributeChanged OnAttributeChanged;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnPointAttributeChange OnPointAttributeChange;
-protected:
-	/* [Server] - I mean you really should call it ony server */
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnInstigatorCausedDamage OnInstigatorCausedDamage;
+public:
 	/* Get Attribute (UProperty), from component class */
 	UProperty* GetAttribute(FName AttributeName);
 
@@ -68,9 +70,16 @@ public:
 		This function shouldn't ever implement things like armor reduction or other math formulas.
 		That is what Effects are for. Or weapons. Or whatever.
 	*/
-	virtual void ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser);
+	virtual void DamageAttribute(FARDamageEvent const& DamageEvent, AActor* EventInstigator, AActor* DamageCauser);
 
-	virtual void InstigatedAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, UDamageType* DamageType);
+	virtual void HealAttribute();
+	virtual void ChangeAttribute(FName AttributeName, float ModValue, TEnumAsByte<EAttrOp> OperationType);
+	
+	//virtual void ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser);
+
+	virtual void InstigatedAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType);
+
+	virtual void SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType);
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Attribute")
 		FAttributeChanged ChangedAttribute;

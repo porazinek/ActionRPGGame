@@ -26,6 +26,8 @@ void UARAttributeComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UARAttributeComponent, Health);
+	DOREPLIFETIME(UARAttributeComponent, Armor);
+	DOREPLIFETIME(UARAttributeComponent, AttackPower);
 }
 
 void UARAttributeComponent::OnRep_Health()

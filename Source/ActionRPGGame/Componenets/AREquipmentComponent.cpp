@@ -589,6 +589,7 @@ void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapo
 		weaponBase->SetOwner(MyChar);
 		weaponBase->Instigator = MyChar;
 		weaponBase->WeaponOwner = MyChar;
+		weaponBase->OwningController = TargetController;
 		ActiveRightHandWeapon = weaponBase;
 		SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
 	}

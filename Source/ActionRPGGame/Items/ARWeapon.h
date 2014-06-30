@@ -18,8 +18,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
 	FGameplayTagContainer OwnedTags;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Owner")
 	class AARCharacter* WeaponOwner;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Owner")
+	class AARPlayerController* OwningController;
 
 	//UFUNCTION()
 	//	void OnRep_WeaponOwner();

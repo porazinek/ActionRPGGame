@@ -350,16 +350,5 @@ void AARCharacter::InputStopFireRightWeapon()
 
 float AARCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
-	if (DamageEvent.IsOfType(FAttributePointMod::ClassID))
-	{
-		FAttributePointMod* const Attr = (FAttributePointMod*)&DamageEvent;
-		//Attributes->ChangeAttribute(Attr->AttributeMod.ModValue, Attr->AttributeMod.AttributeName, Attr->AttributeMod.OperationType);
-	}
-	else if (DamageEvent.IsOfType(FAttributeRadialMod::ClassID))
-	{
-		FAttributeRadialMod* const AttrRad = (FAttributeRadialMod*)&DamageEvent;
-		//Attributes->ChangeAttribute(AttrRad->AttributeMod.ModValue, AttrRad->AttributeMod.AttributeName, AttrRad->AttributeMod.OperationType);
-	}
-
 	return 0;
 }

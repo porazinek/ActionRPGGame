@@ -24,7 +24,7 @@ FPeriodicEffect UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AAc
 	//SpawnInfo.Instigator = EffectCauser;
 
 	AAREffectPeriodic* effecTemp = EffectTarget->GetWorld()->SpawnActor<AAREffectPeriodic>(EffectType, SpawnInfo);
-
+	effecTemp->EffectCauser = EffectCauser;
 	PeriodicEffect.PeriodicEffect = effecTemp;
 	PeriodicEffect.MaxDuration = Duration;
 	PeriodicEffect.PeriodicEffect->MaxDuration = Duration;
@@ -49,22 +49,29 @@ void UAREffectStatics::ChangeAttribute(AActor* Target, AActor* CausedBy, float M
 
 	if (!attrComp.IsValid())
 		return;
-	//Pass ability info here ?
-	//how Do I distinguish type of damage.
-	//Or is it healing ?
-	//In UI might want to color code damage numbers depending on damage type.
-	//Or display ability/effect icons along damage numbers.
-	//Do I want floating damage numbers in the first place ?
-
-	//I will need data struct, that will be constructed here
-	//then passed to component
-	//and the replicated and broadcasted using delegate. (also broadcasted for server as well).
-
-
-	//attrComp->ChangeAttribute(ModVal, AttributeName, OpType);
+	attrComp->ChangeAttribute(AttributeName, ModVal, OpType);
 }
 
-void UAREffectStatics::ApplyPointAttributeChange(AActor* DamageTarget, float AttributeMod, FName AttributeName, TEnumAsByte<EAttrOp> AttributeOperation, FVector HitFromLocation, FHitResult HitInfo, AController* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType)
+void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, TSubclassOf<class UDamageType> DamageType)
+{
+	if (!DamageTarget)
+		return;
+
+	TWeakObjectPtr<UARAttributeBaseComponent> attr = DamageTarget->FindComponentByClass<UARAttributeBaseComponent>();
+
+	FAttribute Attribute;
+	Attribute.AttributeName = AttributeName;
+	Attribute.ModValue = BaseDamage;
+	Attribute.OperationType = EAttrOp::Attr_Subtract;
+
+	FARDamageEvent DamageEvent;
+	DamageEvent.Attribute = Attribute;
+	DamageEvent.DamageTypeClass = DamageType;
+
+	attr->DamageAttribute(DamageEvent, EventInstigator, DamageCauser);
+}
+
+void UAREffectStatics::ApplyPointDamage(AActor* DamageTarget, float AttributeMod, FName AttributeName, const FVector& HitFromLocation, const FHitResult& HitInfo, AActor* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType)
 {
 	if (!DamageTarget)
 		return;
@@ -77,8 +84,23 @@ void UAREffectStatics::ApplyPointAttributeChange(AActor* DamageTarget, float Att
 	FAttribute Attribute;
 	Attribute.AttributeName = AttributeName;
 	Attribute.ModValue = AttributeMod;
-	Attribute.OperationType = AttributeOperation;
+	Attribute.OperationType = EAttrOp::Attr_Subtract;
 
-	FPointAttributeChangeEvent AttributeEvent(Attribute, HitInfo, HitFromLocation, DamageType);
-	attrComp->ChangeAttribute(AttributeEvent, EventInstigator, Causer);
+	//FPointAttributeChangeEvent AttributeEvent(Attribute, HitInfo, HitFromLocation, DamageType);
+	FARPointDamageEvent AttributeEvent;
+	AttributeEvent.Attribute = Attribute;
+	AttributeEvent.HitInfo = HitInfo;
+	AttributeEvent.ShotDirection = HitFromLocation;
+	AttributeEvent.DamageTypeClass = DamageType;
+	attrComp->DamageAttribute(AttributeEvent, EventInstigator, Causer);
+}
+
+void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject, float BaseDamage, float MinimumDamage, const FVector& Origin, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator)
+{
+
+}
+
+void UAREffectStatics::ApplyRadialDamage(UObject* WorldContextObject, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage)
+{
+
 }

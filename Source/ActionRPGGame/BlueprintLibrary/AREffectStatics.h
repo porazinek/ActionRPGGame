@@ -15,11 +15,22 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintCallable, Category = "AR|Static")
 		static void ActivatePeriodicEffect(FPeriodicEffect PeriodicEffect);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
 		static void ChangeAttribute(AActor* Target, AActor* CausedBy, float ModVal, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
-		static void ApplyPointAttributeChange(AActor* DamageTarget, float AttributeMod, FName AttributeName, TEnumAsByte<EAttrOp> AttributeOperation, FVector HitFromLocation, FHitResult HitInfo, AController* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
+		static void ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, TSubclassOf<class UDamageType> DamageType);
+	/*
+		EventInstigator - who Instigated Damage. In General should be controller. But can be any Actor with Attribute component.
+	*/
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
+		static void ApplyPointDamage(AActor* DamageTarget, float AttributeMod, FName AttributeName, const FVector& HitFromLocation, const FHitResult& HitInfo, AActor* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static", meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", AutoCreateRefTerm = "IgnoreActors"))
+		static void ApplyRadialDamage(UObject* WorldContextObject, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static", meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", AutoCreateRefTerm = "IgnoreActors"))
+		static void ApplyRadialDamageWithFalloff(UObject* WorldContextObject, float BaseDamage, float MinimumDamage, const FVector& Origin, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser = NULL, AActor* Instigator = NULL);
 };
 
 

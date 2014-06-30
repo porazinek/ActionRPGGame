@@ -45,6 +45,7 @@ void AAREffectPeriodic::Initialze()
 
 void AAREffectPeriodic::Activate()
 {
+	OnEffectInitialized();
 	IsEffectActive = true;
 }
 

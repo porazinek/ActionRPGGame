@@ -19,7 +19,7 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 		static void ChangeAttribute(AActor* Target, AActor* CausedBy, float ModVal, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
-		static void ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, TSubclassOf<class UDamageType> DamageType);
+		static void ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, FGameplayTagContainer DamageTag, TSubclassOf<class UDamageType> DamageType);
 	/*
 		EventInstigator - who Instigated Damage. In General should be controller. But can be any Actor with Attribute component.
 	*/

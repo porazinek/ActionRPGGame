@@ -46,6 +46,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
 		FAttribute Attribute;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Damage")
+		FGameplayTagContainer DamageTag;
+
 	UPROPERTY()
 		TSubclassOf<class UDamageType> DamageTypeClass;
 
@@ -100,13 +103,13 @@ public:
 		FAttribute Attribute;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
-		AActor* ChangeTarget;
+		AActor* DamageTarget;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
-		AActor* ChangeCauser;
+		AActor* DamageCauser;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
-		class AActor* ChangeInstigator;
+		class AActor* DamageInstigator;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
 		UDamageType* DamageType;

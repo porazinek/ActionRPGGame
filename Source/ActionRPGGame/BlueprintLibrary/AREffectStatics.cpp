@@ -71,7 +71,7 @@ void UAREffectStatics::ChangeAttribute(AActor* Target, AActor* CausedBy, float M
 	attrComp->ChangeAttribute(AttributeName, ModVal, OpType);
 }
 
-void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, TSubclassOf<class UDamageType> DamageType)
+void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, FGameplayTagContainer DamageTag, TSubclassOf<class UDamageType> DamageType)
 {
 	if (!DamageTarget)
 		return;
@@ -86,7 +86,7 @@ void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName
 	FARDamageEvent DamageEvent;
 	DamageEvent.Attribute = Attribute;
 	DamageEvent.DamageTypeClass = DamageType;
-
+	DamageEvent.DamageTag = DamageTag;
 	attr->DamageAttribute(DamageEvent, EventInstigator, DamageCauser);
 }
 

@@ -7,10 +7,15 @@
 //dumb delegates declarations
 //these will need to transfer some properties around.
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeModified, FAttributeModified, ModifiedAttribute);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChanged, FAttributeChanged, AttributeChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInstigatorCausedDamage, FAttributeChanged, AttributeChanged);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeChange, FAttribute, Attribute, class AActor*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttributeDamage, FAttributeChanged, AttributeChanged, FGameplayTagContainer, DamageTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInstigatorCausedDamage, FAttributeChanged, AttributeChanged, FGameplayTagContainer, DamageTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeDamage, FAttribute, Attribute, class AActor*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
+
+/* stubs */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectAppiled);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectRemoved);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectInstigated);
 /*
 	Despite the name, AttributeBaseComponent DO NOT hold any attributes.
 	Attributes should be defined in component derived from this class.
@@ -46,16 +51,31 @@ public:
 		void ServerRemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnAttributeModified OnAttributeModified;
+		FOnAttributeDamage OnAttributeDamage;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnAttributeChanged OnAttributeChanged;
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnPointAttributeChange OnPointAttributeChange;
+		FOnPointAttributeDamage OnPointAttributeDamage;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnInstigatorCausedDamage OnInstigatorCausedDamage;
+
+	/*
+		Periodic Effect appiled By Me.
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnPeriodicEffectInstigated OnPeriodicEffectInstigated;
+	/*
+		Periodic Effect Appiled to Me.
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnPeriodicEffectAppiled OnPeriodicEffectAppiled;
+	/*
+		Periodic Effect Removed from Me.
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnPeriodicEffectRemoved OnPeriodicEffectRemoved;
+
+
 public:
 	/* Get Attribute (UProperty), from component class */
 	UProperty* GetAttribute(FName AttributeName);
@@ -72,6 +92,7 @@ public:
 		to this function.
 		This function shouldn't ever implement things like armor reduction or other math formulas.
 		That is what Effects are for. Or weapons. Or whatever.
+		It is important, because here we will call all events and set replicated properties.
 	*/
 	virtual void DamageAttribute(FARDamageEvent const& DamageEvent, AActor* EventInstigator, AActor* DamageCauser);
 
@@ -80,15 +101,17 @@ public:
 	
 	//virtual void ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser);
 
-	virtual void InstigatedAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType);
+	/*
+		Damage cause to attribute by Instigator. For example when Player1 deal Damage to Player2,
+		the Player1 will usually be instigator. Though it can be any object with Attribute
+		Component Attached.
+	*/
+	virtual void InstigatorAttributeDamageCaused(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
 
-	virtual void SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType);
+	virtual void SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Attribute")
 		FAttributeChanged ChangedAttribute;
-
-	//UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-	//	FOnAttributeChanged OnAttributeChanged;
 
 protected:
 	void SetAttributeModified(float ModValue, FName AttributeName);

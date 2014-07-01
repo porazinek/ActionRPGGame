@@ -94,6 +94,7 @@ void UARAttributeBaseComponent::AddPeriodicEffect(FPeriodicEffect PeriodicEffect
 		//server
 		PeriodicEffect.PeriodicEffect->Initialze();
 		ActivePeriodicEffects.ActiveEffects.AddUnique(PeriodicEffect);
+		OnPeriodicEffectAppiled.Broadcast();
 	}
 
 }
@@ -113,6 +114,7 @@ void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* Pe
 				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->Destroy();
 				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Reset();
 				ActivePeriodicEffects.ActiveEffects.RemoveAtSwap(It.GetIndex());
+				OnPeriodicEffectRemoved.Broadcast();
 				//PeriodicEffect->Deactivate();
 				//PeriodicEffect->
 				return;
@@ -190,10 +192,10 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 
 		if (attr)
 		{
-			attr->InstigatedAttributeChange(DamageEvent.Attribute, GetOwner(), DamageCauser, EventInstigator, Damage);
+			attr->InstigatorAttributeDamageCaused(DamageEvent.Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
 		}
-		SetAttributeChange(DamageEvent.Attribute, GetOwner(), DamageCauser, EventInstigator, Damage);
-		OnAttributeChanged.Broadcast(ChangedAttribute);
+		SetAttributeChange(DamageEvent.Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+		OnAttributeDamage.Broadcast(ChangedAttribute, DamageEvent.DamageTag);
 	}
 	else if (DamageEvent.IsOfType(FARPointDamageEvent::ClassID))
 	{
@@ -208,11 +210,11 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 
 		if (attr)
 		{
-			attr->InstigatedAttributeChange(Point->Attribute, GetOwner(), DamageCauser, EventInstigator, Damage);
+			attr->InstigatorAttributeDamageCaused(Point->Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
 		}
-		SetAttributeChange(Point->Attribute, GetOwner(), DamageCauser, EventInstigator, Damage);
-		OnAttributeChanged.Broadcast(ChangedAttribute);
-		OnPointAttributeChange.Broadcast(Point->Attribute, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
+		SetAttributeChange(Point->Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+		OnAttributeDamage.Broadcast(ChangedAttribute, Point->DamageTag);
+		OnPointAttributeDamage.Broadcast(Point->Attribute, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
 	}
 }
 void UARAttributeBaseComponent::HealAttribute()
@@ -224,49 +226,23 @@ void UARAttributeBaseComponent::ChangeAttribute(FName AttributeName, float ModVa
 {
 	SetFloatValue(AttributeOp(ModValue, GetFloatValue(AttributeName), OperationType), AttributeName);
 }
-//void UARAttributeBaseComponent::ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser)
-//{
-//	if (AttributeEvent.IsOfType(FPointAttributeChangeEvent::ClassID))
-//	{
-//		FPointAttributeChangeEvent* const Point = (FPointAttributeChangeEvent*)&AttributeEvent;
-//		SetFloatValue(AttributeOp(Point->AttributeMod.ModValue, GetFloatValue(Point->AttributeMod.AttributeName), Point->AttributeMod.OperationType), Point->AttributeMod.AttributeName);
-//		UDamageType* Damage = nullptr;
-//		if (Point->DamageTypeClass)
-//		{
-//			Damage = ConstructObject<UDamageType>(Point->DamageTypeClass);
-//		}
-//		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
-//
-//		if (attr)
-//		{
-//			attr->InstigatedAttributeChange(Point->AttributeMod, GetOwner(), DamageCauser, EventInstigator, Damage);
-//		}
-//		SetAttributeChange(Point->AttributeMod, GetOwner(), DamageCauser, EventInstigator, Damage);
-//		OnAttributeChanged.Broadcast(ChangedAttribute);
-//		OnPointAttributeChange.Broadcast(Point->AttributeMod, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
-//	}
-//	else if (AttributeEvent.IsOfType(FRadialAttributeChangeEvent::ClassID))
-//	{
-//		FRadialAttributeChangeEvent* const Radial = (FRadialAttributeChangeEvent*)&AttributeEvent;
-//	}
-//}
 
-void UARAttributeBaseComponent::InstigatedAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType)
+void UARAttributeBaseComponent::InstigatorAttributeDamageCaused(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
 {
 	ChangedAttribute.Attribute = Attribute;
-	ChangedAttribute.ChangeCauser = DamageCauser;
-	ChangedAttribute.ChangeTarget = DamageTarget;
+	ChangedAttribute.DamageCauser = DamageCauser;
+	ChangedAttribute.DamageTarget = DamageTarget;
 	//ChangedAttribute.ChangeInstigator = Instigator;
 	ChangedAttribute.DamageType = DamageType;
 
-	OnInstigatorCausedDamage.Broadcast(ChangedAttribute);
+	OnInstigatorCausedDamage.Broadcast(ChangedAttribute, DamageTag);
 }
 
-void UARAttributeBaseComponent::SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType)
+void UARAttributeBaseComponent::SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
 {
 	ChangedAttribute.Attribute = Attribute;
-	ChangedAttribute.ChangeCauser = DamageCauser;
-	ChangedAttribute.ChangeTarget = DamageTarget;
+	ChangedAttribute.DamageCauser = DamageCauser;
+	ChangedAttribute.DamageTarget = DamageTarget;
 	//ChangedAttribute.ChangeInstigator = Instigator;
 	ChangedAttribute.DamageType = DamageType;
 }
@@ -281,7 +257,7 @@ void UARAttributeBaseComponent::SetAttributeModified(float ModValue, FName Attri
 
 void UARAttributeBaseComponent::GetAttributeModified()
 {
-	OnAttributeModified.Broadcast(ModifiedAttribute);
+	//OnAttributeModified.Broadcast(ModifiedAttribute);
 }
 
 float UARAttributeBaseComponent::AttributeOp(float ModValue, float AttrValueIn, TEnumAsByte<EAttrOp> OpType)

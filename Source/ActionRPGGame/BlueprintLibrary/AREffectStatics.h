@@ -10,9 +10,9 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
-	UFUNCTION(BlueprintCallable, Category = "AR|Static")
+		UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
 		static FPeriodicEffect CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType);
-	UFUNCTION(BlueprintCallable, Category = "AR|Static")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
 		static void ActivatePeriodicEffect(FPeriodicEffect PeriodicEffect);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")

@@ -25,7 +25,7 @@ void UARFXHelpersStatics::SpawnTrailEffect_Implementation(UParticleSystem* trail
 			{
 				const FVector AdjustedDir = (target.ImpactPoint - Origin).SafeNormal();
 				FVector ParticleSpeed = AdjustedDir * trailSpeed;
-				TrailPSC->SetVectorParameter(trailSpeedParam, ParticleSpeed);
+				//TrailPSC->SetVectorParameter(trailSpeedParam, ParticleSpeed);
 			}
 		}
 	}

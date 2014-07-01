@@ -42,6 +42,9 @@ public:
 
 	void RemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
+
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnAttributeModified OnAttributeModified;
 

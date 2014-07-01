@@ -99,18 +99,36 @@ void UARAttributeBaseComponent::AddPeriodicEffect(FPeriodicEffect PeriodicEffect
 }
 
 void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect)
-{
-	for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
+{ 
+	if (GetOwnerRole() < ROLE_Authority)
 	{
-		if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Get() == PeriodicEffect)
+		ServerRemovePeriodicEffect(PeriodicEffect);
+	}
+	else
+	{
+		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
 		{
-			ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->Destroy();
-			ActivePeriodicEffects.ActiveEffects.RemoveAtSwap(It.GetIndex());
-			//PeriodicEffect->Deactivate();
-			//PeriodicEffect->
-			return;
+			if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Get() == PeriodicEffect)
+			{
+				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->Destroy();
+				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Reset();
+				ActivePeriodicEffects.ActiveEffects.RemoveAtSwap(It.GetIndex());
+				//PeriodicEffect->Deactivate();
+				//PeriodicEffect->
+				return;
+			}
 		}
 	}
+}
+
+void UARAttributeBaseComponent::ServerRemovePeriodicEffect_Implementation(class AAREffectPeriodic* PeriodicEffect)
+{
+	RemovePeriodicEffect(PeriodicEffect);
+}
+
+bool UARAttributeBaseComponent::ServerRemovePeriodicEffect_Validate(class AAREffectPeriodic* PeriodicEffect)
+{
+	return true;
 }
 
 UProperty* UARAttributeBaseComponent::GetAttribute(FName AttributeName)

@@ -7,6 +7,7 @@
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
 #include "../ARCharacter.h"
+#include "ParticleDefinitions.h"
 
 #include "ARFXEffectComponent.h"
 
@@ -28,7 +29,7 @@ void UARFXEffectComponent::SpawnTrailEffect_Implementation(UParticleSystem* trai
 			{
 				const FVector AdjustedDir = (target.ImpactPoint - Origin).SafeNormal();
 				FVector ParticleSpeed = AdjustedDir * trailSpeed;
-				TrailPSC->SetVectorParameter(trailSpeedParam, ParticleSpeed);
+				//TrailPSC->SetVectorParameter(trailSpeedParam, ParticleSpeed);
 			}
 		}
 	}

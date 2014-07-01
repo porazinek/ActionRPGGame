@@ -20,7 +20,7 @@ void UAREditorEngine::Init(IEngineLoop* InEngineLoop)
 	FString Weapons = "DataTable'/Game/Blueprints/Data/WeaponItemData.WeaponItemData'";
 	WeaponItemDataTable = LoadObject<UDataTable>(NULL, *Weapons, NULL, LOAD_None, NULL);
 	//DataTable'/Game/Blueprints/Data/GameTags.GameTags'
-	IGameplayTagsModule& GameplayTagsModule = IGameplayTagsModule::Get();
-	FString Tags = "DataTable'/Game/Blueprints/Data/GameTags.GameTags'";
-	GameplayTagsModule.GetGameplayTagsManager().LoadGameplayTagTable(*Tags);
+	//IGameplayTagsModule& GameplayTagsModule = IGameplayTagsModule::Get();
+	//FString Tags = "DataTable'/Game/Blueprints/Data/GameTags.GameTags'";
+	//GameplayTagsModule.GetGameplayTagsManager().LoadGameplayTagTable(*Tags);
 }

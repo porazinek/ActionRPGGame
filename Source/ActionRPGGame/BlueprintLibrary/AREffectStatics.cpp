@@ -17,6 +17,19 @@ FPeriodicEffect UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AAc
 	FPeriodicEffect PeriodicEffect;
 	if (!EffectTarget && !EffectCauser)
 		return PeriodicEffect;
+	UARAttributeComponent* attrComp = EffectTarget->FindComponentByClass<UARAttributeComponent>();
+
+	if (attrComp->ActivePeriodicEffects.ActiveEffects.Num() > 0)
+	{
+		for (FPeriodicEffect& effect : attrComp->ActivePeriodicEffects.ActiveEffects)
+		{
+			if (effect.PeriodicEffect.IsValid() && effect.PeriodicEffect->GetClass() == EffectType)
+			{
+				//reality. Do check if effect is stackable or something.
+				return PeriodicEffect;
+			}
+		}
+	}
 
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.bNoCollisionFail = true;
@@ -28,6 +41,12 @@ FPeriodicEffect UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AAc
 	PeriodicEffect.PeriodicEffect = effecTemp;
 	PeriodicEffect.MaxDuration = Duration;
 	PeriodicEffect.PeriodicEffect->MaxDuration = Duration;
+
+	
+	PeriodicEffect.IsEffectActive = true;
+
+	attrComp->AddPeriodicEffect(PeriodicEffect);
+
 	return PeriodicEffect;
 }
 

@@ -11,6 +11,20 @@ class UARFXEffectComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presitent Effect")
+		UParticleSystem* PresitentFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presitent Effect")
+		FName SocketToAttach;
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnParticleEffect, Category = "Presitent Effect")
+		bool IsHit;
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnParticleEffect, Category = "Presitent Effect")
+		AActor* ParticleTarget;
+
+	UFUNCTION()
+		void OnRep_SpawnParticleEffect();
+
+	UPROPERTY(Replicated)
+		bool blank;
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Ability|FX")
 		void SpawnTrailEffect(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName, APawn* Causer);
 

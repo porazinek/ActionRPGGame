@@ -2,10 +2,10 @@
 #pragma once
 #include "Engine.h"
 #include "UnrealEd.h"
-#include "AREditorEngine.generated.h"
+#include "AREdEngine.generated.h"
 
 UCLASS()
-class UAREditorEngine : public UEditorEngine
+class UAREdEngine : public UUnrealEdEngine
 {
 	GENERATED_UCLASS_BODY()
 

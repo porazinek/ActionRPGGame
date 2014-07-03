@@ -120,5 +120,10 @@ struct FHitInfo
 {
 	GENERATED_USTRUCT_BODY()
 public:
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitInfo")
+		FVector Origin;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitInfo")
+		FVector Location;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitInfo")
+		FName StartSocket;
 };

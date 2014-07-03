@@ -24,9 +24,21 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Owner")
 	class AARPlayerController* OwningController;
 
-	//UFUNCTION()
-	//	void OnRep_WeaponOwner();
-	//void SetWeaponOwner(AARCharacter* NewOwner);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		UParticleSystem* TrailFXPar;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		FName StartSocket;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		float TrailSpeedPar;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		FName TrailSpeedParamName;
+	UPROPERTY(ReplicatedUsing = OnRep_HitInfo, BlueprintReadWrite, Category = "HitInfo")
+		FHitInfo HitInfo;
+	UFUNCTION()
+		void OnRep_HitInfo();
+	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket);
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponMesh)
 		TSubobjectPtr<USkeletalMeshComponent> WeaponMesh;

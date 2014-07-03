@@ -20,6 +20,25 @@ public:
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnParticleEffect, Category = "Presitent Effect")
 		AActor* ParticleTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		UParticleSystem* TrailFXPar;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		FName StartSocket;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		float TrailSpeedPar;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		FName TrailSpeedParamName;
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_SpawnParticleEffect, Category = "Trail Effect")
+		bool IsFired;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Hit, BlueprintReadWrite, Category="Hit Info")
+		FHitInfo HitInfo;
+	UFUNCTION()
+		void OnRep_Hit();
+	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket);
+
+	UPROPERTY(ReplicatedUsing = OnRep_Hit, BlueprintReadWrite, Category = "Hit Info")
+		FHitInfo ImpactInfo;
 	UFUNCTION()
 		void OnRep_SpawnParticleEffect();
 

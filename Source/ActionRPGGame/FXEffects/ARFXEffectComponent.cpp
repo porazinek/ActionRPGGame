@@ -7,7 +7,9 @@
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
 #include "../ARCharacter.h"
-#include "ParticleDefinitions.h"
+#include "ParticleHelper.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -26,6 +28,9 @@ void UARFXEffectComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePro
 	DOREPLIFETIME(UARFXEffectComponent, blank);
 	DOREPLIFETIME(UARFXEffectComponent, IsHit);
 	DOREPLIFETIME(UARFXEffectComponent, ParticleTarget);
+
+	DOREPLIFETIME(UARFXEffectComponent, HitInfo);
+	DOREPLIFETIME(UARFXEffectComponent, ImpactInfo);
 }
 
 void UARFXEffectComponent::SpawnTrailEffect_Implementation(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName, APawn* Causer)
@@ -75,5 +80,28 @@ void UARFXEffectComponent::OnRep_SpawnParticleEffect()
 	if (!hitTarget)
 		return;
 
-	UParticleSystemComponent* AttachedPSC = UGameplayStatics::SpawnEmitterAttached(PresitentFX, hitTarget->Mesh, SocketToAttach);
+	UParticleSystemComponent* AttachedPSC = UGameplayStatics::SpawnEmitterAttached(PresitentFX, hitTarget->GetRootComponent(), NAME_None, ImpactInfo.Location, FRotator(0,0,0), EAttachLocation::KeepWorldPosition);
+}
+
+void UARFXEffectComponent::OnRep_Hit()
+{
+	SimulateHitOnClients(HitInfo.Origin, HitInfo.Location, HitInfo.StartSocket);
+}
+void UARFXEffectComponent::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket)
+{
+	//FVector Origin = UARTraceStatics::GetStartLocation(SocketName, Causer);
+	//UARTraceStatics::GetHitResult(10000, StartSocket, )
+	//if ()
+	//{
+		if (TrailFXPar)
+		{
+			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFXPar, Origin);
+			if (TrailPSC)
+			{
+				const FVector AdjustedDir = (Location - Origin).SafeNormal();
+				FVector ParticleSpeed = AdjustedDir * TrailSpeedPar;
+				TrailPSC->SetVectorParameter(TrailSpeedParamName, ParticleSpeed);
+			}
+		}
+	//}
 }

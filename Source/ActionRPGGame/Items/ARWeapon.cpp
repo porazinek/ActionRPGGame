@@ -7,6 +7,10 @@
 #include "../ActionState/ARActionStateComponent.h"
 #include "../FXEffects/ARFXEffectComponent.h"
 
+#include "ParticleHelper.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+
 #include "ARWeapon.h"
 
 AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
@@ -30,6 +34,8 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponState->SetIsReplicated(true);
 
 	FXEffect = PCIP.CreateDefaultSubobject<UARFXEffectComponent>(this, TEXT("FXEffects"));
+	FXEffect->SetIsReplicated(true);
+	FXEffect->SetNetAddressable();
 	TraceHit = PCIP.CreateDefaultSubobject<UARActionHitTrace>(this, TEXT("TraceHit"));
 
 	bNetUseOwnerRelevancy = true;
@@ -48,6 +54,7 @@ void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AARWeapon, WeaponOwner);
+	DOREPLIFETIME(AARWeapon, HitInfo);
 }
 
 //void AARWeapon::OnRep_WeaponOwner()
@@ -90,7 +97,7 @@ void AARWeapon::InputPressed()
 	//PrimaryActorTick.bStartWithTickEnabled = true;
 	if (Role < ROLE_Authority)
 	{
-		//Execute_ServerOnActionStart(this);
+		Execute_ClientOnActionStart(this);
 		//WeaponState->StartAction();
 		ServerStartAction();
 	}
@@ -138,4 +145,28 @@ void AARWeapon::ServerStopAction_Implementation()
 bool AARWeapon::ServerStopAction_Validate()
 {
 	return true;
+}
+
+
+void AARWeapon::OnRep_HitInfo()
+ {
+	SimulateHitOnClients(HitInfo.Origin, HitInfo.Location, HitInfo.StartSocket);
+}
+void AARWeapon::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket)
+{
+	//FVector Origin = UARTraceStatics::GetStartLocation(SocketName, Causer);
+	//UARTraceStatics::GetHitResult(10000, StartSocket, )
+	//if ()
+	//{
+	if (TrailFXPar)
+	{
+		UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFXPar, Origin);
+		if (TrailPSC)
+		{
+			const FVector AdjustedDir = (Location - Origin).SafeNormal();
+			FVector ParticleSpeed = AdjustedDir * TrailSpeedPar;
+			TrailPSC->SetVectorParameter(TrailSpeedParamName, ParticleSpeed);
+		}
+	}
+	//}
 }

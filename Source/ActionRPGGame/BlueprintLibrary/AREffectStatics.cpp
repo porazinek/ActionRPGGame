@@ -4,6 +4,9 @@
 
 #include "../Effects/AREffectPeriodic.h"
 #include "../Componenets/ARAttributeComponent.h"
+#include "ARTraceStatics.h"
+
+#include "../ARProjectile.h"
 #include "AREffectStatics.h"
 
 UAREffectStatics::UAREffectStatics(const class FPostConstructInitializeProperties& PCIP)
@@ -122,4 +125,60 @@ void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject,
 void UAREffectStatics::ApplyRadialDamage(UObject* WorldContextObject, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage)
 {
 
+}
+
+void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult)
+{
+	APawn* pawn = Cast<APawn>(Causer);
+	if (!pawn)
+		return;
+
+	if (HitResult.bBlockingHit)
+	{
+		const FVector dir = (HitResult.ImpactPoint - Origin).SafeNormal();
+		FTransform SpawnTM(FRotator(0,0,0), Origin);
+
+		AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
+
+
+		if (proj)
+		{
+			//proj->Instigator = Causer;
+			proj->SetOwner(Causer);
+			proj->Movement->Velocity = dir * proj->Movement->InitialSpeed;
+			UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
+		}
+	}
+
+}
+
+void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, float MaxRadius, float MaxHeight, int32 Amount)
+{
+	APawn* pawn = Cast<APawn>(Causer);
+	if (!pawn)
+		return;
+
+	if (HitResult.bBlockingHit)
+	{
+		for (int32 CurAmount = 0; CurAmount < Amount; CurAmount++)
+		{
+			FVector Location = HitResult.ImpactPoint;
+			Location.Z += MaxHeight;
+			Location.Y += FMath::RandRange(-MaxRadius, MaxRadius);
+			Location.X += FMath::RandRange(-MaxRadius, MaxRadius);
+			FTransform SpawnTM(FRotator(0, 0, 0), Location);
+
+			AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
+
+			FVector FallDirection = FVector(0, 0, -1);
+
+			if (proj)
+			{
+				//proj->Instigator = Causer;
+				proj->SetOwner(Causer);
+				proj->Movement->Velocity = FallDirection * proj->Movement->InitialSpeed;
+				UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
+			}
+		}
+	}
 }

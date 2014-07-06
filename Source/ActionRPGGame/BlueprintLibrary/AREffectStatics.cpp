@@ -152,12 +152,8 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 
 }
 
-void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, float MaxRadius, float MaxHeight, int32 Amount)
+void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, FHitResult HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount)
 {
-	APawn* pawn = Cast<APawn>(Causer);
-	if (!pawn)
-		return;
-
 	if (HitResult.bBlockingHit)
 	{
 		for (int32 CurAmount = 0; CurAmount < Amount; CurAmount++)
@@ -170,13 +166,14 @@ void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Pr
 
 			AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
 
-			FVector FallDirection = FVector(0, 0, -1);
+			FVector FallDirection = FVector(FMath::FRandRange(-ImpactDirection, ImpactDirection), FMath::FRandRange(-ImpactDirection, ImpactDirection), -1);
 
 			if (proj)
 			{
 				//proj->Instigator = Causer;
 				proj->SetOwner(Causer);
-				proj->Movement->Velocity = FallDirection * proj->Movement->InitialSpeed;
+				proj->Instigator = Instigator;
+				proj->Movement->Velocity = FallDirection * InitialVelocity; // proj->Movement->InitialSpeed;
 				UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
 			}
 		}

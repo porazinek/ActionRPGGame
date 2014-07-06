@@ -2,8 +2,6 @@
 
 #include "ActionRPGGame.h"
 
-#include "ARActionStateComponent.h"
-
 #include "ARActionStateCooldown.h"
 
 UARActionStateCooldown::UARActionStateCooldown(const class FPostConstructInitializeProperties& PCIP)

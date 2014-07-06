@@ -23,12 +23,15 @@ void UARActionStateFiring::Tick(float DeltaTime)
 		//	IsFirstFire = false;
 		//	GetOuterUARActionStateComponent()->CastBegin();
 		//}
+		//if (GetOuterUARActionStateComponent()->IsCasting == true)
+		//	GetOuterUARActionStateComponent()->ServerSetCastingState(false);
 
 		CurrentIntervalTime += DeltaTime;
 		if (CurrentIntervalTime >= GetOuterUARActionStateComponent()->IntervalTime)
 		{
+			//GetOuterUARActionStateComponent()->ServerSetCastingState(true);
 			GetOuterUARActionStateComponent()->ActionInterval();
-			IsFirstFire = false;
+			//IsFirstFire = false;
 			CurrentIntervalTime = 0;
 		}
 	}
@@ -36,11 +39,13 @@ void UARActionStateFiring::Tick(float DeltaTime)
 void UARActionStateFiring::BeginState(UARActionState* PrevState)
 {
 	GetOuterUARActionStateComponent()->CastBegin();
+	//GetOuterUARActionStateComponent()->IsCasting = false;
 	FireStarted = true;
 }
 void UARActionStateFiring::EndState()
 {
 	FireStarted = false;
+	GetOuterUARActionStateComponent()->CastEnd();
 	CurrentIntervalTime = 0;
 }
 

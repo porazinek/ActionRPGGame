@@ -37,7 +37,7 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 		static void ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
-		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, float MaxRadius, float MaxHeight, int32 Amount);
+		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, FHitResult HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount);
 };
 
 

@@ -7,6 +7,7 @@
 #include "ARACtionStateCooldown.h"
 #include "ARActionStateCasting.h"
 #include "../BlueprintLibrary/ARTraceStatics.h"
+#include "../ARCharacter.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -18,6 +19,9 @@ UARActionStateComponent::UARActionStateComponent(const class FPostConstructIniti
 	SetIsReplicated(true);
 	bReplicates = true;
 	bWantsInitializeComponent = true;
+	PlayRechargeAnimation = false;
+	IsCasting = false;
+	IsRecharing = false;
 	ActiveState = PCIP.CreateDefaultSubobject<UARActionStateActive>(this, TEXT("StateActive"));
 	CooldownState = PCIP.CreateDefaultSubobject<UARActionStateCooldown>(this, TEXT("StateCooldown"));
 }
@@ -40,17 +44,11 @@ void UARActionStateComponent::GetLifetimeReplicatedProps(TArray< class FLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UARActionStateComponent, BlankRep);
-	//DOREPLIFETIME(UARActionStateComponent, CurrentState);
+	DOREPLIFETIME(UARActionStateComponent, IsCasting);
+	DOREPLIFETIME(UARActionStateComponent, IsRecharing);
+	DOREPLIFETIME(UARActionStateComponent, Owner);
 }
-//void UARActionStateComponent::OnRep_CurrentState()
-//{
-//	SetState(CurrentState);
-//}
-//void UARActionStateComponent::SetState(class UARActionState* StateIn)
-//{
-//	CurrentState = StateIn;
-//}
+
 void UARActionStateComponent::TickMe(float DeltaTime)
 {
 	if (CurrentState)
@@ -58,7 +56,13 @@ void UARActionStateComponent::TickMe(float DeltaTime)
 		CurrentState->Tick(DeltaTime);
 	}
 }
+void UARActionStateComponent::PostNetReceive()
+{
+	Super::PostNetReceive();
 
+	if (IsCasting)
+		IsCasting = false;
+}
 void UARActionStateComponent::GotoState(class UARActionState* NextState)
 {
 	if (NextState == NULL || !NextState->IsIn(this))
@@ -146,25 +150,70 @@ bool UARActionStateComponent::ServerStopAction_Validate()
 
 void UARActionStateComponent::CooldownBegin()
 {
+	IsRecharing = true;
 	OnCooldownBegin.Broadcast();
 }
 void UARActionStateComponent::CooldownEnded()
 {
-	//GetOwner()->PrimaryActorTick.SetTickFunctionEnable(false);
-	//GetOwner()->PrimaryActorTick.UnRegisterTickFunction();
+	IsRecharing = false;
 	OnCooldownEnded.Broadcast();
 }
 
 void UARActionStateComponent::CastBegin()
 {
+	IsCasting = true;
 	OnActionCastBegin.Broadcast();
 }
 void UARActionStateComponent::CastEnd()
 {
+	IsCasting = false;
 	OnActionCastEnd.Broadcast();
 }
 
 void UARActionStateComponent::ActionInterval()
 {
 	OnActionInterval.Broadcast();
+	IsCasting = true;
+	//ServerSetCastingState(true);
+	//MulticastPlayAnimation();
+}
+
+void UARActionStateComponent::MulticastPlayAnimation_Implementation()
+{
+	if (Owner)
+	{
+		Owner->PlayAnimMontage(CastingMontage);
+	}
+}
+void UARActionStateComponent::OnRep_Casting()
+{
+	if (IsCasting)
+	{
+		if (Owner)
+		{
+			Owner->PlayAnimMontage(CastingMontage);
+		}
+		//ServerSetCastingState(false);
+		//IsCasting = false;
+	}
+	else
+	{
+		if (Owner)
+		{
+			Owner->StopAnimMontage(CastingMontage);
+		}
+		//IsCasting = false;
+	}
+}
+void UARActionStateComponent::OnRep_Recharing()
+{
+
+}
+void UARActionStateComponent::ServerSetCastingState_Implementation(bool State)
+{
+	IsCasting = State;
+}
+bool UARActionStateComponent::ServerSetCastingState_Validate(bool State)
+{
+	return true;
 }

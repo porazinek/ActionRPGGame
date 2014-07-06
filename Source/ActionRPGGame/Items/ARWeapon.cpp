@@ -29,7 +29,7 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
 
 	WeaponState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
-
+	WeaponState->Owner = WeaponOwner;
 	WeaponState->SetNetAddressable();
 	WeaponState->SetIsReplicated(true);
 

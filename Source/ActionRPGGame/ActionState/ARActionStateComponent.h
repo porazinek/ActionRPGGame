@@ -18,6 +18,7 @@ class UARActionStateComponent : public UActorComponent
 public:
 	virtual void InitializeComponent() override;
 	virtual void PostNetReceive() override;
+	virtual void PreNetReceive() override;
 	virtual void TickMe(float DeltaTime);
 	/*
 		this shouldn't be needed but editinlinenew doesn't work.

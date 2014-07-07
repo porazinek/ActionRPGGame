@@ -61,10 +61,10 @@ bool AAREffectPeriodic::ServerActivate_Validate()
 
 void AAREffectPeriodic::Deactivate()
 {
-	if (!GetOwner())
+	if (!EffectTarget)
 		return;
 
-	UARAttributeBaseComponent* AttrComp = GetOwner()->FindComponentByClass<UARAttributeBaseComponent>();
+	UARAttributeBaseComponent* AttrComp = EffectTarget->FindComponentByClass<UARAttributeBaseComponent>();
 
 	if (!AttrComp)
 		return;

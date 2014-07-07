@@ -58,10 +58,13 @@ void UARActionStateComponent::TickMe(float DeltaTime)
 }
 void UARActionStateComponent::PostNetReceive()
 {
-	Super::PostNetReceive();
-
-	if (IsCasting)
-		IsCasting = false;
+	//if (IsCasting)
+	//	ServerSetCastingState(false);
+}
+void UARActionStateComponent::PreNetReceive()
+{
+	//if (!IsCasting)
+	//	ServerSetCastingState(true);
 }
 void UARActionStateComponent::GotoState(class UARActionState* NextState)
 {
@@ -162,6 +165,7 @@ void UARActionStateComponent::CooldownEnded()
 void UARActionStateComponent::CastBegin()
 {
 	IsCasting = true;
+	//MulticastPlayAnimation();
 	OnActionCastBegin.Broadcast();
 }
 void UARActionStateComponent::CastEnd()
@@ -175,6 +179,7 @@ void UARActionStateComponent::ActionInterval()
 	OnActionInterval.Broadcast();
 	IsCasting = true;
 	//ServerSetCastingState(true);
+	
 	//MulticastPlayAnimation();
 }
 

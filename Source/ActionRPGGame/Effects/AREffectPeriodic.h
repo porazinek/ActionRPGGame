@@ -32,6 +32,9 @@ class AAREffectPeriodic : public AActor
 	UPROPERTY(BlueprintReadOnly, Category = "Target")
 		AActor* EffectCauser;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Target")
+		AActor* EffectTarget;
+
 	UFUNCTION()
 		void Initialze();
 

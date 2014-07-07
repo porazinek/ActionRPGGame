@@ -69,9 +69,17 @@ void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick T
 	//we need to tick them on client for cosmetic as well
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		for (FPeriodicEffect& effect : ActivePeriodicEffects.ActiveEffects)
+		//for (FPeriodicEffect& effect : ActivePeriodicEffects.ActiveEffects)
+		//{
+		//	effect.Tick(DeltaTime);
+		//}
+		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
 		{
-			effect.Tick(DeltaTime);
+			//if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Get() == PeriodicEffect)
+			//{
+				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->TickMe(DeltaTime);
+				//return;
+			//}
 		}
 	}
 }
@@ -107,7 +115,7 @@ void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* Pe
 	}
 	else
 	{
-		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
+		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; It++)
 		{
 			if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Get() == PeriodicEffect)
 			{

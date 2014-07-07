@@ -41,6 +41,7 @@ FPeriodicEffect UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AAc
 
 	AAREffectPeriodic* effecTemp = EffectTarget->GetWorld()->SpawnActor<AAREffectPeriodic>(EffectType, SpawnInfo);
 	effecTemp->EffectCauser = EffectCauser;
+	effecTemp->EffectTarget = EffectTarget;
 	PeriodicEffect.PeriodicEffect = effecTemp;
 	PeriodicEffect.MaxDuration = Duration;
 	PeriodicEffect.PeriodicEffect->MaxDuration = Duration;

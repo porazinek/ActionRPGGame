@@ -25,6 +25,8 @@ void UARAttributeBaseComponent::GetLifetimeReplicatedProps(TArray< class FLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UARAttributeBaseComponent, ActivePeriodicEffects);
+	DOREPLIFETIME(UARAttributeBaseComponent, ActiveEffects);
+
 	DOREPLIFETIME(UARAttributeBaseComponent, ModifiedAttribute);
 	DOREPLIFETIME_CONDITION(UARAttributeBaseComponent, ChangedAttribute, COND_OwnerOnly);
 }
@@ -42,7 +44,15 @@ void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick T
 	*/
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-
+		for (auto It = ActiveEffects.Effects.CreateIterator(); It; ++It)
+		{
+			if (ActiveEffects.Effects[It.GetIndex()].IsActive)
+			{
+				ActiveEffects.Effects[It.GetIndex()].CurrentDuration += DeltaTime;
+				if (!ActiveEffects.Effects[It.GetIndex()].IsActive)
+					ActiveEffects.Effects[It.GetIndex()].CurrentDuration = 0;
+			}
+		}
 		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
 		{
 			ActivePeriodicEffects.ActiveEffects[It.GetIndex()].ClientCurrentDuration += DeltaTime;
@@ -52,39 +62,44 @@ void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick T
 				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].IsEffectActive = false;
 			}
 		}
-		//for (FPeriodicEffect& effect : ActivePeriodicEffects.ActiveEffects)
-		//{
-		//	//if (effect.IsEffectActive)
-		//	//{
-		//		effect.ClientCurrentDuration += DeltaTime;
-		//		if (effect.ClientCurrentDuration >= effect.MaxDuration)
-		//		{
-		//			effect.ClientCurrentDuration = 0;
-		//			effect.IsEffectActive = false;
-		//		}
-		//	//}
-		//}
 	}
 	//so we tick effects in struct. Maybe it's not best idea, but it's the only one I have right now...
 	//we need to tick them on client for cosmetic as well
 	if (GetOwnerRole() == ROLE_Authority)
 	{
-		//for (FPeriodicEffect& effect : ActivePeriodicEffects.ActiveEffects)
-		//{
-		//	effect.Tick(DeltaTime);
-		//}
+		for (auto It = ActiveEffects.Effects.CreateIterator(); It; ++It)
+		{
+			ActiveEffects.Effects[It.GetIndex()].ActorEffect->TickMe(DeltaTime);
+		}
 		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; ++It)
 		{
-			//if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Get() == PeriodicEffect)
-			//{
-				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->TickMe(DeltaTime);
-				//return;
-			//}
+			ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->TickMe(DeltaTime);
 		}
 	}
 }
+void UARAttributeBaseComponent::ApplyPeriodicEffect(FEffectSpec& EffectIn)
+{
+	ActiveEffects.Effects.Add(EffectIn);
+	EffectIn.IsActive = true;
+}
+void UARAttributeBaseComponent::OnRep_EffectAppiled()
+{
+	//apply cosmetic effect for effect. Somehow.
+	//and remove it.
+}
 
-void UARAttributeBaseComponent::AddPeriodicEffect(FPeriodicEffect PeriodicEffect)
+void UARAttributeBaseComponent::RemovedPeriodicEffect_TEMP(UAREffectPeriodicO* EffectIn)
+{
+	//for (auto It = ActiveEffects.Effects.CreateIterator(); It; ++It)
+	//{
+	//	if (ActiveEffects.Effects[It.GetIndex()].Effect == EffectIn)
+	//	{
+	//		ActiveEffects.Effects[It.GetIndex()].IsActive = false;
+	//		//ActiveEffects.Effects[It.GetIndex()].CurrentDuration += DeltaTime;
+	//	}
+	//}
+}
+void UARAttributeBaseComponent::AddPeriodicEffect(FEffectSpec& PeriodicEffect)
 {
 	/*
 	there are two solutions. Create client only effect
@@ -100,8 +115,9 @@ void UARAttributeBaseComponent::AddPeriodicEffect(FPeriodicEffect PeriodicEffect
 	else
 	{
 		//server
-		PeriodicEffect.PeriodicEffect->Initialze();
-		ActivePeriodicEffects.ActiveEffects.AddUnique(PeriodicEffect);
+		PeriodicEffect.ActorEffect->Initialze();
+		ActiveEffects.Effects.Add(PeriodicEffect);
+		PeriodicEffect.IsActive = true;
 		OnPeriodicEffectAppiled.Broadcast();
 	}
 
@@ -115,13 +131,14 @@ void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* Pe
 	}
 	else
 	{
-		for (auto It = ActivePeriodicEffects.ActiveEffects.CreateIterator(); It; It++)
+		for (auto It = ActiveEffects.Effects.CreateIterator(); It; It++)
 		{
-			if (ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Get() == PeriodicEffect)
+			if (ActiveEffects.Effects[It.GetIndex()].ActorEffect == PeriodicEffect)
 			{
-				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect->Destroy();
-				ActivePeriodicEffects.ActiveEffects[It.GetIndex()].PeriodicEffect.Reset();
-				ActivePeriodicEffects.ActiveEffects.RemoveAtSwap(It.GetIndex());
+				ActiveEffects.Effects[It.GetIndex()].ActorEffect->Destroy();
+				//ActiveEffects.Effects[It.GetIndex()].ActorEffect.Reset();
+				ActiveEffects.Effects[It.GetIndex()].IsActive = false;
+				ActiveEffects.Effects.RemoveAtSwap(It.GetIndex());
 				OnPeriodicEffectRemoved.Broadcast();
 				//PeriodicEffect->Deactivate();
 				//PeriodicEffect->

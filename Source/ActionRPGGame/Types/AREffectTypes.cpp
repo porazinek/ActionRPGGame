@@ -2,4 +2,4 @@
 #pragma once
 #include "ActionRPGGame.h"
 
-#include "ARAttributeTypes.h"
+#include "AREffectTypes.h"

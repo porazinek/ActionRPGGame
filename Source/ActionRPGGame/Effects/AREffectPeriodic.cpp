@@ -2,6 +2,13 @@
 
 #include "ActionRPGGame.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
+#include "../ARCharacter.h"
+#include "Net/UnrealNetwork.h"
+
+#include "ParticleHelper.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+
 #include "AREffectPeriodic.h"
 
 AAREffectPeriodic::AAREffectPeriodic(const class FPostConstructInitializeProperties& PCIP)
@@ -21,16 +28,31 @@ void AAREffectPeriodic::TickMe(float DeltaTime)
 		if (CurrentPeriodDuration >= PeriodDuration)
 		{
 			CurrentPeriodDuration = 0;
+			OnEffectInterval.Broadcast();
 			OnEffectPeriod();
 		}
 		if (CurrentDuration >= MaxDuration)
 		{
 			CurrentDuration = 0;
 			IsEffectActive = false;
+			OnEffectRemoved.Broadcast();
 			Deactivate();
 		}
 	}
 }
+
+void AAREffectPeriodic::PostNetReceive()
+{
+	Super::PostNetReceive();
+	UARAttributeBaseComponent* AttrComp = EffectTarget->FindComponentByClass<UARAttributeBaseComponent>();
+
+	if (!AttrComp)
+		return;
+	if (IsEffectActive)
+		return;
+	AttrComp->RemovePeriodicEffect(this);
+}
+
 void AAREffectPeriodic::Initialze()
 {
 	if (Role < ROLE_Authority)
@@ -46,6 +68,7 @@ void AAREffectPeriodic::Initialze()
 void AAREffectPeriodic::Activate()
 {
 	OnEffectInitialized();
+	OnEffectInitialized.Broadcast();
 	IsEffectActive = true;
 }
 
@@ -64,14 +87,37 @@ void AAREffectPeriodic::Deactivate()
 	if (!EffectTarget)
 		return;
 
-	UARAttributeBaseComponent* AttrComp = EffectTarget->FindComponentByClass<UARAttributeBaseComponent>();
 
-	if (!AttrComp)
-		return;
 	CurrentDuration = 0;
-	IsEffectActive = false;
 	OnEffectEnd();
-	AttrComp->RemovePeriodicEffect(this);
+	
+}
+void AAREffectPeriodic::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AAREffectPeriodic, IsEffectActive);
+	DOREPLIFETIME(AAREffectPeriodic, EffectTarget);
 }
 
+void AAREffectPeriodic::OnRep_EffectActive()
+{
+	if (!EffectTarget)
+		return;
 
+	AARCharacter* MyChar = Cast<AARCharacter>(EffectTarget);
+	if (!MyChar)
+		return;
+
+	if (IsEffectActive)
+	{
+		if (PresitentFX)
+		{
+			MyChar->PresistentParticle = UGameplayStatics::SpawnEmitterAttached(PresitentFX, MyChar->Mesh, AttachLocation, FVector(0,0,0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
+		}
+	}
+	else
+	{
+		MyChar->PresistentParticle->Deactivate();
+	}
+}

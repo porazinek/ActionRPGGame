@@ -2,7 +2,14 @@
 #pragma once
 
 #include "AREffectPeriodic.generated.h"
-
+/*
+	Dumb helpers, they will need some parameters.
+	
+	Helpers in case we need to access some of Effect, events outside of effect in blueprint.
+*/
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnEffectInitialized)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnEffectInterval)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnEffectRemoved)
 /*
 	Logic of effect is executed only on server. Although Periodic effect is spawned on both
 	cliet and server, client only receive cosmetic non-authorative stuff, that is
@@ -16,11 +23,13 @@ UCLASS(minimalapi)
 class AAREffectPeriodic : public AActor
 {
 	GENERATED_UCLASS_BODY()
-
-		virtual void TickMe(float DeltaTime);
-
+public:
+	virtual void TickMe(float DeltaTime);
+	virtual void PostNetReceive() override;
+	UPROPERTY(ReplicatedUsing = OnRep_EffectActive)
 	bool IsEffectActive;
-
+	UFUNCTION()
+		void OnRep_EffectActive();
 	float MaxDuration;
 	UPROPERTY(Transient)
 	float CurrentDuration;
@@ -32,11 +41,26 @@ class AAREffectPeriodic : public AActor
 	UPROPERTY(BlueprintReadOnly, Category = "Target")
 		AActor* EffectCauser;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Target")
+	UPROPERTY(BlueprintReadWrite, Replicated, Category = "Target")
 		AActor* EffectTarget;
+
+	UPROPERTY(EditAnywhere, Category = "Particles")
+		UParticleSystem* PresitentFX;
+	UPROPERTY(EditAnywhere, Category = "Particles")
+		FName AttachLocation;
+
+
+	UPROPERTY(EditAnywhere, Category = "Particles")
+		UParticleSystem* PeriodFX;
 
 	UFUNCTION()
 		void Initialze();
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Periodic Effect")
+		FDMDOnEffectInitialized OnEffectInitialized;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Periodic Effect")
+		FDMDOnEffectInterval OnEffectInterval;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Periodic Effect")
+		FDMDOnEffectRemoved OnEffectRemoved;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Effect")
 		void OnEffectPeriod();

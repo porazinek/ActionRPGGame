@@ -3,7 +3,9 @@
 #include "ActionRPGGame.h"
 
 #include "../Effects/AREffectPeriodic.h"
+#include "../Effects/AREffectPeriodicO.h"
 #include "../Componenets/ARAttributeComponent.h"
+#include "../Types/AREffectTypes.h"
 #include "ARTraceStatics.h"
 
 #include "../ARProjectile.h"
@@ -15,18 +17,18 @@ UAREffectStatics::UAREffectStatics(const class FPostConstructInitializePropertie
 
 }
 
-FPeriodicEffect UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType)
+FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType)
 {
-	FPeriodicEffect PeriodicEffect;
+	FEffectSpec PeriodicEffect;
 	if (!EffectTarget && !EffectCauser)
 		return PeriodicEffect;
 	UARAttributeComponent* attrComp = EffectTarget->FindComponentByClass<UARAttributeComponent>();
 
-	if (attrComp->ActivePeriodicEffects.ActiveEffects.Num() > 0)
+	if (attrComp->ActiveEffects.Effects.Num() > 0)
 	{
-		for (FPeriodicEffect& effect : attrComp->ActivePeriodicEffects.ActiveEffects)
+		for (FEffectSpec& effect : attrComp->ActiveEffects.Effects)
 		{
-			if (effect.PeriodicEffect.IsValid() && effect.PeriodicEffect->GetClass() == EffectType)
+			if (effect.ActorEffect && effect.ActorEffect->GetClass() == EffectType)
 			{
 				//reality. Do check if effect is stackable or something.
 				return PeriodicEffect;
@@ -42,12 +44,10 @@ FPeriodicEffect UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AAc
 	AAREffectPeriodic* effecTemp = EffectTarget->GetWorld()->SpawnActor<AAREffectPeriodic>(EffectType, SpawnInfo);
 	effecTemp->EffectCauser = EffectCauser;
 	effecTemp->EffectTarget = EffectTarget;
-	PeriodicEffect.PeriodicEffect = effecTemp;
+	effecTemp->MaxDuration = Duration;
+	PeriodicEffect.ActorEffect = effecTemp;
 	PeriodicEffect.MaxDuration = Duration;
-	PeriodicEffect.PeriodicEffect->MaxDuration = Duration;
-
-	
-	PeriodicEffect.IsEffectActive = true;
+	PeriodicEffect.CurrentDuration = 0;
 
 	attrComp->AddPeriodicEffect(PeriodicEffect);
 
@@ -60,7 +60,27 @@ void UAREffectStatics::ActivatePeriodicEffect(FPeriodicEffect PeriodicEffect)
 	UARAttributeComponent* attrComp = PeriodicEffect.PeriodicEffect->GetOwner()->FindComponentByClass<UARAttributeComponent>();
 	PeriodicEffect.IsEffectActive = true;
 
-	attrComp->AddPeriodicEffect(PeriodicEffect);
+	//attrComp->AddPeriodicEffect(PeriodicEffect);
+}
+
+void UAREffectStatics::ApplyPeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class UAREffectPeriodicO> EffectType)
+{
+	//if (!EffectCauser && !EffectTarget)
+	//	return;
+
+	//UARAttributeBaseComponent* attrTarget = EffectTarget->FindComponentByClass<UARAttributeBaseComponent>();
+
+	//UAREffectPeriodicO* effect = ConstructObject<UAREffectPeriodicO>(EffectType);
+
+	//effect->EffectCausedBy = EffectCauser;
+	//effect->EffectTarget = EffectTarget;
+	//effect->MaxDuration = Duration;
+	//FEffectSpec Spec;
+	//Spec.Effect = effect;
+	//Spec.MaxDuration = Duration;
+	//Spec.CurrentDuration = 0;
+	////attrTarget->ActiveEffects.Effects.Add(Spec);
+	//attrTarget->ApplyPeriodicEffect(Spec);
 }
 
 void UAREffectStatics::ChangeAttribute(AActor* Target, AActor* CausedBy, float ModVal, FName AttributeName, TEnumAsByte<EAttrOp> OpType)

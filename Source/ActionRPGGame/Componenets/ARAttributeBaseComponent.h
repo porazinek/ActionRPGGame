@@ -1,6 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "../Types/ARStructTypes.h"
+#include "../Types/AREffectTypes.h"
 #include "../Types/AREnumTypes.h"
 
 #include "ARAttributeBaseComponent.generated.h"
@@ -39,11 +40,19 @@ public:
 	UPROPERTY(Replicated, RepRetry, BlueprintReadOnly, Category = "Effect")
 		FActivePeriodicEffects ActivePeriodicEffects;
 
+	UPROPERTY(ReplicatedUsing=OnRep_EffectAppiled, BlueprintReadOnly, Category="Effects")
+		FActiveEffectList ActiveEffects;
+	UFUNCTION()
+		void OnRep_EffectAppiled();
+	void ApplyPeriodicEffect(FEffectSpec& EffectIn);
+
+	void RemovedPeriodicEffect_TEMP(UAREffectPeriodicO* EffectIn);
+
 	//these exist only on client.
 	UPROPERTY(BlueprintReadOnly, Category = "Effect")
 		TArray<FPeriodicEffect> ActiveClientEffects;
 
-	void AddPeriodicEffect(FPeriodicEffect PeriodicEffect);
+	void AddPeriodicEffect(FEffectSpec& PeriodicEffect);
 
 	void RemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 

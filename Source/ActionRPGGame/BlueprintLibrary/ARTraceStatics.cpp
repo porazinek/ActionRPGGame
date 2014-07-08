@@ -92,6 +92,9 @@ FVector UARTraceStatics::GetStartLocation(FName SocketName, APawn* InitiatedBy)
 FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy, TEnumAsByte<EARTraceType> TraceType)
 {
 	FHitResult Hit(ForceInit);
+	if (!InitiatedBy)
+		return Hit;
+	
 
 	static FName PowerTag = FName(TEXT("RangedTrace"));
 	FCollisionQueryParams TraceParams(PowerTag, false, InitiatedBy);

@@ -9,30 +9,106 @@ struct FEffectHandle
 {
 	GENERATED_USTRUCT_BODY()
 public:
-
-	inline void SetHandle(int32 HandleIn)
-	{
-		Handle = HandleIn;
-	};
-
 	inline bool operator==(const FEffectHandle& Other) const
 	{
-		Handle == Other.Handle;
+		return Handle == Other.Handle;
 	};
 	inline bool operator!=(const FEffectHandle& Other) const
 	{
-		Handle != Other.Handle;
+		return Handle != Other.Handle;
 	};
 
-	FAttribute() {};
+	FEffectHandle() {};
 private:
 	int32 Handle;
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FEffectSpec
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	UPROPERTY()
 	FEffectHandle Handle;
+
+	//will match name in FEffectData.
+	UPROPERTY()
+		FName EffectName;
+
+	//UPROPERTY()
+	//class UAREffectPeriodicO* Effect;
+	UPROPERTY()
+	class AAREffectPeriodic* ActorEffect;
+	UPROPERTY()
+		bool IsActive;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Effect")
+		float CurrentDuration;
+	UPROPERTY(BlueprintReadOnly, Category = "Effect")
+		float MaxDuration;
+};
+
+USTRUCT(BlueprintType)
+struct FActiveEffect
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY()
+	FEffectHandle Handle;
+
+	UPROPERTY(NotReplicated)
+	class UAREffectPeriodicO* Effect;
+
+	UPROPERTY()
+		bool IsActive;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Effect")
+		float CurrentDuration;
+	UPROPERTY(BlueprintReadOnly, Category = "Effect")
+		float MaxDuration;
+};
+
+USTRUCT(BlueprintType)
+struct FActiveEffectList
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "Effect")
+		TArray<FEffectSpec> Effects;
+};
+
+/*
+	We will use for async loading of cosmetic effcts on clients, while effect is appiled.
+*/
+USTRUCT(BlueprintType)
+struct FEffectData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY()
+		UParticleSystem* EffectParticle;
+
+	UPROPERTY()
+		UAnimMontage* EffectAnim;
+
+
+};
+
+
+/*
+	Stores information about cosmetic effects that might be appiled by weapons, abilities or effects.
+*/
+USTRUCT(BlueprintType)
+struct FEffectCue
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Effect Cue")
+		FName CueName;
+	UPROPERTY(EditAnywhere, Category = "Effect Cue")
+		TWeakObjectPtr<UParticleSystem> ParticleSystem;
+	UPROPERTY(EditAnywhere, Category = "Effect Cue")
+		TWeakObjectPtr<USoundBase> Sound;
+	UPROPERTY(EditAnywhere, Category = "Effect Cue")
+		TWeakObjectPtr<UAnimMontage> AnimMontage;
 };

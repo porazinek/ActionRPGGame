@@ -58,7 +58,6 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	Attributes = PCIP.CreateDefaultSubobject<UARAttributeComponent>(this, TEXT("Attributes"));
 	Attributes->Activate();
 	Attributes->bAutoRegister = true;
-	//Attributes->
 	Attributes->SetIsReplicated(true);
 
 	Equipment = PCIP.CreateDefaultSubobject<UAREquipmentComponent>(this, TEXT("Equipment"));

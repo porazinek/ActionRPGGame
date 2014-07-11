@@ -39,12 +39,16 @@ void UARTrailCue::SimulateHitOnClients(FVector Origin, FVector Location, FName S
 	//{
 		if (TrailFX)
 		{
-			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, Origin+100);
+			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, Origin);
 			if (TrailPSC)
 			{
 				const FVector AdjustedDir = (Location - Origin).SafeNormal();
 				FVector ParticleSpeed = AdjustedDir * TrailSpeed2;
 				TrailPSC->SetVectorParameter(TrailSpeedParam2, ParticleSpeed);
+				FScriptDelegate del;
+				del.BindUFunction(TrailPSC, "Deactivate");
+				TrailPSC->OnComponentBeginOverlap.Add(del);
+				TrailPSC->OnComponentHit.Add(del);
 			}
 		}
 	//}

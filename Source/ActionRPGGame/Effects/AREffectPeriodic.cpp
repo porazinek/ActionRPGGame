@@ -44,13 +44,6 @@ void AAREffectPeriodic::TickMe(float DeltaTime)
 void AAREffectPeriodic::PostNetReceive()
 {
 	Super::PostNetReceive();
-	UARAttributeBaseComponent* AttrComp = EffectTarget->FindComponentByClass<UARAttributeBaseComponent>();
-
-	if (!AttrComp)
-		return;
-	if (IsEffectActive)
-		return;
-	AttrComp->RemovePeriodicEffect(this);
 }
 
 void AAREffectPeriodic::Initialze()
@@ -68,7 +61,7 @@ void AAREffectPeriodic::Initialze()
 void AAREffectPeriodic::Activate()
 {
 	OnEffectInitialized();
-	OnEffectInitialized.Broadcast();
+	OnEffectActivated.Broadcast();
 	IsEffectActive = true;
 }
 
@@ -86,10 +79,17 @@ void AAREffectPeriodic::Deactivate()
 {
 	if (!EffectTarget)
 		return;
+	OnEffectEnd();
+	UARAttributeBaseComponent* AttrComp = EffectTarget->FindComponentByClass<UARAttributeBaseComponent>();
 
+	if (!AttrComp)
+		return;
+	if (IsEffectActive)
+		return;
+	AttrComp->RemovePeriodicEffect(this);
 
 	CurrentDuration = 0;
-	OnEffectEnd();
+
 	
 }
 void AAREffectPeriodic::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
@@ -98,6 +98,7 @@ void AAREffectPeriodic::GetLifetimeReplicatedProps(TArray< class FLifetimeProper
 
 	DOREPLIFETIME(AAREffectPeriodic, IsEffectActive);
 	DOREPLIFETIME(AAREffectPeriodic, EffectTarget);
+	//DOREPLIFETIME(AAREffectPeriodic, EffectCauser);
 }
 
 void AAREffectPeriodic::OnRep_EffectActive()
@@ -111,6 +112,11 @@ void AAREffectPeriodic::OnRep_EffectActive()
 
 	if (IsEffectActive)
 	{
+
+		for (FEffectCue& cue : EffectCues)
+		{
+
+		}
 		if (PresitentFX)
 		{
 			MyChar->PresistentParticle = UGameplayStatics::SpawnEmitterAttached(PresitentFX, MyChar->Mesh, AttachLocation, FVector(0,0,0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
@@ -118,6 +124,6 @@ void AAREffectPeriodic::OnRep_EffectActive()
 	}
 	else
 	{
-		MyChar->PresistentParticle->Deactivate();
+		//MyChar->PresistentParticle->Deactivate();
 	}
 }

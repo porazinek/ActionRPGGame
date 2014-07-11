@@ -23,6 +23,25 @@ private:
 	int32 Handle;
 };
 
+/*
+Stores information about cosmetic effects that might be appiled by weapons, abilities or effects.
+*/
+USTRUCT(BlueprintType)
+struct FEffectCue
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Effect Cue")
+		FName CueName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Cue")
+		TWeakObjectPtr<UParticleSystem> ParticleSystem;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Cue")
+		TWeakObjectPtr<USoundBase> Sound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Cue")
+		TWeakObjectPtr<UAnimMontage> AnimMontage;
+};
+
+//this struct will need clean up. I toss random things here for testing!
 USTRUCT(BlueprintType)
 struct FEffectSpec
 {
@@ -37,6 +56,15 @@ public:
 
 	//UPROPERTY()
 	//class UAREffectPeriodicO* Effect;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Effect")
+		FEffectCue EffectCue;
+
+	UPROPERTY()
+		FGameplayTagContainer OwnedTags;
+
+	UPROPERTY() //really don't think that this is needed.
+		TSubclassOf<class AARActorCue> ActorCue;
 	UPROPERTY()
 	class AAREffectPeriodic* ActorEffect;
 	UPROPERTY()
@@ -92,23 +120,4 @@ public:
 		UAnimMontage* EffectAnim;
 
 
-};
-
-
-/*
-	Stores information about cosmetic effects that might be appiled by weapons, abilities or effects.
-*/
-USTRUCT(BlueprintType)
-struct FEffectCue
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY(EditAnywhere, Category = "Effect Cue")
-		FName CueName;
-	UPROPERTY(EditAnywhere, Category = "Effect Cue")
-		TWeakObjectPtr<UParticleSystem> ParticleSystem;
-	UPROPERTY(EditAnywhere, Category = "Effect Cue")
-		TWeakObjectPtr<USoundBase> Sound;
-	UPROPERTY(EditAnywhere, Category = "Effect Cue")
-		TWeakObjectPtr<UAnimMontage> AnimMontage;
 };

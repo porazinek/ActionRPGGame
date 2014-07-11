@@ -28,13 +28,13 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 {
 	// Set size for collision capsule
 	CapsuleComponent->InitCapsuleSize(42.f, 96.0f);
-
+	IsCharacterTurningYaw = false;
 	//LowOffset = FVector(-380.0f, 35.0f, 15.0f);
 	//MidOffset = FVector(-380.0f, 35.0f, 60.0f);
 	//HighOffset = FVector(-380.0f, 35.0f, 150.0f); //x,y,z
 
 	CameraBoom = PCIP.CreateDefaultSubobject<USpringArmComponent>(this, TEXT("CameraBoom"));
-	CameraBoom->AttachTo(RootComponent);
+	CameraBoom->AttachTo(CapsuleComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character
 	CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
 	CameraBoom->SocketOffset = FVector(0.0f, 50.0f, 100.0f);
@@ -95,6 +95,7 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	FootMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("FootMesh"));
 	FootMesh->AttachParent = Mesh;
 	FootMesh->SetMasterPoseComponent(Mesh);
+	//SetRootComponent(Mesh);
 }
 
 void AARCharacter::PostInitializeComponents()
@@ -266,6 +267,15 @@ void AARCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AARCharacter::AddControllerYawInput(float Val)
+{
+	Super::AddControllerYawInput(Val);
+	if (Val != 0)
+		IsCharacterTurningYaw = true;
+	else
+		IsCharacterTurningYaw = false;
 }
 void AARCharacter::InputActionButtonOne()
 {

@@ -5,8 +5,13 @@
 #include "../Types/ARStructTypes.h"
 #include "../Types/AREnumTypes.h"
 #include "../Effects/AREffectPeriodic.h"
-
+#include "../ARCharacter.h"
 #include "../ARPlayerCameraManager.h"
+#include "../CosmeticEffects/ARActorCue.h"
+
+#include "ParticleHelper.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -42,7 +47,7 @@ void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick T
 	Client only.  When client get replicaated version of ActivePeriodicEffects, we run simulation on it.
 	so we don't need to get timing from server each time.
 	*/
-	if (GetOwnerRole() < ROLE_Authority)
+	if (GetOwnerRole() < ROLE_Authority || GetNetMode() != ENetMode::NM_DedicatedServer )
 	{
 		for (auto It = ActiveEffects.Effects.CreateIterator(); It; ++It)
 		{
@@ -118,11 +123,49 @@ void UARAttributeBaseComponent::AddPeriodicEffect(FEffectSpec& PeriodicEffect)
 		PeriodicEffect.ActorEffect->Initialze();
 		ActiveEffects.Effects.Add(PeriodicEffect);
 		PeriodicEffect.IsActive = true;
-		OnPeriodicEffectAppiled.Broadcast();
+		AttachEffectCue(PeriodicEffect);
+		OnPeriodicEffectAppiled.Broadcast(PeriodicEffect.OwnedTags);
 	}
 
 }
 
+void UARAttributeBaseComponent::AttachEffectCue_Implementation(FEffectSpec EffectIn)
+{
+	AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+	if (!MyChar && EffectIn.EffectCue.ParticleSystem.IsValid())
+		return;
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.bNoCollisionFail = true;
+	SpawnInfo.Owner = MyChar;
+	AARActorCue* cue = GetWorld()->SpawnActor<AARActorCue>(AARActorCue::StaticClass(), SpawnInfo);
+	if (!cue)
+		return;
+	cue->ParticleSystem = EffectIn.EffectCue.ParticleSystem;
+	cue->InitializeAttachment(MyChar, "LeftHandSocket");
+	cue->AttachRootComponentToActor(MyChar, "LeftHandSocket", EAttachLocation::SnapToTarget);
+
+	//MyChar->PresistentParticle = UGameplayStatics::SpawnEmitterAttached(EffectIn.EffectCue.ParticleSystem.Get(), MyChar->Mesh, "LeftHandSocket", FVector(0, 0, 0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
+}
+void UARAttributeBaseComponent::DetachEffectCue_Implementation(FEffectSpec EffectIn)
+{
+	AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+	if (!MyChar && EffectIn.EffectCue.ParticleSystem.IsValid())
+		return;
+
+	TArray<AActor*> AttachedActors;
+	MyChar->GetAttachedActors(AttachedActors);
+	if (AttachedActors.Num() > 0)
+	{
+		for (AActor* actor : AttachedActors)
+		{
+			actor->Destroy();
+		}
+	}
+	//if (!MyChar->PresistentParticle)
+	//	return;
+
+	//MyChar->PresistentParticle->Deactivate();
+}
 void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect)
 { 
 	if (GetOwnerRole() < ROLE_Authority)
@@ -135,13 +178,11 @@ void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* Pe
 		{
 			if (ActiveEffects.Effects[It.GetIndex()].ActorEffect == PeriodicEffect)
 			{
-				ActiveEffects.Effects[It.GetIndex()].ActorEffect->Destroy();
-				//ActiveEffects.Effects[It.GetIndex()].ActorEffect.Reset();
 				ActiveEffects.Effects[It.GetIndex()].IsActive = false;
+				ActiveEffects.Effects[It.GetIndex()].ActorEffect->Destroy();
+				DetachEffectCue(ActiveEffects.Effects[It.GetIndex()]);
+				OnPeriodicEffectRemoved.Broadcast(ActiveEffects.Effects[It.GetIndex()].OwnedTags);
 				ActiveEffects.Effects.RemoveAtSwap(It.GetIndex());
-				OnPeriodicEffectRemoved.Broadcast();
-				//PeriodicEffect->Deactivate();
-				//PeriodicEffect->
 				return;
 			}
 		}

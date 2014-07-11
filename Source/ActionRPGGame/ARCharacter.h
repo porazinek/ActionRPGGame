@@ -83,12 +83,17 @@ class AARCharacter : public ACharacter
 	void InputStopFireRightWeapon();
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling
+
+	UPROPERTY(BlueprintReadOnly, Category = "Input")
+		bool IsCharacterTurningYaw;
 protected:
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
 	/** Called for side to side input */
 	void MoveRight(float Value);
+
+	virtual void AddControllerYawInput(float Val);
 
 	UPROPERTY(BlueprintReadOnly, Transient, ReplicatedUsing = OnRep_ActionButtonOne, Category = "Ability Bar")
 		class AARAbility* ActionButtonOne;

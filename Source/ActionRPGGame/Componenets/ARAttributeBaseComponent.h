@@ -13,8 +13,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInstigatorCausedDamage, FAttribu
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeDamage, FAttribute, Attribute, class AActor*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
 
 /* stubs */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectAppiled);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectRemoved);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectAppiled, FGameplayTagContainer, OwnedTags);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectRemoved, FGameplayTagContainer, OwnedTags);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectInstigated);
 /*
@@ -56,6 +56,12 @@ public:
 
 	void RemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 
+	UFUNCTION(NetMulticast, Unreliable)
+		void AttachEffectCue(FEffectSpec EffectIn);
+	UFUNCTION(NetMulticast, Unreliable)
+		void DetachEffectCue(FEffectSpec EffectIn);
+
+
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerRemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 
@@ -80,6 +86,7 @@ public:
 		FOnPeriodicEffectAppiled OnPeriodicEffectAppiled;
 	/*
 		Periodic Effect Removed from Me.
+		Broadcast tags owned by this effect.
 	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnPeriodicEffectRemoved OnPeriodicEffectRemoved;

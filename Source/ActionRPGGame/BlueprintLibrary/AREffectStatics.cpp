@@ -9,6 +9,8 @@
 #include "ARTraceStatics.h"
 
 #include "../ARProjectile.h"
+#include "../Effects/ARFieldBase.h"
+
 #include "AREffectStatics.h"
 
 UAREffectStatics::UAREffectStatics(const class FPostConstructInitializeProperties& PCIP)
@@ -17,7 +19,7 @@ UAREffectStatics::UAREffectStatics(const class FPostConstructInitializePropertie
 
 }
 
-FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType)
+FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType, FEffectCue EffectCue, TSubclassOf<class AARActorCue> ActorCue)
 {
 	FEffectSpec PeriodicEffect;
 	if (!EffectTarget && !EffectCauser)
@@ -48,7 +50,8 @@ FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor*
 	PeriodicEffect.ActorEffect = effecTemp;
 	PeriodicEffect.MaxDuration = Duration;
 	PeriodicEffect.CurrentDuration = 0;
-
+	PeriodicEffect.EffectCue = EffectCue;
+	PeriodicEffect.ActorCue = ActorCue;
 	attrComp->AddPeriodicEffect(PeriodicEffect);
 
 	return PeriodicEffect;
@@ -138,14 +141,58 @@ void UAREffectStatics::ApplyPointDamage(AActor* DamageTarget, float AttributeMod
 	attrComp->DamageAttribute(AttributeEvent, EventInstigator, Causer);
 }
 
-void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject, float BaseDamage, float MinimumDamage, const FVector& Origin, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator)
+void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject, FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, AActor* DamageCauser, AActor* Instigator)
 {
+	if (!DamageCauser)
+		return;
 
+	static FName NAME_AttributeRadialDamage = FName(TEXT("ApplyRadialDamage"));
+	FCollisionQueryParams SphereParams(NAME_AttributeRadialDamage, false, nullptr);
+	SphereParams.AddIgnoredActors(IgnoreActors);
+	FCollisionResponseParams ResponseParams;
+	//ResponseParams.CollisionResponse.
+
+	TArray<FOverlapResult> Overlaps;
+	TArray<FHitResult> HitResults;
+	//DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects));
+	DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams);
+	//DamageCauser->GetWorld()->SweepMulti(HitResults, Origin, Origin + DamageOuterRadius, FQuat::Identity, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects));
+	TArray<UARAttributeBaseComponent*> Attributes;
+
+	//create list of attribute component that we can apply damage to.
+	for (FOverlapResult& result : Overlaps)
+	{
+		if (result.Actor.IsValid())
+		{
+			UARAttributeBaseComponent* Attr = result.Actor->FindComponentByClass<UARAttributeBaseComponent>();
+			if (Attr)
+			{
+				Attributes.AddUnique(Attr);
+			}
+		}
+	}
+	for (UARAttributeBaseComponent* attr : Attributes)
+	{
+
+		FAttribute Attribute;
+
+		Attribute.AttributeName = AttributeName;
+		Attribute.ModValue = BaseDamage;
+		Attribute.OperationType = EAttrOp::Attr_Subtract;
+
+		FARDamageEvent DamageEvent;
+
+		DamageEvent.Attribute = Attribute;
+		DamageEvent.DamageTypeClass = DamageTypeClass;
+		DamageEvent.DamageTag = DamageTag;
+
+		attr->DamageAttribute(DamageEvent, Instigator, DamageCauser);
+	}
 }
 
-void UAREffectStatics::ApplyRadialDamage(UObject* WorldContextObject, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage)
+void UAREffectStatics::ApplyRadialDamage(UObject* WorldContextObject, FName AttributeName, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag)
 {
-
+	ApplyRadialDamageWithFalloff(WorldContextObject, AttributeName, BaseDamage, BaseDamage, Origin, DamageRadius, DamageRadius, DamageRadius, DamageTypeClass, IgnoreActors, DamageTag, DamageCauser, Instigator);
 }
 
 void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult)
@@ -198,5 +245,31 @@ void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Pr
 				UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
 			}
 		}
+	}
+}
+
+void UAREffectStatics::SpawnField(TSubclassOf<class AARFieldBase> Field, AActor* Instigator, FHitResult Location, float Duration, float TickInterval)
+{
+	if (!Field && !Instigator)
+		return;
+
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.bNoCollisionFail = true;
+	SpawnInfo.Owner = Instigator;
+	
+	//SpawnInfo.Instigator = Instigator;
+
+	//Instigator->GetWorld()->SpawnActor<AARFieldBase>(Field, Location.Location, FRotator(0, 0, 0), SpawnInfo);
+
+	FTransform SpawnTM(FRotator(0, 0, 0), Location.Location);
+	AARFieldBase* field = Cast<AARFieldBase>(UGameplayStatics::BeginSpawningActorFromClass(Instigator, Field, SpawnTM, true));
+	if (field)
+	{
+		field->MaximumLifeTime = Duration;
+		field->TickInterval = TickInterval;
+		field->SetOwner(Instigator);
+		field->Initialize();
+		//field->Instigator = Instigator;
+		UGameplayStatics::FinishSpawningActor(field, SpawnTM);
 	}
 }

@@ -114,6 +114,7 @@ void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName
 	DamageEvent.Attribute = Attribute;
 	DamageEvent.DamageTypeClass = DamageType;
 	DamageEvent.DamageTag = DamageTag;
+
 	attr->DamageAttribute(DamageEvent, EventInstigator, DamageCauser);
 }
 
@@ -141,7 +142,7 @@ void UAREffectStatics::ApplyPointDamage(AActor* DamageTarget, float AttributeMod
 	attrComp->DamageAttribute(AttributeEvent, EventInstigator, Causer);
 }
 
-void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject, FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, AActor* DamageCauser, AActor* Instigator)
+void UAREffectStatics::ApplyRadialDamageWithFalloff(FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, AActor* DamageCauser, AActor* Instigator)
 {
 	if (!DamageCauser)
 		return;
@@ -151,18 +152,16 @@ void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject,
 	SphereParams.AddIgnoredActors(IgnoreActors);
 	FCollisionResponseParams ResponseParams;
 	//ResponseParams.CollisionResponse.
-
+	
 	TArray<FOverlapResult> Overlaps;
-	TArray<FHitResult> HitResults;
 	//DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects));
-	DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams);
-	//DamageCauser->GetWorld()->SweepMulti(HitResults, Origin, Origin + DamageOuterRadius, FQuat::Identity, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects));
+	DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, Collision, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams);
 	TArray<UARAttributeBaseComponent*> Attributes;
 
 	//create list of attribute component that we can apply damage to.
 	for (FOverlapResult& result : Overlaps)
 	{
-		if (result.Actor.IsValid())
+		if (result.Actor.IsValid() && result.Actor->bCanBeDamaged)
 		{
 			UARAttributeBaseComponent* Attr = result.Actor->FindComponentByClass<UARAttributeBaseComponent>();
 			if (Attr)
@@ -180,19 +179,41 @@ void UAREffectStatics::ApplyRadialDamageWithFalloff(UObject* WorldContextObject,
 		Attribute.ModValue = BaseDamage;
 		Attribute.OperationType = EAttrOp::Attr_Subtract;
 
-		FARDamageEvent DamageEvent;
+		FARRadialDamageEvent DamageEvent;
 
 		DamageEvent.Attribute = Attribute;
 		DamageEvent.DamageTypeClass = DamageTypeClass;
 		DamageEvent.DamageTag = DamageTag;
-
+		DamageEvent.HitInfo.Location = Origin;
+		DamageEvent.HitInfo.ImpactPoint = Origin;
+		DamageEvent.Radius = DamageOuterRadius;
 		attr->DamageAttribute(DamageEvent, Instigator, DamageCauser);
 	}
 }
 
-void UAREffectStatics::ApplyRadialDamage(UObject* WorldContextObject, FName AttributeName, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag)
+void UAREffectStatics::ApplyRadialDamage(FName AttributeName, float BaseDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag)
 {
-	ApplyRadialDamageWithFalloff(WorldContextObject, AttributeName, BaseDamage, BaseDamage, Origin, DamageRadius, DamageRadius, DamageRadius, DamageTypeClass, IgnoreActors, DamageTag, DamageCauser, Instigator);
+	ApplyRadialDamageWithFalloff(AttributeName, BaseDamage, BaseDamage, Origin, Collision, DamageRadius, DamageRadius, DamageRadius, DamageTypeClass, IgnoreActors, DamageTag, DamageCauser, Instigator);
+}
+
+void UAREffectStatics::ApplyMultiBoxDamage(FVector StartLocation, float Range, FVector BoxExtends, TEnumAsByte<ECollisionChannel> Collision, AActor* DamageCauser, APawn* DamageInstigator)
+{
+	if (!DamageCauser || !DamageInstigator)
+		return;
+	const FVector ShootDir = UARTraceStatics::GetCameraAim(DamageInstigator);
+	const FVector StartTrace = UARTraceStatics::GetCameraDamageStartLocation(ShootDir, DamageInstigator);
+	const FVector EndTrace = ((ShootDir * Range) + StartTrace);
+	FHitResult EndPoint = UARTraceStatics::RangedTrace(StartTrace, EndTrace, DamageInstigator, EARTraceType::Trace_Weapon);
+
+	TArray<FHitResult> OutHits;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(DamageCauser);
+
+	DamageCauser->GetWorld()->SweepMulti(OutHits, StartLocation, EndPoint.Location, FQuat::Identity, Collision, FCollisionShape::MakeBox(FVector(100, 100, 100)), Params);
+
+
+
+	DrawDebugBox(DamageCauser->GetWorld(), StartLocation, BoxExtends, FColor::Black, true, 10);
 }
 
 void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult)

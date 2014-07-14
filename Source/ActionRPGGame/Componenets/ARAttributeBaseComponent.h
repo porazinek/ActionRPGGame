@@ -122,9 +122,9 @@ public:
 		the Player1 will usually be instigator. Though it can be any object with Attribute
 		Component Attached.
 	*/
-	virtual void InstigatorAttributeDamageCaused(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
+	virtual void InstigatorAttributeDamageCaused(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
 
-	virtual void SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
+	virtual void SetAttributeChange(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Attribute")
 		FAttributeChanged ChangedAttribute;

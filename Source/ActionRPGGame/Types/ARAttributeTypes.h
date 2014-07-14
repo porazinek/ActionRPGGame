@@ -50,6 +50,12 @@ public:
 		FGameplayTagContainer DamageTag;
 
 	UPROPERTY()
+	struct FHitResult HitInfo;
+
+	UPROPERTY()
+		bool IsComboFinisher;
+
+	UPROPERTY()
 		TSubclassOf<class UDamageType> DamageTypeClass;
 
 	static const int32 ClassID = 0;
@@ -67,9 +73,6 @@ public:
 	UPROPERTY()
 		FVector_NetQuantizeNormal ShotDirection;
 
-	UPROPERTY()
-	struct FHitResult HitInfo;
-
 	static const int32 ClassID = 1;
 
 	virtual int32 GetTypeID() const { return FARPointDamageEvent::ClassID; }
@@ -86,12 +89,29 @@ public:
 		FVector_NetQuantizeNormal ShotDirection;
 
 	UPROPERTY()
-	struct FHitResult HitInfo;
+		float Radius;
 
 	static const int32 ClassID = 2;
 
 	virtual int32 GetTypeID() const { return FARRadialDamageEvent::ClassID; }
 	virtual bool IsOfType(int32 InID) const { return FARRadialDamageEvent::ClassID == InID; };
+};
+
+USTRUCT(BlueprintType)
+struct FARLineBoxDamageEvent : public FARDamageEvent
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	/** Direction the shot came from. Should be normalized. */
+	UPROPERTY()
+		FVector BoxExtens;
+	UPROPERTY()
+		float Range;
+
+	static const int32 ClassID = 3;
+
+	virtual int32 GetTypeID() const { return FARLineBoxDamageEvent::ClassID; }
+	virtual bool IsOfType(int32 InID) const { return FARLineBoxDamageEvent::ClassID == InID; };
 };
 
 USTRUCT(BlueprintType)
@@ -101,6 +121,9 @@ struct FAttributeChanged
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
 		FAttribute Attribute;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
+		FVector HitLocation;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
 		AActor* DamageTarget;

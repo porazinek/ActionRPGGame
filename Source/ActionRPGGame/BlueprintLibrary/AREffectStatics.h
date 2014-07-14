@@ -21,6 +21,20 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
 		static void ChangeAttribute(AActor* Target, AActor* CausedBy, float ModVal, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
 
+	/*
+		Ahem. I want to add seprate Heal Damage functionality. which means:
+		1. I have to copy paste everything. Bad.
+		2. Extract the target aggregation part to seprate functions, and just create simple function for healing
+		and damage.
+		3. Add switch to indicate whether it is healing or dmage to existing functions.
+
+		Also probably will need to add few more Damage Trace Types:
+		1. Positioned Box - Box is spawned in position aligned to player view in hit point.
+		2. Cylinder ?
+	*/
+	/*
+	
+	*/
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
 		static void ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, FGameplayTagContainer DamageTag, TSubclassOf<class UDamageType> DamageType);
 	/*
@@ -29,11 +43,17 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
 		static void ApplyPointDamage(AActor* DamageTarget, float AttributeMod, FName AttributeName, const FVector& HitFromLocation, const FHitResult& HitInfo, AActor* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static", meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", AutoCreateRefTerm = "IgnoreActors"))
-		static void ApplyRadialDamage(UObject* WorldContextObject, FName AttributeName, float BaseDamage, const FVector& Origin, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static", meta = (AutoCreateRefTerm = "IgnoreActors"))
+		static void ApplyRadialDamage(FName AttributeName, float BaseDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static", meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", AutoCreateRefTerm = "IgnoreActors"))
-		static void ApplyRadialDamageWithFalloff(UObject* WorldContextObject, FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, AActor* DamageCauser = NULL, AActor* Instigator = NULL);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static", meta = (AutoCreateRefTerm = "IgnoreActors"))
+		static void ApplyRadialDamageWithFalloff(FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, AActor* DamageCauser = NULL, AActor* Instigator = NULL);
+	
+	/*
+		Apply Damage in box shape from Origin point to end of trace.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "AR|Damage Static")
+		static void ApplyMultiBoxDamage(FVector StartLocation, float Range, FVector BoxExtends, TEnumAsByte<ECollisionChannel> Collision, AActor* DamageCauser, APawn* DamageInstigator);
 	//probably need better category
 	/*
 	

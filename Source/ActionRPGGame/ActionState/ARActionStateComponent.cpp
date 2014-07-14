@@ -9,6 +9,8 @@
 #include "../BlueprintLibrary/ARTraceStatics.h"
 #include "../ARCharacter.h"
 
+#include "IARActionState.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "ARActionStateComponent.h"
@@ -178,6 +180,12 @@ void UARActionStateComponent::ActionInterval()
 {
 	OnActionInterval.Broadcast();
 	IsCasting = true;
+
+	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	if (interval)
+	{
+		interval->Execute_OnActionInterval(GetOwner());
+	}
 	//ServerSetCastingState(true);
 	
 	//MulticastPlayAnimation();

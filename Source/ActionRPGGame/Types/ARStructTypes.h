@@ -317,3 +317,38 @@ public:
 		TAssetSubclassOf<class AARItem> ItemBlueprint;
 
 };
+/*
+	Keep in mind that those properties, do not really have any real world physical
+	meaning. They exist as way for easier setup for various substances.
+
+	In reality there is many prameters that may affect how easy to trun something in flames.
+	While freeze or Melting properties are pretty straight forward and should be used with values close to 
+	real world materials.
+*/
+USTRUCT(BlueprintType)
+struct FARActorSubstanceProperties
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	/*
+	How much fuel object have. When fuel is 0, object is destroyed.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical Properties")
+		float Fuel;
+	/*
+	Current temperature of object. In Celcious.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical Properties")
+		float Temperature;
+	/*
+	Minimum needed temperature to ignite object. In Celcious.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical Properties")
+		float CombustionTemperature;
+	/*
+	Minimum needed temperature to freeze object. In Celcious.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical Properties")
+		float FreezeTemperature;
+
+};

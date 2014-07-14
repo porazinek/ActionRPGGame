@@ -12,3 +12,6 @@
 10,Field.Fire,
 11,Field.Water,
 12,Field.Steam,
+13,Finisher.Blast,
+14,Finisher.Whirlwind,
+15,Finisher.Cleave,

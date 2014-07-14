@@ -6,12 +6,13 @@
 #include "../Types/AREnumTypes.h"
 #include "../Effects/AREffectPeriodic.h"
 #include "../ARCharacter.h"
-#include "../ARPlayerCameraManager.h"
 #include "../CosmeticEffects/ARActorCue.h"
 
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+
+#include "../Attributes/IAttribute.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -255,12 +256,34 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 			Damage = ConstructObject<UDamageType>(DamageEvent.DamageTypeClass);
 		}
 		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+		/*
+			TODO!!!
+			Part about setting up damage events and data is in need of serious rework!
+			1. Better organize what data is send.
+			2. Add more specialized function for Radial Damage
+			3. Split Damage Info (hit location, radius, damage type) from what was damaged.
+		*/
+		SetAttributeChange(DamageEvent.Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+		//handle death.
+		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
+		if (attrInt)
+		{
+			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent.DamageTag);
+			if (DamageEvent.Attribute.AttributeName == attrInt->GetDeathAttribute())
+			{
+				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 
+					//different thresholds.
+				{
+					attrInt->Died();
+				}
+			}
+		}
 
 		if (attr)
 		{
-			attr->InstigatorAttributeDamageCaused(DamageEvent.Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+			attr->InstigatorAttributeDamageCaused(DamageEvent.Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
 		}
-		SetAttributeChange(DamageEvent.Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+		
 		OnAttributeDamage.Broadcast(ChangedAttribute, DamageEvent.DamageTag);
 	}
 	else if (DamageEvent.IsOfType(FARPointDamageEvent::ClassID))
@@ -273,14 +296,64 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 			Damage = ConstructObject<UDamageType>(Point->DamageTypeClass);
 		}
 		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+		SetAttributeChange(Point->Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+		
+		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
+		if (attrInt)
+		{
+			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent.DamageTag);
+			if (DamageEvent.Attribute.AttributeName == attrInt->GetDeathAttribute())
+			{
+				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 
+					//different thresholds.
+				{
+					attrInt->Died();
+				}
+			}
+		}
 
 		if (attr)
 		{
-			attr->InstigatorAttributeDamageCaused(Point->Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+			attr->InstigatorAttributeDamageCaused(Point->Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
 		}
-		SetAttributeChange(Point->Attribute, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+
 		OnAttributeDamage.Broadcast(ChangedAttribute, Point->DamageTag);
 		OnPointAttributeDamage.Broadcast(Point->Attribute, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
+	}
+	else if (DamageEvent.IsOfType(FARRadialDamageEvent::ClassID))
+	{
+		FARRadialDamageEvent* const Point = (FARRadialDamageEvent*)&DamageEvent;
+		SetFloatValue(AttributeOp(Point->Attribute.ModValue, GetFloatValue(Point->Attribute.AttributeName), Point->Attribute.OperationType), Point->Attribute.AttributeName);
+		UDamageType* Damage = nullptr;
+		if (Point->DamageTypeClass)
+		{
+			Damage = ConstructObject<UDamageType>(Point->DamageTypeClass);
+		}
+		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+		SetAttributeChange(Point->Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+
+		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
+		if (attrInt)
+		{
+			attrInt->Execute_OnRecivedRadialDamage(GetOwner(), ChangedAttribute, *Point, DamageEvent.DamageTag);
+			if (DamageEvent.Attribute.AttributeName == attrInt->GetDeathAttribute())
+			{
+				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 
+					//different thresholds.
+				{
+					attrInt->Died();
+				}
+			}
+		}
+
+		if (attr)
+		{
+			attr->InstigatorAttributeDamageCaused(Point->Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+		}
+
+		OnAttributeDamage.Broadcast(ChangedAttribute, Point->DamageTag);
+		
+		//OnPointAttributeDamage.Broadcast(Point->Attribute, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
 	}
 }
 void UARAttributeBaseComponent::HealAttribute()
@@ -293,9 +366,10 @@ void UARAttributeBaseComponent::ChangeAttribute(FName AttributeName, float ModVa
 	SetFloatValue(AttributeOp(ModValue, GetFloatValue(AttributeName), OperationType), AttributeName);
 }
 
-void UARAttributeBaseComponent::InstigatorAttributeDamageCaused(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
+void UARAttributeBaseComponent::InstigatorAttributeDamageCaused(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
 {
 	ChangedAttribute.Attribute = Attribute;
+	ChangedAttribute.HitLocation = HitLocation;
 	ChangedAttribute.DamageCauser = DamageCauser;
 	ChangedAttribute.DamageTarget = DamageTarget;
 	//ChangedAttribute.ChangeInstigator = Instigator;
@@ -304,9 +378,10 @@ void UARAttributeBaseComponent::InstigatorAttributeDamageCaused(FAttribute Attri
 	OnInstigatorCausedDamage.Broadcast(ChangedAttribute, DamageTag);
 }
 
-void UARAttributeBaseComponent::SetAttributeChange(FAttribute Attribute, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
+void UARAttributeBaseComponent::SetAttributeChange(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
 {
 	ChangedAttribute.Attribute = Attribute;
+	ChangedAttribute.HitLocation = HitLocation;
 	ChangedAttribute.DamageCauser = DamageCauser;
 	ChangedAttribute.DamageTarget = DamageTarget;
 	//ChangedAttribute.ChangeInstigator = Instigator;

@@ -12,7 +12,7 @@ class UIARFXEffect : public UInterface
 class IIARFXEffect
 {
 	GENERATED_IINTERFACE_BODY()
-//public:
-//	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, Category = "Ability|Interface")
-//		void SpawnTrailEffect(UParticleSystem* trailFX, float trailSpeed, FName trailSpeedParam, FHitResult target, FName SocketName, APawn* Causer);
+//protected:
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physical Properties")
+	//	float Fuel;
 };

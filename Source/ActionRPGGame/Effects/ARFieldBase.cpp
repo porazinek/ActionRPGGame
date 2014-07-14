@@ -179,7 +179,7 @@ void AARFieldBase::CombineFields(TSubclassOf<class AARFieldBase> NewField, float
 	}
 }
 
-void AARFieldBase::OnRecivedDamage_Implementation(FAttributeChanged AttributeChanged, FGameplayTagContainer DamageTag)
+void AARFieldBase::OnRecivedDamage_Implementation(FAttributeChanged AttributeChanged, FARDamageEvent const& Damage, FGameplayTagContainer DamageTag)
 {
 	//if incoming damage is blast finisher
 	//call blast finisher function.
@@ -196,23 +196,30 @@ void AARFieldBase::OnRecivedDamage_Implementation(FAttributeChanged AttributeCha
 	//which means we would still need to pull off FieldType, and the designer would have to create
 	//separate functions for each possible field/finisher combination - uber-super-terri
 
-	/*
-		It probably would be good idea to add additonal flag (bool), to check if incoming damage
-		can be part of combo at all.
-		If it is not, there is no reason to check all tags, because incoming damage will always have
-		some Tags.
-	*/
-	
-
-
+	//if damage is not combo finisher. There is not reason to proceed any further.
+	if (Damage.IsComboFinisher)
+	{
+		if (DamageTag.HasTag(CombustionFinisherInfo.CombustionTag, EGameplayTagMatchType::IncludeParentTags, EGameplayTagMatchType::Explicit))
+		{
+			CombustionFinisher(AttributeChanged, Damage);
+		}
+	}
 }
 
 void AARFieldBase::OnRecivedRadialDamage_Implementation(FAttributeChanged AttributeChanged, FARRadialDamageEvent const& Damage, FGameplayTagContainer DamageTag)
 {
-	if (DamageTag.HasTag(BlastFinisherInfo.BlastFinisherTag, EGameplayTagMatchType::IncludeParentTags, EGameplayTagMatchType::Explicit))
+	if (Damage.IsComboFinisher)
 	{
-		BlastFinisher(AttributeChanged, Damage);
+		if (DamageTag.HasTag(BlastFinisherInfo.BlastFinisherTag, EGameplayTagMatchType::IncludeParentTags, EGameplayTagMatchType::Explicit))
+		{
+			BlastFinisher(AttributeChanged, Damage);
+		}
 	}
+}
+
+void AARFieldBase::OnRecivedLineBoxDamage_Implementation(FAttributeChanged AttributeChanged, FARLineBoxDamageEvent const& Damage, FGameplayTagContainer DamageTag)
+{
+
 }
 void AARFieldBase::BlastFinisher(FAttributeChanged const& DamageInfo, FARRadialDamageEvent const& HitInfo)
 {
@@ -229,7 +236,7 @@ void AARFieldBase::BlastFinisher(FAttributeChanged const& DamageInfo, FARRadialD
 		UAREffectStatics::ApplyRadialDamage(BlastFinisherInfo.Damage.AttributeName, 
 			BlastFinisherInfo.Damage.ModValue, HitInfo.HitInfo.Location, ECollisionChannel::ECC_Pawn,
 			BlastFinisherInfo.Radius, UDamageType::StaticClass(), IgnoredActors, this, DamageInfo.DamageInstigator, true,
-			BlastFinisherInfo.BlastDamageTags);
+			BlastFinisherInfo.BlastDamageTags, false);
 	}
 
 	//if there are any effects we will just apply them.
@@ -253,9 +260,9 @@ void AARFieldBase::WhirlFinisher()
 
 }
 
-void AARFieldBase::CombustionFinisher()
+void AARFieldBase::CombustionFinisher(FAttributeChanged AttributeChanged, FARDamageEvent const& Damage)
 {
-
+	OnCombustionFinisher();
 }
 
 void AARFieldBase::DirectionalImpulseFinisher()
@@ -267,29 +274,6 @@ void AARFieldBase::OmniImpuleFinisher()
 {
 
 }
-
-//void AARFieldBase::BlastFinisher(FGameplayTagContainer BlastFinisherTags, FAttribute Damage, float BlastRadius, TArray<class UAREffectType*> EffectsIn, bool bRemoveField)
-//{
-//	if (!OwnedTags.MatchesAll(BlastFinisherTags, false))
-//		return;
-//
-//	//mod value is different from 0, which means we want to do something with it.
-//	if (Damage.ModValue != 0)
-//	{
-//
-//	}
-//
-//	//if there are any effects we will just apply them.
-//	for (UAREffectType* effect : EffectsIn)
-//	{
-//
-//	}
-//
-//	if (bRemoveField)
-//	{
-//		this->Died();
-//	}
-//}
 
 void AARFieldBase::SetOnBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

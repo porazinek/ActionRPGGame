@@ -268,7 +268,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
 		if (attrInt)
 		{
-			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent.DamageTag);
+			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent, DamageEvent.DamageTag);
 			if (DamageEvent.Attribute.AttributeName == attrInt->GetDeathAttribute())
 			{
 				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 
@@ -301,7 +301,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
 		if (attrInt)
 		{
-			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent.DamageTag);
+			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent, DamageEvent.DamageTag);
 			if (DamageEvent.Attribute.AttributeName == attrInt->GetDeathAttribute())
 			{
 				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 
@@ -336,6 +336,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		if (attrInt)
 		{
 			attrInt->Execute_OnRecivedRadialDamage(GetOwner(), ChangedAttribute, *Point, DamageEvent.DamageTag);
+			attrInt->Execute_OnRecivedDamage(GetOwner(), ChangedAttribute, DamageEvent, DamageEvent.DamageTag);
 			if (DamageEvent.Attribute.AttributeName == attrInt->GetDeathAttribute())
 			{
 				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 

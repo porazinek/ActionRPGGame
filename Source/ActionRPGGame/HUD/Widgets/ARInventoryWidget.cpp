@@ -45,10 +45,11 @@ TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FInvento
 			.Content()
 			[
 				SNew(SARInventoryItemWidget)
-				.InventoryItemObj(AssetItem)
+				.InventoryItem(AssetItem)
 				.PlayerController(PlayerController)
 				.Character(Character)
 				.SlotType(EItemSlot::Item_Inventory)//set inventory slot type to well inventory.
+				.EquipmentSlot(EEquipmentSlot::Item_Inventory)
 				.SlotName(FText::FromName("Inv"))
 			];
 		return ReturnRow;

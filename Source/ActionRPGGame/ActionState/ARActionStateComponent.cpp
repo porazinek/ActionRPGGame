@@ -156,11 +156,21 @@ bool UARActionStateComponent::ServerStopAction_Validate()
 void UARActionStateComponent::CooldownBegin()
 {
 	IsRecharing = true;
+	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	if (interval)
+	{
+		interval->Execute_OnCooldownBegin(GetOwner());
+	}
 	OnCooldownBegin.Broadcast();
 }
 void UARActionStateComponent::CooldownEnded()
 {
 	IsRecharing = false;
+	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	if (interval)
+	{
+		interval->Execute_OnCooldownEnd(GetOwner());
+	}
 	OnCooldownEnded.Broadcast();
 }
 
@@ -168,11 +178,22 @@ void UARActionStateComponent::CastBegin()
 {
 	IsCasting = true;
 	//MulticastPlayAnimation();
+
+	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	if (interval)
+	{
+		interval->Execute_OnCastStart(GetOwner());
+	}
 	OnActionCastBegin.Broadcast();
 }
 void UARActionStateComponent::CastEnd()
 {
 	IsCasting = false;
+	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	if (interval)
+	{
+		interval->Execute_OnCastEnd(GetOwner());
+	}
 	OnActionCastEnd.Broadcast();
 }
 

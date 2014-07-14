@@ -180,6 +180,8 @@ struct FInventorySlot
 public:
 	UPROPERTY()
 		int8 SlotID;
+	UPROPERTY()
+		int8 OldSlotID;
 
 	UPROPERTY(EditAnywhere, Category="Item")
 		FName ItemID;
@@ -200,6 +202,7 @@ public:
 		if (*this != Other)
 		{
 			SlotID = Other.SlotID;
+			OldSlotID = Other.OldSlotID;
 			ItemID = Other.ItemID;
 			ItemSlot = Other.ItemSlot;
 			EEquipmentSlot = Other.EEquipmentSlot;

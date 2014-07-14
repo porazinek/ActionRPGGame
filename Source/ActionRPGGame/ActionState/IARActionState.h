@@ -24,8 +24,25 @@ class IIARActionState
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void ClientOnActionStart();
 	/*[Server]*/
+	/*
+		Called when Input is pressed.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void OnCastStart();
+	/*
+		Called when Input is released OR when current State ended.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void OnCastEnd();
+	/*
+		Called when current state is exectued. Usually while button is pressed.
+	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void OnActionInterval();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void OnCooldownEnd();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void OnCooldownBegin();
 	/*[Server]*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void OnActionEnd();

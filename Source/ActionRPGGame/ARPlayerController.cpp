@@ -46,7 +46,7 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	{
 		FInventorySlot slot;
 		slot.SlotID = i;
-		slot.ItemID = "-1"; //no item on that slot.
+		slot.ItemID = NAME_None; //no item on that slot.
 		slot.ItemSlot = EItemSlot::Item_Inventory;
 		slot.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
 		InventorySmall.Add(slot);
@@ -55,6 +55,7 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	for (int32 i = 0; i < 4; i++)
 	{
 		FInventorySlot in;
+		in.ItemID = NAME_None;
 		in.SlotID = i;
 		in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
 		in.ItemSlot = EItemSlot::Item_Weapon;
@@ -65,6 +66,7 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	for (int32 i = 0; i < 4; i++)
 	{
 		FInventorySlot in;
+		in.ItemID = NAME_None;
 		in.SlotID = i;
 		in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
 		in.ItemSlot = EItemSlot::Item_Weapon;
@@ -100,7 +102,7 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("FireLeftWeapon", IE_Released, this, &AARPlayerController::InputStopFireLeftWeapon);
 	InputComponent->BindAction("FireRightWeapon", IE_Released, this, &AARPlayerController::InputStopFireRightWeapon);
 
-	//InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
+	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARPlayerController::InputSwapLeftWeapon);
 	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARPlayerController::InputSwapRightWeapon);
 	InputComponent->BindAction("AddWeapons", IE_Pressed, this, &AARPlayerController::InputTempAddWeapons);
 }
@@ -172,6 +174,13 @@ void AARPlayerController::InputSwapRightWeapon()
 	if (ARCharacter)
 	{
 		ARCharacter->InputSwapRightWeapon();
+	}
+}
+void AARPlayerController::InputSwapLeftWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputSwapLeftWeapon();
 	}
 }
 void AARPlayerController::SetInventoryVisibility()
@@ -309,7 +318,7 @@ void AARPlayerController::AddItemToInventory(FInventorySlot Item)
 		{
 			for (FInventorySlot& item : InventorySmall)
 			{
-				if (item.ItemID == "-1")
+				if (item.ItemID.IsNone())
 				{
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
@@ -346,7 +355,7 @@ void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 Sl
 		{
 			for (FInventorySlot& item : InventorySmall)
 			{
-				if (item.SlotID == SlotID && item.ItemID != "-1")
+				if (item.SlotID == SlotID && item.ItemID != NAME_None)
 				{
 					FInventorySlot oldItemTemp = item;
 					item.ItemID = Item.ItemID;
@@ -369,11 +378,12 @@ void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 Sl
 					//OnRep_InventoryChanged();
 					return;
 				}
-				if (item.ItemID == "-1" && item.SlotID == SlotID)
+				if (item.ItemID == NAME_None && item.SlotID == SlotID)
 				{
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
+					RemoveItemFromInventory(Item.ItemID, Item.OldSlotID);
 					IsInventoryChanged = true;
 					ClientSetInventoryChanged();
 					//RemoveItemFromInventory(Item.ItemID, Item.SlotID);
@@ -414,12 +424,12 @@ bool AARPlayerController::RemoveItemFromInventory(FName ItemID, int32 SlotID)
 	{
 		for (FInventorySlot& item : InventorySmall)
 		{
-			if (item.SlotID == SlotID)
+			if (item.SlotID == SlotID && item.ItemID != NAME_None)
 			{
 				//we don't remove actually anything from array.
 				//just change ID and slot types, to match an "empty" slot 
 				// in inventory.
-				item.ItemID = "-1";
+				item.ItemID = NAME_None;
 				item.ItemSlot = EItemSlot::Item_Inventory;
 				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
 				IsInventoryChanged = true;
@@ -473,11 +483,32 @@ void AARPlayerController::AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID)
 	{
 		for (FInventorySlot& weapon : LeftHandWeapons)
 		{
+			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+			{
+				FInventorySlot oldItemTemp = weapon;
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				for (FInventorySlot& oldItem : InventorySmall)
+				{
+					if (weapon.SlotID == oldItem.SlotID)
+					{
+						oldItem.ItemID = oldItemTemp.ItemID;
+						oldItem.ItemSlot = oldItemTemp.ItemSlot;
+						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+						return;
+					}
+				}
+				LeftHandWeaponsUpdated = true;
+				//OnRep_InventoryChanged();
+				return;
+			}
 			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
 			{
 				weapon.ItemID = Weapon.ItemID;
 				weapon.ItemSlot = Weapon.ItemSlot;
 				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				LeftHandWeaponsUpdated = true;
 				return;
 			}
 		}
@@ -492,6 +523,40 @@ bool AARPlayerController::ServerAddLeftHandWeapon_Validate(FInventorySlot Weapon
 	return true;
 }
 
+bool AARPlayerController::RemoveLeftHandWeapon(FName ItemID, int32 SlotID)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerRemoveLeftHandWeapon(ItemID, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& item : LeftHandWeapons)
+		{
+			if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			{
+				//we don't remove actually anything from array.
+				//just change ID and slot types, to match an "empty" slot 
+				// in inventory.
+				item.ItemID = NAME_None;
+				item.ItemSlot = EItemSlot::Item_Inventory;
+				item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+				LeftHandWeaponsUpdated = true;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+void AARPlayerController::ServerRemoveLeftHandWeapon_Implementation(FName ItemID, int32 SlotID)
+{
+	RemoveLeftHandWeapon(ItemID, SlotID);
+}
+bool AARPlayerController::ServerRemoveLeftHandWeapon_Validate(FName ItemID, int32 SlotID)
+{
+	return true;
+}
+
 void AARPlayerController::AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID)
 {
 	if (Role < ROLE_Authority)
@@ -502,11 +567,33 @@ void AARPlayerController::AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID
 	{
 		for (FInventorySlot& weapon : RightHandWeapons)
 		{
+			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+			{
+				FInventorySlot oldItemTemp = weapon;
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				for (FInventorySlot& oldItem : InventorySmall)
+				{
+					if (weapon.SlotID == oldItem.SlotID)
+					{
+						oldItem.ItemID = oldItemTemp.ItemID;
+						oldItem.ItemSlot = oldItemTemp.ItemSlot;
+						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+						return;
+					}
+				}
+				RightHandWeaponsUpdated = true;
+				//OnRep_InventoryChanged();
+				return;
+			}
 			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
 			{
 				weapon.ItemID = Weapon.ItemID;
 				weapon.ItemSlot = Weapon.ItemSlot;
 				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+
+				RightHandWeaponsUpdated = true;
 				return;
 			}
 		}
@@ -517,6 +604,40 @@ void AARPlayerController::ServerAddRightHandWeapon_Implementation(FInventorySlot
 	AddRightHandWeapon(Weapon, SlotID);
 }
 bool AARPlayerController::ServerAddRightHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+{
+	return true;
+}
+
+bool AARPlayerController::RemoveRightHandWeapon(FName ItemID, int32 SlotID)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerRemoveRightHandWeapon(ItemID, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& item : RightHandWeapons)
+		{
+			if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			{
+				//we don't remove actually anything from array.
+				//just change ID and slot types, to match an "empty" slot 
+				// in inventory.
+				item.ItemID = NAME_None;
+				item.ItemSlot = EItemSlot::Item_Inventory;
+				item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+				RightHandWeaponsUpdated = true;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+void AARPlayerController::ServerRemoveRightHandWeapon_Implementation(FName ItemID, int32 SlotID)
+{
+	RemoveRightHandWeapon(ItemID, SlotID);
+}
+bool AARPlayerController::ServerRemoveRightHandWeapon_Validate(FName ItemID, int32 SlotID)
 {
 	return true;
 }

@@ -5,6 +5,15 @@
 
 #include "AREquipmentComponent.generated.h"
 
+/*
+	I'm not sure if Equipment Manager on it's own is that good idea honestly.
+
+	It have it merits, like it can be attached to any actor, but it honestly is pretty tighly couple to
+	whatever actor it is attached.
+
+	It probably make only sense on player controller in the end, as character doesn't really loose
+	equipment when for example enter vechile.
+*/
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), meta = (BlueprintSpawnableComponent), DefaultToInstanced, BlueprintType) //, Within = ARPlayerController
 class UAREquipmentComponent : public UActorComponent
 {
@@ -62,7 +71,7 @@ public:
 		These weapons are equiped in character sheet,
 		but are not active. Player can choose from these weapons in combat.
 		To make these weapons active.
-		*/
+	*/
 	UPROPERTY() //not sure but I think we shouldn't really replicate this back.
 		TArray<FInventorySlot> LeftHandWeapons;
 
@@ -80,22 +89,40 @@ public:
 	int32 MaxEquipedWeapons;
 
 	/*
-		These weapons are active and can be used by Player.
-		**/
-	//Left Hand Weapon
+		Currently equiped weapon. It can be used to perform actions.
+	*/
 	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
 	class AARWeapon* ActiveLeftHandWeapon;
+	/*
+		Helper struct, to retrieve information form data table.
+	*/
 	UPROPERTY()
 		FInventorySlot ActiveLeftHandWeaponStruct;
+	/*
+		Socket to which left hand weapon will be attached.
+	*/
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FName LeftWeaponSocket;
 	UFUNCTION()
 		void OnRep_AtiveLeftHandWeapon();
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerSwapLeftWeapon();
+	/*
+		Swap left hand weapon from list of equiped weapons in
+		PlayerController->LeftHandWeapons.
+	*/
 	void SwapLeftWeapon();
+	/*
+		Set LeftHandWeapon to ActiveLeftHandWeapon
+	*/
 	void SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
 
+	/*
+		UnEquip current ActiveLeftHandWeapon making it impossible to use, until it is equiped again.
+	*/
+	void UnEquipLeftHandWeapon(FName ItemID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerUnEquipLeftHandWeapon(FName ItemID);
 
 	//Right Hand Weapon
 	UPROPERTY(ReplicatedUsing = OnRep_ActiveRightHandWeapon)

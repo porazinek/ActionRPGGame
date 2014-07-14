@@ -25,10 +25,11 @@ public:
 
 	/*[Server]*/
 	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Attribute")
-		void OnRecivedDamage(FAttributeChanged AttributeChanged, FGameplayTagContainer DamageTag);
+		void OnRecivedDamage(FAttributeChanged AttributeChanged, FARDamageEvent const& Damage, FGameplayTagContainer DamageTag);
 	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Attribute")
 		void OnRecivedRadialDamage(FAttributeChanged AttributeChanged, FARRadialDamageEvent const& Damage, FGameplayTagContainer DamageTag);
-
+	UFUNCTION(BlueprintNativeEvent, BlueprintAuthorityOnly, Category = "Attribute")
+		void OnRecivedLineBoxDamage(FAttributeChanged AttributeChanged, FARLineBoxDamageEvent const& Damage, FGameplayTagContainer DamageTag);
 private:
 	//name of attribute used for actor death check.
 	//Maybe change to array so multiple attributes can be affected

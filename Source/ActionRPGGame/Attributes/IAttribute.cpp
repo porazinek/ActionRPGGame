@@ -14,11 +14,15 @@ void IIAttribute::Died()
 
 }
 
-void IIAttribute::OnRecivedDamage_Implementation(FAttributeChanged AttributeChanged, FGameplayTagContainer DamageTag)
+void IIAttribute::OnRecivedDamage_Implementation(FAttributeChanged AttributeChanged, FARDamageEvent const& Damage, FGameplayTagContainer DamageTag)
 {
 
 }
 void IIAttribute::OnRecivedRadialDamage_Implementation(FAttributeChanged AttributeChanged, FARRadialDamageEvent const& Damage, FGameplayTagContainer DamageTag)
+{
+
+}
+void IIAttribute::OnRecivedLineBoxDamage_Implementation(FAttributeChanged AttributeChanged, FARLineBoxDamageEvent const& Damage, FGameplayTagContainer DamageTag)
 {
 
 }

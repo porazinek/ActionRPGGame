@@ -255,7 +255,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedP
 			.Content()
 			[
 				SNew(SARInventoryItemWidget)
-				.InventoryItemObj(AssetItem)
+				.InventoryItem(AssetItem)
 				.PlayerController(MyPC)
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
 				.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
@@ -287,7 +287,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TShared
 			.Content()
 			[
 				SNew(SARInventoryItemWidget)
-				.InventoryItemObj(AssetItem)
+				.InventoryItem(AssetItem)
 				.PlayerController(MyPC)
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
 				.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)

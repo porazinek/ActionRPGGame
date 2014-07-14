@@ -42,6 +42,7 @@ public:
 
 	void InputTempAddWeapons();
 
+	void InputSwapLeftWeapon();
 	void InputSwapRightWeapon();
 	/* GUI Input **/
 	void SetInventoryVisibility();
@@ -53,38 +54,105 @@ public:
 	void SetAbilityInventoryVisibility();
 	EVisibility AbilityInventoryVisibility;
 
+	/*
+		Everything regarding currently equiped items and inventory is handled on server.
+		Every time user is trying to change something in inventory there is RPC call made from client 
+		to server, where client request operation on Item.
+
+		It could potentialy get quite heavy, because all RPC calls are reliable,
+		My assumption here is, that operations on inventory in most extreme cases, are not
+		that often, and we don't want risk user operation on his own items will be lost
+		somewhere over network.
+	*/
 	/* Character Sheet **/
 	//Left Hand Weapon
+	/*
+		List of weapon which can be equiped to left hand
+	*/
 	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.
 		TArray<FInventorySlot> LeftHandWeapons;
 	UFUNCTION()
 		void OnRep_LeftHandWeapons();
+	/*
+		Indicates whether there is some change in LeftHandWeapons
+	*/
 	bool LeftHandWeaponsUpdated;
+	/* 
+		[client] [server] - Add left hand weapon to LeftHandWeapons
+	*/
 	void AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
+
+	/* 
+		[server] - Calls AddLeftHandWeapon On server. 
+	*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerAddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
-	//Right Hand Weapon
+	/* 
+		[client] [server] - Remove left hand weapon to list of equiped weapons.
+		Return true if something has been removed.
+	*/
+	bool RemoveLeftHandWeapon(FName ItemID, int32 SlotID);
+
+	/* 
+		[server] - Calls RemoveLeftHandWeapon On server. 
+		
+		@param ItemID - ID of item remove.
+		@param SlotID - ID of Inventory slot, which item occupy.
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemoveLeftHandWeapon(FName ItemID, int32 SlotID);
+
+	/*
+		List of weapon which can be equiped to right hand
+	*/
 	UPROPERTY(ReplicatedUsing = OnRep_RightHandWeapons)
 		TArray<FInventorySlot> RightHandWeapons;
 	UFUNCTION()
 		void OnRep_RightHandWeapons();
+	/*
+		Indicates whether there is some change in RightHandWeapons
+	*/
 	bool RightHandWeaponsUpdated;
+
+	/* 
+		[client] [server] - Add right hand weapon to RightHandWeapons
+	*/
 	void AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
+
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerAddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
-	//Equiped Items
+	/*
+		[client] [server] - Remove right hand weapon from RightHandWeapons.
+		Return true if something has been removed.
+	*/
+	bool RemoveRightHandWeapon(FName ItemID, int32 SlotID);
+	/* 
+		[server] - Calls RemoveRightHandWeapon On server. 
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemoveRightHandWeapon(FName ItemID, int32 SlotID);
+
+	/*
+		Items which are equiped, like chest, gloves neckles etc. whitout assigning them to specific slot.
+	*/
 	UPROPERTY()
 		TArray<FInventorySlot> EquippedItems;
 
-	/* Ability Inventory - Spellbook, mele action bla bla, got the point **/
+	/* 
+		Ability Inventory - Spellbook, mele action bla bla, got the point 
+	**/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_AbilityInventory, Category = "Abilities")
 		TArray <FAbilityInfo> AbilityInventory;
 	UFUNCTION()
 		void OnRep_AbilityInventory();
 		bool UpdateAbilityInventory;
+	/*
+		Array which represents action bar. Essentialy hack, it would be better as TMap,
+		but by default TMap is not exposed to reflection and replication.
+	*/
 	UPROPERTY(ReplicatedUsing = OnRep_ActionBarOne)
 		TArray<FAbilityInfo> ActionBarOne;
 	UFUNCTION()

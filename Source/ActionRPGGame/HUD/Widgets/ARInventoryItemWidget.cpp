@@ -29,9 +29,9 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 	SlotName = InArgs._SlotName;
 	//ItemInSlot = InArgs._ItemInSlot;
 	EquipmentSlot = InArgs._EquipmentSlot;
-	InventoryItemObj = InArgs._InventoryItemObj;
+	InventoryItem = InArgs._InventoryItem;
 
-	if (PlayerController != NULL && InventoryItemObj.IsValid())
+	if (PlayerController != NULL && InventoryItem.IsValid())
 	{
 		if (ItemInSlot.IsValid())
 		{
@@ -40,13 +40,13 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 		}
 		FString usless;
 		FARItemData* data = nullptr;
-		switch (InventoryItemObj->ItemSlot)
+		switch (InventoryItem->ItemSlot)
 		{
 		case EItemSlot::Item_Chest:
-			data = ChestItemDataTable->FindRow<FARItemData>(InventoryItemObj->ItemID, usless);
+			data = ChestItemDataTable->FindRow<FARItemData>(InventoryItem->ItemID, usless);
 			break;
 		case EItemSlot::Item_Weapon:
-			data = WeaponItemDataTable->FindRow<FARItemData>(InventoryItemObj->ItemID, usless);
+			data = WeaponItemDataTable->FindRow<FARItemData>(InventoryItem->ItemID, usless);
 			break;
 		default:
 			break;
@@ -63,7 +63,7 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 				ItemInSlot = PlayerController->GetWorld()->SpawnActor<AARItem>(gen->GeneratedClass, SpawnInfo);
 				ItemInSlot->SetOwner(PlayerController->GetPawn());
 				ItemInSlot->Instigator = PlayerController->GetPawn();
-				ItemInSlot->ItemID = InventoryItemObj->ItemID;
+				ItemInSlot->ItemID = InventoryItem->ItemID;
 			}
 		}
 		//if (data)
@@ -107,7 +107,7 @@ FText SARInventoryItemWidget::GetItemText() const
 {
 	if (InventoryItem.IsValid())
 	{
-		return FText::FromName(InventoryItem->ItemName);
+		return FText::FromName(InventoryItem->ItemID);
 	}
 
 	return SlotName;
@@ -140,9 +140,9 @@ FReply SARInventoryItemWidget::OnDragOver(const FGeometry& MyGeometry, const FDr
 }
 FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
 {
+	TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 	if (this->EquipmentSlot == EEquipmentSlot::Item_Chest)
 	{
-		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
 		{
 			TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
@@ -152,62 +152,102 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 				int32 tempSlotID = Operation->PickedItem->SlotID;
 				Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_Chest;
 				Operation->LastItemSlot->ItemInSlot.Reset();
-				Operation->LastItemSlot->InventoryItemObj.Reset();
-				InventoryItemObj = Operation->PickedItem;
+				Operation->LastItemSlot->InventoryItem.Reset();
+				InventoryItem = Operation->PickedItem;
 				ItemInSlot = Operation->InventoryItemObj;
 				MyChar->Equipment->ChangeItem(*Operation->PickedItem, tempSlotID);
 
-				//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItemObj->ItemID, Operation->LastItemSlot->InventoryItemObj->SlotID);
+				//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
 				return FReply::Handled();
 			}
 		}
 	}
+	//check type of current InventorySlot type.
 	if (this->EquipmentSlot == EEquipmentSlot::Item_LeftHandOne)
 	{
-		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
 		{
-				int32 tempSlotID = this->InventoryItemObj->SlotID;
-				Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+			//check last slot from which item has be dragged.
+			//if it is Item_RightHandOne we will remove this item from
+			// PlayerController->RightHandWeapons (TArray)
+			//this probably should also check against inventory slot, to remove
+			//item from inventory.
+			//this is RPC call!
+			if (Operation->PickedItem->EEquipmentSlot == EEquipmentSlot::Item_RightHandOne)
+			{
+				PlayerController->RemoveRightHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
+			}
+			//store current slot ID;
+			int32 tempSlotID = this->InventoryItem->SlotID;
+			//Change slot to which item is equiped.
+			Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
 
-				Operation->LastItemSlot->ItemInSlot.Reset();
-				Operation->LastItemSlot->InventoryItemObj.Reset();
-				InventoryItemObj = Operation->PickedItem;
-				ItemInSlot = Operation->InventoryItemObj;
-				PlayerController->AddLeftHandWeapon(*Operation->PickedItem, tempSlotID);
-				//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItemObj->ItemID, Operation->LastItemSlot->InventoryItemObj->SlotID);
-				return FReply::Handled();
-			
+			//Assign new item to inventory.
+			InventoryItem = Operation->PickedItem;
+			//Assign actor to current slot.
+			ItemInSlot = Operation->InventoryItemObj;
+
+			//create new item
+			FInventorySlot item;
+			item.SlotID = Operation->PickedItem->SlotID;
+			item.OldSlotID = Operation->LastItemSlot->InventoryItem->SlotID;
+			item.ItemID = Operation->PickedItem->ItemID;
+			item.ItemSlot = Operation->PickedItem->ItemSlot;
+			item.EEquipmentSlot = Operation->PickedItem->EEquipmentSlot;
+
+			Operation->LastItemSlot->ItemInSlot.Reset();
+			Operation->LastItemSlot->InventoryItem.Reset();
+
+			//add it to inventory.
+			PlayerController->AddLeftHandWeapon(item, tempSlotID);
+
+			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
+			return FReply::Handled();
+
 		}
 	}
 	if (this->EquipmentSlot == EEquipmentSlot::Item_RightHandOne)
 	{
-		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
 		{
-			int32 tempSlotID = this->InventoryItemObj->SlotID;
+			if (Operation->PickedItem->EEquipmentSlot == EEquipmentSlot::Item_LeftHandOne)
+			{
+				PlayerController->RemoveLeftHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
+			}
+			int32 tempSlotID = this->InventoryItem->SlotID;
 			Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
 
-			Operation->LastItemSlot->ItemInSlot.Reset();
-			Operation->LastItemSlot->InventoryItemObj.Reset();
-			InventoryItemObj = Operation->PickedItem;
+			InventoryItem = Operation->PickedItem;
 			ItemInSlot = Operation->InventoryItemObj;
-			PlayerController->AddRightHandWeapon(*Operation->PickedItem, tempSlotID);
-			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItemObj->ItemID, Operation->LastItemSlot->InventoryItemObj->SlotID);
+
+			FInventorySlot item;
+			item.SlotID = Operation->PickedItem->SlotID;
+			item.OldSlotID = Operation->LastItemSlot->InventoryItem->SlotID;
+			item.ItemID = Operation->PickedItem->ItemID;
+			item.ItemSlot = Operation->PickedItem->ItemSlot;
+			item.EEquipmentSlot = Operation->PickedItem->EEquipmentSlot;
+
+			Operation->LastItemSlot->ItemInSlot.Reset();
+			Operation->LastItemSlot->InventoryItem.Reset();
+
+			PlayerController->AddRightHandWeapon(item, tempSlotID);
+
+
+			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
 			return FReply::Handled();
 
 		}
 	}
 	if (this->EquipmentSlot == EEquipmentSlot::Item_Inventory)
 	{
-		TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 		if (PlayerController.IsValid() && Operation.IsValid())
 		{
-			int32 tempSlot = InventoryItemObj->SlotID;
-			InventoryItemObj = Operation->PickedItem;
+			int32 tempSlot = InventoryItem->SlotID;
+			InventoryItem = Operation->PickedItem;
 			ItemInSlot = Operation->InventoryItemObj;
 			FInventorySlot item;
 			item.SlotID = Operation->PickedItem->SlotID;
+			item.OldSlotID = Operation->LastItemSlot->InventoryItem->SlotID;
 			item.ItemID = Operation->PickedItem->ItemID;
 			item.ItemSlot = Operation->PickedItem->ItemSlot;
 			item.EEquipmentSlot = Operation->PickedItem->EEquipmentSlot;
@@ -219,15 +259,18 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 				const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
 				if (MyChar.IsValid())
 				{
-					MyChar->Equipment->UnEquipItem(*InventoryItemObj);
+					MyChar->Equipment->UnEquipItem(*InventoryItem);
 				}
-				Operation->LastItemSlot->InventoryItemObj.Reset();
-				//InventoryItemObj = NULL
+				Operation->LastItemSlot->InventoryItem.Reset();
+				//InventoryItem = NULL
 				Operation->LastItemSlot->ItemInSlot.Reset();
 			}
+			Operation->LastItemSlot->ItemInSlot.Reset();
+			Operation->LastItemSlot->InventoryItem.Reset();
 			return FReply::Handled();
 		}
 	}
+	Operation.Reset();
 	return FReply::Handled();
 }
 void SARInventoryItemWidget::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -240,10 +283,14 @@ void SARInventoryItemWidget::OnMouseLeave(const FPointerEvent& MouseEvent)
 }
 FReply SARInventoryItemWidget::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	TSharedRef<FInventoryDragDrop> Operation = FInventoryDragDrop::New(InventoryItemObj, ItemInSlot, SharedThis(this));
+	if (InventoryItem->ItemID.IsNone())
+	{
+		return FReply::Unhandled();
+	}
+	TSharedRef<FInventoryDragDrop> Operation = FInventoryDragDrop::New(InventoryItem, ItemInSlot, SharedThis(this));
 	Operation->SetDecoratorVisibility(true);
-	//InventoryItemObj.Reset();
-	//InventoryItemObj = NULL;
+	//InventoryItem.Reset();
+	//InventoryItem = NULL;
 	//ItemInSlot->Destroy();
 	//ItemInSlot.Reset();
 
@@ -252,9 +299,9 @@ FReply SARInventoryItemWidget::OnDragDetected(const FGeometry& MyGeometry, const
 
 FReply SARInventoryItemWidget::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	if (InventoryItemObj.IsValid())
+	if (InventoryItem.IsValid())
 	{
-		if (InventoryItemObj->ItemID != "-1")
+		if (!InventoryItem->ItemID.IsNone())
 		{
 			return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton()).CaptureMouse(SharedThis(this));
 		}
@@ -268,12 +315,12 @@ FReply SARInventoryItemWidget::OnMouseButtonUp(const FGeometry& MyGeometry, cons
 
 
 
-TSharedRef<FInventoryDragDrop> FInventoryDragDrop::New(TSharedPtr<FInventorySlot> PickedItemIn, TWeakObjectPtr<class AARItem> InventoryItemObjIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn)
+TSharedRef<FInventoryDragDrop> FInventoryDragDrop::New(TSharedPtr<FInventorySlot> PickedItemIn, TWeakObjectPtr<class AARItem> InventoryItemIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn)
 {
 	TSharedRef<FInventoryDragDrop> Operation = MakeShareable(new FInventoryDragDrop);
 
 	Operation->PickedItem = PickedItemIn;
-	Operation->InventoryItemObj = InventoryItemObjIn;
+	Operation->InventoryItemObj = InventoryItemIn;
 	Operation->LastItemSlot = LastItemSlotIn;
 	Operation->Construct();
 	return Operation;

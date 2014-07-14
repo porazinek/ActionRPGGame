@@ -14,17 +14,34 @@ class SARInventoryItemWidget : public SCompoundWidget
 public:
 	SLATE_BEGIN_ARGS(SARInventoryItemWidget)
 	{}
-	/*See private declaration of OwnerHUD below.*/
+		/*
+			Controller which owns Inventory
+		*/
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, PlayerController)
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARCharacter>, Character)
-		SLATE_ARGUMENT(TSharedPtr<FARItemInfo>, InventoryItem)
 
-		SLATE_ARGUMENT(TSharedPtr<FInventorySlot>, InventoryItemObj)
+		/*
+			Information about current item slot in inventory.
+		*/
+		SLATE_ARGUMENT(TSharedPtr<FInventorySlot>, InventoryItem)
 
+		/*
+			Type of slot used by item in this inventory slot.
+			I forgot why I needed it ;o.
+		*/
 		SLATE_ARGUMENT(TEnumAsByte<EItemSlot>, SlotType)
+		/*
+			Slot to which item will be equiped. 
+		*/
 		SLATE_ARGUMENT(TEnumAsByte<EEquipmentSlot::Type>, EquipmentSlot)
+		/*
+			Actor Object representing current item. Used to show icons,
+			and other informations.
+		*/
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARItem>, ItemInSlot)
-
+		/*
+			To display something.
+		*/
 		SLATE_ARGUMENT(FText, SlotName) //temp it should really display icon.
 	SLATE_END_ARGS()
 public:
@@ -46,15 +63,32 @@ public:
 protected:
 
 public:
-	TSharedPtr<FARItemInfo> InventoryItem;
+	/*
+		Controller which owns Inventory
+	*/
 	TWeakObjectPtr<class AARPlayerController> PlayerController;
 	TWeakObjectPtr<class AARCharacter> Character;
+	/*
+		Information about current item slot in inventory.
+	*/
+	TSharedPtr<FInventorySlot> InventoryItem;
+
+	/*
+		Type of slot used by item in this inventory slot.
+		I forgot why I needed it ;o.
+	*/
 	TEnumAsByte<EItemSlot> SlotType;
+	/*
+		Slot to which item will be equiped.
+	*/
 	TEnumAsByte<EEquipmentSlot::Type> EquipmentSlot;
-	//item equiped in current slot. Coressponds to pointers in EquipmentComponent.
+	/*
+		Actor Object representing current item. Used to show icons,
+		and other informations.
+	*/
 	TWeakObjectPtr<class AARItem> ItemInSlot;
 
-	TSharedPtr<FInventorySlot> InventoryItemObj;
+
 
 	FText SlotName;
 

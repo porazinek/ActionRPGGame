@@ -98,7 +98,7 @@ void UAREffectStatics::ChangeAttribute(AActor* Target, AActor* CausedBy, float M
 	attrComp->ChangeAttribute(AttributeName, ModVal, OpType);
 }
 
-void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, FGameplayTagContainer DamageTag, TSubclassOf<class UDamageType> DamageType)
+void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName AttributeName, AActor* EventInstigator, AActor* DamageCauser, FGameplayTagContainer DamageTag, bool bIsComboFinisher, TSubclassOf<class UDamageType> DamageType)
 {
 	if (!DamageTarget)
 		return;
@@ -114,11 +114,11 @@ void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName
 	DamageEvent.Attribute = Attribute;
 	DamageEvent.DamageTypeClass = DamageType;
 	DamageEvent.DamageTag = DamageTag;
-
+	DamageEvent.IsComboFinisher = bIsComboFinisher;
 	attr->DamageAttribute(DamageEvent, EventInstigator, DamageCauser);
 }
 
-void UAREffectStatics::ApplyPointDamage(AActor* DamageTarget, float AttributeMod, FName AttributeName, const FVector& HitFromLocation, const FHitResult& HitInfo, AActor* EventInstigator, AActor* Causer, TSubclassOf<class UDamageType> DamageType)
+void UAREffectStatics::ApplyPointDamage(AActor* DamageTarget, float AttributeMod, FName AttributeName, const FVector& HitFromLocation, const FHitResult& HitInfo, AActor* EventInstigator, AActor* Causer, bool bIsComboFinisher, TSubclassOf<class UDamageType> DamageType)
 {
 	if (!DamageTarget)
 		return;
@@ -139,10 +139,11 @@ void UAREffectStatics::ApplyPointDamage(AActor* DamageTarget, float AttributeMod
 	AttributeEvent.HitInfo = HitInfo;
 	AttributeEvent.ShotDirection = HitFromLocation;
 	AttributeEvent.DamageTypeClass = DamageType;
+	AttributeEvent.IsComboFinisher = bIsComboFinisher;
 	attrComp->DamageAttribute(AttributeEvent, EventInstigator, Causer);
 }
 
-void UAREffectStatics::ApplyRadialDamageWithFalloff(FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, AActor* DamageCauser, AActor* Instigator)
+void UAREffectStatics::ApplyRadialDamageWithFalloff(FName AttributeName, float BaseDamage, float MinimumDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageInnerRadius, float DamageOuterRadius, float DamageFalloff, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, FGameplayTagContainer DamageTag, bool bIsComboFinisher, AActor* DamageCauser, AActor* Instigator)
 {
 	if (!DamageCauser)
 		return;
@@ -187,13 +188,14 @@ void UAREffectStatics::ApplyRadialDamageWithFalloff(FName AttributeName, float B
 		DamageEvent.HitInfo.Location = Origin;
 		DamageEvent.HitInfo.ImpactPoint = Origin;
 		DamageEvent.Radius = DamageOuterRadius;
+		DamageEvent.IsComboFinisher = bIsComboFinisher;
 		attr->DamageAttribute(DamageEvent, Instigator, DamageCauser);
 	}
 }
 
-void UAREffectStatics::ApplyRadialDamage(FName AttributeName, float BaseDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag)
+void UAREffectStatics::ApplyRadialDamage(FName AttributeName, float BaseDamage, const FVector& Origin, TEnumAsByte<ECollisionChannel> Collision, float DamageRadius, TSubclassOf<class UDamageType> DamageTypeClass, const TArray<AActor*>& IgnoreActors, AActor* DamageCauser, AActor* Instigator, bool bDoFullDamage, FGameplayTagContainer DamageTag, bool bIsComboFinisher)
 {
-	ApplyRadialDamageWithFalloff(AttributeName, BaseDamage, BaseDamage, Origin, Collision, DamageRadius, DamageRadius, DamageRadius, DamageTypeClass, IgnoreActors, DamageTag, DamageCauser, Instigator);
+	ApplyRadialDamageWithFalloff(AttributeName, BaseDamage, BaseDamage, Origin, Collision, DamageRadius, DamageRadius, DamageRadius, DamageTypeClass, IgnoreActors, DamageTag, bIsComboFinisher, DamageCauser, Instigator);
 }
 
 void UAREffectStatics::ApplyMultiBoxDamage(FVector StartLocation, float Range, FVector BoxExtends, TEnumAsByte<ECollisionChannel> Collision, AActor* DamageCauser, APawn* DamageInstigator)
@@ -201,19 +203,45 @@ void UAREffectStatics::ApplyMultiBoxDamage(FVector StartLocation, float Range, F
 	if (!DamageCauser || !DamageInstigator)
 		return;
 	const FVector ShootDir = UARTraceStatics::GetCameraAim(DamageInstigator);
-	const FVector StartTrace = UARTraceStatics::GetCameraDamageStartLocation(ShootDir, DamageInstigator);
-	const FVector EndTrace = ((ShootDir * Range) + StartTrace);
-	FHitResult EndPoint = UARTraceStatics::RangedTrace(StartTrace, EndTrace, DamageInstigator, EARTraceType::Trace_Weapon);
+	FVector StartTrace = UARTraceStatics::GetCameraDamageStartLocation(ShootDir, DamageInstigator);
+	FVector EndTrace = ((ShootDir * Range) + StartLocation);
+	FHitResult EndPoint = UARTraceStatics::RangedTrace(StartLocation, EndTrace, DamageInstigator, EARTraceType::Trace_Weapon);
 
 	TArray<FHitResult> OutHits;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(DamageCauser);
 
-	DamageCauser->GetWorld()->SweepMulti(OutHits, StartLocation, EndPoint.Location, FQuat::Identity, Collision, FCollisionShape::MakeBox(FVector(100, 100, 100)), Params);
+	DamageCauser->GetWorld()->SweepMulti(OutHits, StartLocation, EndTrace, FQuat::Identity, Collision, FCollisionShape::MakeBox(FVector(100, 100, 100)), Params);
 
+	DrawDebugSweptBox(DamageInstigator->GetWorld(), StartLocation, EndTrace, FRotator(0,0,0), FVector(100, 100, 100), FColor::Black, true, 10);
+}
 
+void UAREffectStatics::DrawDebugSweptBox(const UWorld* InWorld, FVector const& Start, FVector const& End, FRotator const & Orientation, FVector const & HalfSize, FColor const& Color, bool bPersistentLines, float LifeTime, uint8 DepthPriority)
+{
+	FVector const TraceVec = End - Start;
+	float const Dist = TraceVec.Size();
 
-	DrawDebugBox(DamageCauser->GetWorld(), StartLocation, BoxExtends, FColor::Black, true, 10);
+	FVector const Center = Start + TraceVec * 0.5f;
+
+	FQuat const CapsuleRot = Orientation.Quaternion();
+	::DrawDebugBox(InWorld, Start, HalfSize, CapsuleRot, Color, bPersistentLines, LifeTime, DepthPriority);
+
+	//now draw lines from vertices
+	FVector Vertices[8];
+	Vertices[0] = Start + CapsuleRot.RotateVector(FVector(-HalfSize.X, -HalfSize.Y, -HalfSize.Z));	//flt
+	Vertices[1] = Start + CapsuleRot.RotateVector(FVector(-HalfSize.X, HalfSize.Y, -HalfSize.Z));	//frt
+	Vertices[2] = Start + CapsuleRot.RotateVector(FVector(-HalfSize.X, -HalfSize.Y, HalfSize.Z));	//flb
+	Vertices[3] = Start + CapsuleRot.RotateVector(FVector(-HalfSize.X, HalfSize.Y, HalfSize.Z));	//frb
+	Vertices[4] = Start + CapsuleRot.RotateVector(FVector(HalfSize.X, -HalfSize.Y, -HalfSize.Z));	//blt
+	Vertices[5] = Start + CapsuleRot.RotateVector(FVector(HalfSize.X, HalfSize.Y, -HalfSize.Z));	//brt
+	Vertices[6] = Start + CapsuleRot.RotateVector(FVector(HalfSize.X, -HalfSize.Y, HalfSize.Z));	//blb
+	Vertices[7] = Start + CapsuleRot.RotateVector(FVector(HalfSize.X, HalfSize.Y, HalfSize.Z));		//brb
+	for (int32 VertexIdx = 0; VertexIdx < 8; ++VertexIdx)
+	{
+		::DrawDebugLine(InWorld, Vertices[VertexIdx], Vertices[VertexIdx] + TraceVec, Color, bPersistentLines, LifeTime, DepthPriority);
+	}
+
+	::DrawDebugBox(InWorld, End, HalfSize, CapsuleRot, Color, bPersistentLines, LifeTime, DepthPriority);
 }
 
 void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult)

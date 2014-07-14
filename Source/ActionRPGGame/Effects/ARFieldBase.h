@@ -84,6 +84,21 @@ struct FDirectionalImpulseFinisherData
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Impulse Finisher")
 		float Density;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Impulse Finisher")
+		FGameplayTag DirectionalTag;
+};
+
+USTRUCT(BlueprintType)
+struct FCombustionFinisherData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Impulse Finisher")
+		float DamageMultiplier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Directional Impulse Finisher")
+		FGameplayTag CombustionTag;
 };
 
 UENUM(BlueprintType)
@@ -142,9 +157,11 @@ public:
 	*/
 	virtual void Died() override;
 
-	virtual void OnRecivedDamage_Implementation(FAttributeChanged AttributeChanged, FGameplayTagContainer DamageTag) override;
+	virtual void OnRecivedDamage_Implementation(FAttributeChanged AttributeChanged, FARDamageEvent const& Damage, FGameplayTagContainer DamageTag) override;
 	
 	virtual void OnRecivedRadialDamage_Implementation(FAttributeChanged AttributeChanged, FARRadialDamageEvent const& Damage, FGameplayTagContainer DamageTag) override;
+	
+	virtual void OnRecivedLineBoxDamage_Implementation(FAttributeChanged AttributeChanged, FARLineBoxDamageEvent const& Damage, FGameplayTagContainer DamageTag) override;
 	/*
 		IGameplayTagAssetInterface
 	*/
@@ -314,11 +331,18 @@ public:
 		FBlastFinisherData BlastFinisherInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Finisher Data")
 		FDirectionalImpulseFinisherData DirectImpulseFinisherInfo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Finisher Data")
+		FCombustionFinisherData CombustionFinisherInfo;
 	/*
 		Called When blast finisher is executed. I dunno why would it be needed but..
+		You might want to do something in blueprint after blast is played. 
+		Play some effect or apply some logic to targets.
+		Which mean I probably should pass some data trough this event...
 	*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Field")
 		void OnBlastFinisher();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Field")
+		void OnCombustionFinisher();
 
 	/*
 		This will spawn projectiles in random horizontal direction.
@@ -340,7 +364,7 @@ public:
 		it will explode dealing more damage than normaly in instant.
 	*/
 	UFUNCTION()
-		void CombustionFinisher();
+		void CombustionFinisher(FAttributeChanged AttributeChanged, FARDamageEvent const& Damage);
 
 	/*
 		Two below functions need some work and thought.

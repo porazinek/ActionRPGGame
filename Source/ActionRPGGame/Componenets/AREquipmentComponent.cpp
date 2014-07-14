@@ -529,12 +529,40 @@ void UAREquipmentComponent::SetLeftWeapon(FInventorySlot Weapon, class AARWeapon
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.Owner = MyChar;
 		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		weaponBase->ItemName = Weapon.ItemID;
 		weaponBase->SetOwner(MyChar);
 		weaponBase->Instigator = MyChar;
 		weaponBase->WeaponOwner = MyChar;
 		ActiveLeftHandWeapon = weaponBase;
 		SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 	}
+}
+
+void UAREquipmentComponent::UnEquipLeftHandWeapon(FName ItemID)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerUnEquipLeftHandWeapon(ItemID);
+	}
+	else
+	{
+		if (ActiveLeftHandWeapon && ActiveLeftHandWeapon->ItemName == ItemID)
+		{
+			//we don't want to move item back to inventory.
+			//we just need to reset pointer to weapon, and un attach mesh.
+			ActiveLeftHandWeapon->SetActorHiddenInGame(true);
+			ActiveLeftHandWeapon = nullptr;
+		}
+	}
+}
+
+void UAREquipmentComponent::ServerUnEquipLeftHandWeapon_Implementation(FName ItemID)
+{
+	UnEquipLeftHandWeapon(ItemID);
+}
+bool UAREquipmentComponent::ServerUnEquipLeftHandWeapon_Validate(FName ItemID)
+{
+	return true;
 }
 
 void UAREquipmentComponent::ServerSwapRightWeapon_Implementation()
@@ -586,11 +614,14 @@ void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapo
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.Owner = MyChar;
 		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		
+		weaponBase->ItemName = Weapon.ItemID;
 		weaponBase->SetOwner(MyChar);
 		weaponBase->Instigator = MyChar;
 		weaponBase->WeaponOwner = MyChar;
 		weaponBase->OwningController = TargetController;
 		ActiveRightHandWeapon = weaponBase;
+
 		SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
 	}
 }

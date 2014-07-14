@@ -49,10 +49,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Damage")
 		FGameplayTagContainer DamageTag;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	struct FHitResult HitInfo;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 		bool IsComboFinisher;
 
 	UPROPERTY()
@@ -88,7 +88,7 @@ public:
 	UPROPERTY()
 		FVector_NetQuantizeNormal ShotDirection;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 		float Radius;
 
 	static const int32 ClassID = 2;
@@ -103,9 +103,9 @@ struct FARLineBoxDamageEvent : public FARDamageEvent
 	GENERATED_USTRUCT_BODY()
 public:
 	/** Direction the shot came from. Should be normalized. */
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 		FVector BoxExtens;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 		float Range;
 
 	static const int32 ClassID = 3;

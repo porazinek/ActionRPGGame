@@ -26,12 +26,41 @@ UAREquipmentComponent::UAREquipmentComponent(const class FPostConstructInitializ
 	bReplicates = true;
 	bWantsInitializeComponent = true;
 	bAutoRegister = true;
-	//ChestItem = "-1";
+	/*
+		I should do some default initialization for these pointer at startup.
+		Otherwise everything is messed up.
+	*/
+	ActiveRightHandWeapon = nullptr;
+	ActiveLeftHandWeapon = nullptr;
 }
 
 void UAREquipmentComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		if (ActiveLeftHandWeapon)
+		{
+
+		}
+		if (!ActiveRightHandWeapon)
+		{
+			AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+			//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
+			FActorSpawnParameters SpawnInfo;
+			SpawnInfo.bNoCollisionFail = true;
+			SpawnInfo.Owner = MyChar;
+			ActiveRightHandWeapon = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
+			if (ActiveRightHandWeapon)
+			{
+				//ActiveRightHandWeapon->ItemName = Weapon.ItemID;
+				ActiveRightHandWeapon->SetOwner(MyChar);
+				ActiveRightHandWeapon->Instigator = MyChar;
+				ActiveRightHandWeapon->WeaponOwner = MyChar;
+				ActiveRightHandWeapon->OwningController = TargetController;
+			}
+		}
+	}
 }
 void UAREquipmentComponent::BeginDestroy()
 {
@@ -534,6 +563,7 @@ void UAREquipmentComponent::SetLeftWeapon(FInventorySlot Weapon, class AARWeapon
 		weaponBase->Instigator = MyChar;
 		weaponBase->WeaponOwner = MyChar;
 		ActiveLeftHandWeapon = weaponBase;
+		OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
 		SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 	}
 }
@@ -546,10 +576,16 @@ void UAREquipmentComponent::UnEquipLeftHandWeapon(FName ItemID)
 	}
 	else
 	{
+		/*
+			In reality it should attach weapon do different socket.
+			Each socket coresponds to single slot in PlayerController->LeftHandWeapons
+			Bur for now it will suffice.
+		*/
 		if (ActiveLeftHandWeapon && ActiveLeftHandWeapon->ItemName == ItemID)
 		{
 			//we don't want to move item back to inventory.
 			//we just need to reset pointer to weapon, and un attach mesh.
+			ActiveLeftHandWeaponStruct.ItemID = NAME_None;
 			ActiveLeftHandWeapon->SetActorHiddenInGame(true);
 			ActiveLeftHandWeapon = nullptr;
 		}
@@ -592,6 +628,13 @@ void UAREquipmentComponent::SwapRightWeapon()
 		}
 	}
 }
+/*
+	Spawn Weapon actor to Right hand and assign it to ActiveRightHandWeapon,
+	Then attach weapon to socket of current character.
+
+	When ActiveRightHandWeapon is set, it is replicated back to all clients,
+	and SetAttachWeapon is called again to attach weapon mesh.
+*/
 void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon)
 {
 	if (PrevWeapon)
@@ -621,7 +664,40 @@ void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapo
 		weaponBase->WeaponOwner = MyChar;
 		weaponBase->OwningController = TargetController;
 		ActiveRightHandWeapon = weaponBase;
-
+		OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
 		SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
 	}
+}
+
+
+void UAREquipmentComponent::UnEquipRightHandWeapon(FName ItemID)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerUnEquipRightHandWeapon(ItemID);
+	}
+	else
+	{
+		/*
+		In reality it should attach weapon do different socket.
+		Each socket coresponds to single slot in PlayerController->LeftHandWeapons
+		Bur for now it will suffice.
+		*/
+		if (ActiveRightHandWeapon && ActiveRightHandWeapon->ItemName == ItemID)
+		{
+			//we don't want to move item back to inventory.
+			//we just need to reset pointer to weapon, and un attach mesh.
+			ActiveRightHandWeaponStruct.ItemID = NAME_None;
+			ActiveRightHandWeapon->SetActorHiddenInGame(true);
+			ActiveRightHandWeapon = nullptr;
+		}
+	}
+}
+void UAREquipmentComponent::ServerUnEquipRightHandWeapon_Implementation(FName ItemID)
+{
+	UnEquipRightHandWeapon(ItemID);
+}
+bool UAREquipmentComponent::ServerUnEquipRightHandWeapon_Validate(FName ItemID)
+{
+	return true;
 }

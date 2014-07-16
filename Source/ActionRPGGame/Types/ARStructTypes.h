@@ -355,3 +355,16 @@ public:
 		float FreezeTemperature;
 
 };
+
+USTRUCT(BlueprintType)
+struct FARProjectileInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float InitialVelocity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float MaxVelocity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float GravityScale;
+};

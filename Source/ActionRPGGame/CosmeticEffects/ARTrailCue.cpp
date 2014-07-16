@@ -31,25 +31,35 @@ void UARTrailCue::OnRep_Hit()
 {
 	SimulateHitOnClients(HitInfo.Origin, HitInfo.Location, HitInfo.StartSocket);
 }
-void UARTrailCue::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket)
+void UARTrailCue::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocketIn)
 {
-	//FVector Origin = UARTraceStatics::GetStartLocation(SocketName, Causer);
-	//UARTraceStatics::GetHitResult(10000, StartSocket, )
-	//if ()
-	//{
-		if (TrailFX)
+	if (TrailFX)
+	{
+		TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, Origin);
+		if (TrailPSC)
 		{
-			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, Origin);
-			if (TrailPSC)
-			{
-				const FVector AdjustedDir = (Location - Origin).SafeNormal();
-				FVector ParticleSpeed = AdjustedDir * TrailSpeed2;
-				TrailPSC->SetVectorParameter(TrailSpeedParam2, ParticleSpeed);
-				FScriptDelegate del;
-				del.BindUFunction(TrailPSC, "Deactivate");
-				TrailPSC->OnComponentBeginOverlap.Add(del);
-				TrailPSC->OnComponentHit.Add(del);
-			}
+			const FVector AdjustedDir = (Location - Origin).SafeNormal();
+			FVector ParticleSpeed = AdjustedDir * TrailSpeed2;
+			TrailPSC->SetVectorParameter(TrailSpeedParam2, ParticleSpeed);
+
 		}
-	//}
+	}
 }
+
+void UARTrailCue::SpawnEffectOnOwner()
+{
+	if (GetNetMode() == ENetMode::NM_Standalone)
+		OnRep_Hit();
+}
+void UARTrailCue::OnCollide(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName)
+{
+	if (TrailPSC)
+	{
+		TrailPSC->Deactivate();
+		TrailPSC->DestroyComponent();
+	}
+}
+//void UARTrailCue::SetOnBeginOverlap(class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+//{
+//
+//}

@@ -29,6 +29,8 @@ class UARActionStateCasting : public UARActionState
 
 	bool IsCasting;
 
+	FGameplayTagContainer TempTags;
+
 };
 
 

@@ -22,8 +22,8 @@ class UAREffectPeriodicO : public UAREffectType
 public:
 	virtual void TickMe(float DeltaTime);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Periodic Effect")
-		void OnEffectInitialized();
+	//UFUNCTION(BlueprintImplementableEvent, Category = "Periodic Effect")
+	//	void OnEffectInitialized();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Periodic Effect")
 		void OnEffectPeriodic();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Periodic Effect")

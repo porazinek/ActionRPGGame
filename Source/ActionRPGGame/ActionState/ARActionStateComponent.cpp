@@ -120,6 +120,7 @@ void UARActionStateComponent::StartAction()
 	}
 	else
 	{
+		OnActionPreCast.Broadcast();
 		BeginActionSequence();
 	}
 }
@@ -184,7 +185,7 @@ void UARActionStateComponent::CastBegin()
 	{
 		interval->Execute_OnCastStart(GetOwner());
 	}
-	OnActionCastBegin.Broadcast();
+	OnActionCastBegin.Broadcast(OwnedTags);
 }
 void UARActionStateComponent::CastEnd()
 {

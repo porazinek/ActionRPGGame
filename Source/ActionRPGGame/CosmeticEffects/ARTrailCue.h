@@ -13,6 +13,9 @@ class UARTrailCue : public UActorComponent
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
 		UParticleSystem* TrailFX;
+
+	UPROPERTY()
+		UParticleSystemComponent* TrailPSC;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
 		FName StartSocket;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
@@ -24,7 +27,16 @@ public:
 		FHitInfo HitInfo;
 	UFUNCTION()
 		void OnRep_Hit();
-	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket);
+	/*
+		Call it in blueprint after setting up HitInfo.
+		Otherwise effect will not be played for Owner or in Singleplayer.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocketIn);
+
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+		void SpawnEffectOnOwner();
+	void OnCollide(FName EventName, float EmitterTime, int32 ParticleTime, FVector Location, FVector Velocity, FVector Direction, FVector Normal, FName BoneName);
 };
 
 

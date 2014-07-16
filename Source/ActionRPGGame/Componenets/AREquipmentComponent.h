@@ -14,6 +14,9 @@
 	It probably make only sense on player controller in the end, as character doesn't really loose
 	equipment when for example enter vechile.
 */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnRightWeaponActive, AARWeapon*, Weapon);
+
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), meta = (BlueprintSpawnableComponent), DefaultToInstanced, BlueprintType) //, Within = ARPlayerController
 class UAREquipmentComponent : public UActorComponent
 {
@@ -80,6 +83,21 @@ public:
 
 	int32 MaxWeapons;
 
+	/*
+		I could probably handle it in Array. For example:
+		Index = 0 Right hand weapon.
+		Index = 1 Left Hand weapon.
+
+		It would cut off half of the code.
+	*/
+
+	/*
+		Curremt;y equiped weapons ready to use with input.
+		Again. TMap would best for it. Indexes are not really reliable, unlike Keys in TMap.
+	*/
+	UPROPERTY()
+	TArray<class AARWeapon*> ActiveWeapons;
+
 	/* [Server][Client] - Add weapon to equiped weapons list**/
 	UFUNCTION()
 		void AddLeftHandWeapon(FName ItemName);
@@ -91,7 +109,7 @@ public:
 	/*
 		Currently equiped weapon. It can be used to perform actions.
 	*/
-	UPROPERTY(ReplicatedUsing = OnRep_AtiveLeftHandWeapon)
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_AtiveLeftHandWeapon, Category = "Active Weapons")
 	class AARWeapon* ActiveLeftHandWeapon;
 	/*
 		Helper struct, to retrieve information form data table.
@@ -113,7 +131,7 @@ public:
 	*/
 	void SwapLeftWeapon();
 	/*
-		Set LeftHandWeapon to ActiveLeftHandWeapon
+		Set weapon from LeftHandWeapons to ActiveLeftHandWeapon
 	*/
 	void SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
 
@@ -125,7 +143,7 @@ public:
 		void ServerUnEquipLeftHandWeapon(FName ItemID);
 
 	//Right Hand Weapon
-	UPROPERTY(ReplicatedUsing = OnRep_ActiveRightHandWeapon)
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_ActiveRightHandWeapon, Category="Active Weapons")
 	class AARWeapon* ActiveRightHandWeapon;
 	UPROPERTY()
 		FInventorySlot ActiveRightHandWeaponStruct;
@@ -137,6 +155,16 @@ public:
 		void ServerSwapRightWeapon();
 	void SwapRightWeapon();
 	void SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
+		FDMDOnRightWeaponActive OnRightWeaponActive;
+
+	/*
+	UnEquip current ActiveLeftHandWeapon making it impossible to use, until it is equiped again.
+	*/
+	void UnEquipRightHandWeapon(FName ItemID);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerUnEquipRightHandWeapon(FName ItemID);
 
 	//Weapon general
 	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);

@@ -10,7 +10,7 @@
 #include "Componenets/ARAbilityComponent.h"
 
 #include "Types/ARAttributeTypes.h"
-
+#include "Effects/AREffectType.h"
 #include "Items/ARWeapon.h"
 #include "ARPlayerController.h"
 
@@ -71,7 +71,7 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	Abilities->bAutoRegister = true;
 	//Equipment->GetNetAddressable();
 	Abilities->SetIsReplicated(true);
-	
+
 	HeadMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HeadMesh"));
 	HeadMesh->AttachParent = Mesh;
 	HeadMesh->SetMasterPoseComponent(Mesh);
@@ -106,6 +106,20 @@ void AARCharacter::PostInitializeComponents()
 	{
 		OnCharacterInitialize();
 		SpawnDefaultAbility();
+
+		for (TSubclassOf<UAREffectType> featClass : FeatClasses)
+		{
+			UAREffectType* effect = ConstructObject<UAREffectType>(featClass);
+			if (effect)
+			{
+				effect->EffectTarget = this;
+				effect->EffectCausedBy = this;
+				effect->EffectInstigator = this;
+				//effect->AddToRoot();
+				effect->Initialize();
+				Feats.Add(effect);
+			}
+		}
 	}
 }
 void AARCharacter::SpawnDefaultAbility()

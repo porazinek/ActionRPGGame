@@ -244,7 +244,7 @@ void UAREffectStatics::DrawDebugSweptBox(const UWorld* InWorld, FVector const& S
 	::DrawDebugBox(InWorld, End, HalfSize, CapsuleRot, Color, bPersistentLines, LifeTime, DepthPriority);
 }
 
-void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult)
+void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult)
 {
 	APawn* pawn = Cast<APawn>(Causer);
 	if (!pawn)
@@ -262,14 +262,16 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 		{
 			//proj->Instigator = Causer;
 			proj->SetOwner(Causer);
-			proj->Movement->Velocity = dir * proj->Movement->InitialSpeed;
+			proj->Movement->Velocity = dir * Data.InitialVelocity;
+			proj->Movement->MaxSpeed = Data.MaxVelocity;
+			proj->Movement->ProjectileGravityScale = Data.GravityScale;
 			UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
 		}
 	}
 
 }
 
-void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, FHitResult HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount)
+void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount)
 {
 	if (HitResult.bBlockingHit)
 	{

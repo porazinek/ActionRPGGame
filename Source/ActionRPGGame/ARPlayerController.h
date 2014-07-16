@@ -25,6 +25,8 @@ public:
 		TSubobjectPtr<class UARAttributeBaseComponent> Attributes;
 	virtual void SetPawn(APawn* InPawn) override;
 
+	virtual void PostInitializeComponents() override;
+
 	/* Input **/
 	virtual void SetupInputComponent() override;
 	void InputActionButtonOne();
@@ -44,6 +46,15 @@ public:
 
 	void InputSwapLeftWeapon();
 	void InputSwapRightWeapon();
+
+
+	//debug
+
+	void InputAddFeat();
+	void AddFeat();
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddFeat();
+
 	/* GUI Input **/
 	void SetInventoryVisibility();
 	EVisibility InventoryVisibility;
@@ -54,6 +65,15 @@ public:
 	void SetAbilityInventoryVisibility();
 	EVisibility AbilityInventoryVisibility;
 
+	/*
+		Temporary test for Effects which are going to be feats.
+		Base functionality test.
+	*/
+	UPROPERTY(BlueprintReadOnly, Category = "Feats")
+		TArray<class UAREffectType*> Feats;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Feats")
+		TArray<TSubclassOf<class UAREffectType>> FeatClasses;
 	/*
 		Everything regarding currently equiped items and inventory is handled on server.
 		Every time user is trying to change something in inventory there is RPC call made from client 

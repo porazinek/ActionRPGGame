@@ -18,18 +18,9 @@ void UARActionStateFiring::Tick(float DeltaTime)
 {
 	if (FireStarted)
 	{
-		//if (IsFirstFire)
-		//{
-		//	IsFirstFire = false;
-		//	GetOuterUARActionStateComponent()->CastBegin();
-		//}
-		//if (GetOuterUARActionStateComponent()->IsCasting == true)
-		//	GetOuterUARActionStateComponent()->ServerSetCastingState(false);
-
 		CurrentIntervalTime += DeltaTime;
 		if (CurrentIntervalTime >= GetOuterUARActionStateComponent()->IntervalTime)
 		{
-			//GetOuterUARActionStateComponent()->ServerSetCastingState(true);
 			GetOuterUARActionStateComponent()->ActionInterval();
 			//IsFirstFire = false;
 			CurrentIntervalTime = 0;

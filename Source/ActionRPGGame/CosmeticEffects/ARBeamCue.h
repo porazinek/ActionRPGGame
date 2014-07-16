@@ -24,6 +24,9 @@ public:
 	UFUNCTION()
 		void OnRep_Hit();
 	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket);
+
+	UFUNCTION(BlueprintCallable, Category = "Effects")
+		void PlayEffectInSinglePlayer();
 };
 
 

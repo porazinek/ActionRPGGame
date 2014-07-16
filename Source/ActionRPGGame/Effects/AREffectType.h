@@ -15,7 +15,7 @@
 	Like damage taken, healing, attribute reduction, etc.
 */
 
-UCLASS(minimalapi)
+UCLASS(Blueprintable, BlueprintType)
 class UAREffectType : public UObject
 {
 	GENERATED_UCLASS_BODY()
@@ -37,21 +37,28 @@ class UAREffectType : public UObject
 	/*
 		Who will be affected by this effect;
 	*/
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Ownership")
 		TWeakObjectPtr<AActor> EffectTarget;
 	/*
 		What caused this effect to EffectTargetl
 	*/
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Ownership")
 		TWeakObjectPtr<AActor> EffectCausedBy;
 	/*
 		Who Instigated this effect.
 	*/
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Ownership")
 		TWeakObjectPtr<AActor> EffectInstigator;
 	/*
 		Get World from EffectTarget
 	*/
+
+	UFUNCTION()
+		virtual void Initialize();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly)
+		void OnEffectInitialized();
+
 	virtual class UWorld* GetWorld() const override;
 };
 

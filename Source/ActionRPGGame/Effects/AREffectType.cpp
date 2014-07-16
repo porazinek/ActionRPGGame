@@ -9,6 +9,11 @@ UAREffectType::UAREffectType(const class FPostConstructInitializeProperties& PCI
 
 }
 
+void UAREffectType::Initialize()
+{
+	OnEffectInitialized();
+}
+
 UWorld* UAREffectType::GetWorld() const
 {
 	if (EffectTarget.IsValid())
@@ -18,3 +23,4 @@ UWorld* UAREffectType::GetWorld() const
 	}
 	return NULL;
 }
+

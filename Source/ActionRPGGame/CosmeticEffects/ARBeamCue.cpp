@@ -33,10 +33,6 @@ void UARBeamCue::OnRep_Hit()
 }
 void UARBeamCue::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket)
 {
-	//FVector HitPoint = UARTraceStatics::RangedTrace(Origin, Location,)
-	//UARTraceStatics::GetHitResult(10000, StartSocket, )
-	//if ()
-	//{
 		if (TrailFX)
 		{
 			UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, Origin);
@@ -46,5 +42,10 @@ void UARBeamCue::SimulateHitOnClients(FVector Origin, FVector Location, FName St
 				TrailPSC->SetVectorParameter(ImpactParam, Location);
 			}
 		}
-	//}
+}
+
+void UARBeamCue::PlayEffectInSinglePlayer()
+{
+	if (GetNetMode() == ENetMode::NM_Standalone)
+		OnRep_Hit();
 }

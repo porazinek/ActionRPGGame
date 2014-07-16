@@ -3,7 +3,9 @@
 
 #include "ARActionStateComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActionCastBegin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActionPreCast);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionCastBegin, const FGameplayTagContainer&, TagsOwnedByAction);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActionCastEnd);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCooldownBegin);
@@ -30,6 +32,17 @@ public:
 		TSubobjectPtr<class UARActionState> ActiveState;
 	UPROPERTY(Instanced, BlueprintReadOnly, Category = "State")
 		TSubobjectPtr<class UARActionState> CooldownState;
+
+	/*
+		Tags Owned by this action (weapon, ability, other).
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Tags")
+		FGameplayTagContainer OwnedTags;
+	/*
+		Tags Required by this action (weapon, ability, other).
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Tags")
+		FGameplayTagContainer RequiredTags;
 
 	/*
 		Animation played when ActionState is active.
@@ -166,7 +179,9 @@ public:
 		Helper events delgates, which might be useful, when defining weapon, ability, spells, etc.
 		in blueprints.
 		*/
-
+	/*[server] - Before action is exectued to give chance on setting any properties before they are used */
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Action State")
+		FOnActionPreCast OnActionPreCast;
 	/*[server] - called when casting is started */
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Action State")
 		FOnActionCastBegin OnActionCastBegin;

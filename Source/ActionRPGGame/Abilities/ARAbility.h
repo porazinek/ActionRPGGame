@@ -19,10 +19,19 @@ public:
 	UPROPERTY(Replicated)
 	bool BlankRep;
 
-	/* Currently Active weapon, must have any of these tags.
-	If it doesn, then this ability can't be used **/
+	/* 
+		Currently Active weapon, must have any of these tags.
+		If it doesn, then this ability can't be used 
+	**/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
 		FGameplayTagContainer WeaponRequiredTags;
+
+	/*
+		These tags will be mainly used with Effects (which can be premament like Feats, Traits, Skills
+		or temporary like buffs), so effects can respond to events,
+		when particular ability is used. Don't put to much tags here! Only absolute nesseary ones.
+		If needed just create new ones.
+	*/
 
 	UPROPERTY(EditAnywhere, Category = "GUI")
 		FSlateBrush AbilityIcon;

@@ -61,10 +61,10 @@ public:
 	
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
-		static void ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, FVector ShootDir, AActor* Causer, FName StartSocket, FHitResult HitResult);
+		static void ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
-		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, FHitResult HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount);
+		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
 		static void SpawnField(TSubclassOf<class AARFieldBase> Field, AActor* Instigator, FHitResult Location, float Duration, float TickInterval);

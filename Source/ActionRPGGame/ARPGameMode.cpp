@@ -11,7 +11,7 @@ AARPGameMode::AARPGameMode(const class FPostConstructInitializeProperties& PCIP)
 {
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerPawnBPClass(TEXT("Class'/Game/Blueprints/MyCharacter2.MyCharacter2_C'"));
-	//static ConstructorHelpers::FObjectFinder<UClass> PlayerControllerBPClass(TEXT("Class'/Game/Blueprints/BP_PlayerController.BP_PlayerController_C'"));
+	static ConstructorHelpers::FObjectFinder<UClass> PlayerControllerBPClass(TEXT("Class'/Game/Blueprints/BP_PlayerController.BP_PlayerController_C'"));
 	static ConstructorHelpers::FObjectFinder<UBlueprint> TheHUDOb(TEXT("Blueprint'/Game/Blueprints/HUD/BP_HUD.BP_HUD'"));
 
 	if (TheHUDOb.Object != NULL)
@@ -22,12 +22,12 @@ AARPGameMode::AARPGameMode(const class FPostConstructInitializeProperties& PCIP)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Object;
 	}
-	//if (PlayerControllerBPClass.Object != NULL)
-	//{
-	//	PlayerControllerClass = PlayerControllerBPClass.Object;
-	//}
+	if (PlayerControllerBPClass.Object != NULL)
+	{
+		PlayerControllerClass = PlayerControllerBPClass.Object;
+	}
 
 	//Blueprint'/Game/Blueprints/MyCharacter.MyCharacter'
 	//Blueprint'/Game/Blueprints/BP_PlayerController.BP_PlayerController'
-	PlayerControllerClass = AARPlayerController::StaticClass();
+	//PlayerControllerClass = AARPlayerController::StaticClass();
 }

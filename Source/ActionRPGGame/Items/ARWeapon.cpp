@@ -54,7 +54,6 @@ void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AARWeapon, WeaponOwner);
-	DOREPLIFETIME(AARWeapon, HitInfo);
 }
 
 //void AARWeapon::OnRep_WeaponOwner()
@@ -145,28 +144,4 @@ void AARWeapon::ServerStopAction_Implementation()
 bool AARWeapon::ServerStopAction_Validate()
 {
 	return true;
-}
-
-
-void AARWeapon::OnRep_HitInfo()
- {
-	SimulateHitOnClients(HitInfo.Origin, HitInfo.Location, HitInfo.StartSocket);
-}
-void AARWeapon::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket)
-{
-	//FVector Origin = UARTraceStatics::GetStartLocation(SocketName, Causer);
-	//UARTraceStatics::GetHitResult(10000, StartSocket, )
-	//if ()
-	//{
-	if (TrailFXPar)
-	{
-		UParticleSystemComponent* TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFXPar, Origin);
-		if (TrailPSC)
-		{
-			const FVector AdjustedDir = (Location - Origin).SafeNormal();
-			FVector ParticleSpeed = AdjustedDir * TrailSpeedPar;
-			TrailPSC->SetVectorParameter(TrailSpeedParamName, ParticleSpeed);
-		}
-	}
-	//}
 }

@@ -7,6 +7,9 @@
 #include "Items/ARWeapon.h"
 #include "Abilities/ARAbility.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
+
+#include "Effects/AREffectType.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "ARPlayerController.h"
@@ -105,7 +108,14 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARPlayerController::InputSwapLeftWeapon);
 	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARPlayerController::InputSwapRightWeapon);
 	InputComponent->BindAction("AddWeapons", IE_Pressed, this, &AARPlayerController::InputTempAddWeapons);
+	InputComponent->BindAction("AddFeats", IE_Pressed, this, &AARPlayerController::InputAddFeat);
 }
+
+void AARPlayerController::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+}
+
 void AARPlayerController::InputTempAddWeapons()
 {
 	FInventorySlot wep1;
@@ -117,7 +127,42 @@ void AARPlayerController::InputTempAddWeapons()
 	wep2.ItemSlot = EItemSlot::Item_Weapon;
 	AddItemToInventory(wep2);
 }
+void AARPlayerController::InputAddFeat()
+{
+	AddFeat();
+}
+void AARPlayerController::AddFeat()
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerAddFeat();
+	}
+	else
+	{
+		for (TSubclassOf<UAREffectType> featClass : FeatClasses)
+		{
+			UAREffectType* effect = ConstructObject<UAREffectType>(featClass);
+			if (effect)
+			{
+				effect->EffectTarget = GetPawn();
+				effect->EffectCausedBy = GetPawn();
+				effect->EffectInstigator = this;
+				//effect->AddToRoot();
+				effect->Initialize();
+				Feats.Add(effect);
+			}
+		}
+	}
+}
 
+void AARPlayerController::ServerAddFeat_Implementation()
+{
+	AddFeat();
+}
+bool AARPlayerController::ServerAddFeat_Validate()
+{
+	return true;
+}
 void AARPlayerController::InputActionButtonOne()
 {
 	if (ActionBarOne[0].Ability.IsValid())
@@ -314,6 +359,10 @@ void AARPlayerController::AddItemToInventory(FInventorySlot Item)
 	}
 	else
 	{
+		if (Feats.Num() > 0)
+		{
+			float g = 0;
+		}
 		if (InventorySmall.Num() <= MaxInventorySize)
 		{
 			for (FInventorySlot& item : InventorySmall)

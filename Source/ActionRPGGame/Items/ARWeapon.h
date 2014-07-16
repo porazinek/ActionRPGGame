@@ -3,7 +3,11 @@
 #include "ARItem.h"
 #include "../ActionState/IARActionState.h"
 #include "../Interfaces/IARFXEffect.h"
+#include "../Types/ARAttributeTypes.h"
+
 #include "ARWeapon.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnWeaponInitialized);
 
 UCLASS(minimalapi)
 class AARWeapon : public AARItem, public IIARActionState, public IIARFXEffect
@@ -11,12 +15,6 @@ class AARWeapon : public AARItem, public IIARActionState, public IIARFXEffect
 	GENERATED_UCLASS_BODY()
 public:
 	virtual void Tick(float DeltaSeconds) override;
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mesh")
-	//	USkeletalMeshComponent* WeaponMesh;
-
-	/* Tags owned by this weapon **/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
-	FGameplayTagContainer OwnedTags;
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Owner")
 	class AARCharacter* WeaponOwner;
@@ -24,25 +22,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Owner")
 	class AARPlayerController* OwningController;
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
-		UParticleSystem* TrailFXPar;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
-		FName StartSocket;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
-		float TrailSpeedPar;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
-		FName TrailSpeedParamName;
-	UPROPERTY(ReplicatedUsing = OnRep_HitInfo, BlueprintReadWrite, Category = "HitInfo")
-		FHitInfo HitInfo;
-	UFUNCTION()
-		void OnRep_HitInfo();
-	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket);
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponMesh)
 		TSubobjectPtr<USkeletalMeshComponent> WeaponMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+		TArray<FAttribute> Attributes;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+		float Damage;
 
 	TSubobjectPtr<UArrowComponent> ArrowComp;
 	void AttachWeapon();

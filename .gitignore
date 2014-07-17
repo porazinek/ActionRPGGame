@@ -239,7 +239,7 @@ pip-log.txt
 #Unreal Engine
 
 Binaries/
-Config/
+
 Content/*
 !Content/Blueprints/
 !Content/UI/

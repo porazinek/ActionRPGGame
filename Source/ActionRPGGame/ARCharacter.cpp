@@ -114,8 +114,7 @@ void AARCharacter::PostInitializeComponents()
 			{
 				effect->EffectTarget = this;
 				effect->EffectCausedBy = this;
-				effect->EffectInstigator = this;
-				//effect->AddToRoot();
+				effect->EffectInstigator = Controller;
 				effect->Initialize();
 				Feats.Add(effect);
 			}

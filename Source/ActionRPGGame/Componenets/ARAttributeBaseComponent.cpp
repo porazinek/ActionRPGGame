@@ -120,11 +120,22 @@ void UARAttributeBaseComponent::AddPeriodicEffect(FEffectSpec& PeriodicEffect)
 	}
 	else
 	{
-		//server
+		
 		PeriodicEffect.ActorEffect->Initialze();
 		ActiveEffects.Effects.Add(PeriodicEffect);
 		PeriodicEffect.IsActive = true;
 		AttachEffectCue(PeriodicEffect);
+
+		if (PeriodicEffect.ActorEffect)
+		{
+			UARAttributeBaseComponent* causerCauserAttr = PeriodicEffect.ActorEffect->EffectCauser->FindComponentByClass<UARAttributeBaseComponent>();
+
+			if (causerCauserAttr)
+			{
+				causerCauserAttr->OnPeriodicEffectInstigated.Broadcast(PeriodicEffect.OwnedTags);
+			}
+		}
+
 		OnPeriodicEffectAppiled.Broadcast(PeriodicEffect.OwnedTags);
 	}
 

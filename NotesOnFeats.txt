@@ -1,0 +1,17 @@
+Feats are effects, which exist for entire life time of game and are assigned per character.
+Feats are based on events, and essentialy work on concept of modifing properties of incoming objects, when
+certain conditions are meet.
+
+Work is needed to make sure that each feat is appiled in right order. If we have weapon X with base damage of 10,
+and two feats one increase damage by 5 and one by 10.
+Expected behavior is to final damage be 25, but as it is now, it might 20 of 15, impossible to predict, it just depends on which feat will happen to be executed last and override entire value.
+
+It might get even worse when using precentages, as we expect that precentage might be calculated from base value, or
+already increased value.
+
+So there need to be set rigid execution order, in which feats are exectued.
+When multipile feats want to modify the same object, these should be queed in whatever order, and exectued one after another.
+
+178
+154
+128

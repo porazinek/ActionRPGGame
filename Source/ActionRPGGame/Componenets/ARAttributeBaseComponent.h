@@ -16,7 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeDamage, FAttribu
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectAppiled, FGameplayTagContainer, OwnedTags);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectRemoved, FGameplayTagContainer, OwnedTags);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPeriodicEffectInstigated);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectInstigated, const FGameplayTagContainer&, DamageTag);
 /*
 	Despite the name, AttributeBaseComponent DO NOT hold any attributes.
 	Attributes should be defined in component derived from this class.

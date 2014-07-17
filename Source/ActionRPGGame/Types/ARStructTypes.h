@@ -368,3 +368,55 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float GravityScale;
 };
+
+/*
+	I'm not sure if these structs are best idea, but I need some way of storing data current action
+	in advance before it is used. So I can modify it in other objects.
+*/
+USTRUCT(BlueprintType)
+struct FARActionInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+};
+
+/*
+	I wonder if not just use AttributeComponent, or create separate Attribute Object (Subobject)
+*/
+USTRUCT(BlueprintType)
+struct FARWeaponInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+		float Damage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+		float MaximumSpread;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+		float RateOfFire;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+		float ReloadTime;
+	/*
+		Time between single shots. To prevent player for maniacally clicking fire button ;)
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+		float RefireTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+		float ClipSize;
+};
+USTRUCT(BlueprintType)
+struct FARAbilityInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Info")
+		FAttribute AttriuteMod;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Info")
+		float RechargeTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Info")
+		float CastTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Info")
+		TArray<FAttribute> ResourceCost;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Info")
+};

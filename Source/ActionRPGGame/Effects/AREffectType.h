@@ -78,6 +78,14 @@ class UAREffectType : public UObject
 		void OnEffectInitialized();
 
 	/*
+		Set AttributeOut, so it can be returned back to other object after it has been modified.
+	*/
+	UFUNCTION(BlueprintCallable, Category="AR|Effect")
+		void SetOutAttribute(const FAttribute& AttributeIn);
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
+	FAttribute AttributeOut;
+	/*
 		Get World from EffectTarget
 	*/
 	virtual class UWorld* GetWorld() const override;

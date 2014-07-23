@@ -14,6 +14,11 @@ void UAREffectType::Initialize()
 	OnEffectInitialized();
 }
 
+void UAREffectType::SetOutAttribute(const FAttribute& AttributeIn)
+{
+	AttributeOut = AttributeIn;
+}
+
 UWorld* UAREffectType::GetWorld() const
 {
 	if (EffectTarget.IsValid())

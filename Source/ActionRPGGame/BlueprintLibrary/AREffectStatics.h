@@ -3,6 +3,7 @@
 
 #include "../Types/ARStructTypes.h"
 #include "../Types/AREnumTypes.h"
+#include "TimerManager.h"
 #include "AREffectStatics.generated.h"
 
 UCLASS()
@@ -10,6 +11,12 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 public:
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
+		static void ApplyEffect(TSubclassOf<class UAREffectType> EffectIn, AActor* EffectCauser, AActor* EffectTarget, const FAttribute& AttributeIn, FAttribute& AttributeOut);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
+		static void ApplyInstantEffect(TSubclassOf<class UAREffectType> EffectIn);
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
 		static FEffectSpec CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType, FEffectCue EffectCue, TSubclassOf<class AARActorCue> ActorCue);
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
@@ -64,12 +71,24 @@ public:
 		static void ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
-		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount);
+		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo, int32 Amount);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
+		static void SpawnProjectileInAreaInterval(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo, int32 Amount, float MinTime, float MaxTime);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
 		static void SpawnField(TSubclassOf<class AARFieldBase> Field, AActor* Instigator, FHitResult Location, float Duration, float TickInterval);
 
 	static void DrawDebugSweptBox(const UWorld* InWorld, FVector const& Start, FVector const& End, FRotator const & Orientation, FVector const & HalfSize, FColor const& Color, bool bPersistentLines = false, float LifeTime = -1.f, uint8 DepthPriority = 0);
+	//TSubclassOf<class AARProjectile> Projectile, AActor* Causer, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo
+	UFUNCTION()
+		static void SpawnProjectile(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, FARProjectileInfo ProjectileInfo);
+	
+	UFUNCTION()
+		static void SpawnProjectileOne(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, FARProjectileInfo ProjectileInfo);
+
+	UFUNCTION()
+		static void StopTimer(AActor* Causer, int32 HandleIn);
 };
 
 

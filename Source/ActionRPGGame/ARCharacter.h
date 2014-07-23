@@ -35,6 +35,9 @@ class AARCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
 		TSubobjectPtr<class UARAttributeComponent> Attributes;
+	/*
+		Deprecated!
+	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
 		TSubobjectPtr<class UAREquipmentComponent> Equipment;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")

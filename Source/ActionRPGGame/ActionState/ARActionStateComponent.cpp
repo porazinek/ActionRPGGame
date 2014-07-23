@@ -120,7 +120,7 @@ void UARActionStateComponent::StartAction()
 	}
 	else
 	{
-		OnActionPreCast.Broadcast();
+		OnActionPreCast.Broadcast(OwnedTags);
 		BeginActionSequence();
 	}
 }

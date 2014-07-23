@@ -259,6 +259,7 @@ void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName Socke
 			Weapon->WeaponMesh->SetHiddenInGame(false);
 		}
 		Weapon->WeaponOwner = MyChar;
+		Weapon->OnWeaponActive();
 	}
 }
 
@@ -563,6 +564,7 @@ void UAREquipmentComponent::SetLeftWeapon(FInventorySlot Weapon, class AARWeapon
 		weaponBase->Instigator = MyChar;
 		weaponBase->WeaponOwner = MyChar;
 		ActiveLeftHandWeapon = weaponBase;
+		//ActiveLeftHandWeapon->OnWeaponActive();
 		OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
 		SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 	}
@@ -664,6 +666,7 @@ void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapo
 		weaponBase->WeaponOwner = MyChar;
 		weaponBase->OwningController = TargetController;
 		ActiveRightHandWeapon = weaponBase;
+		//ActiveLeftHandWeapon->OnWeaponActive();
 		OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
 		SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
 	}

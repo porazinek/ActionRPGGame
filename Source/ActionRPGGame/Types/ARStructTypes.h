@@ -5,6 +5,8 @@
 #include "ARAttributeTypes.h"
 #include "ARStructTypes.generated.h"
 
+DECLARE_DELEGATE_RetVal(float, FOnGetFloat);
+
 //it probably will be better to store these informations in DataTable
 //or in database. For much faster lookups.
 //and the best option possible would be to create hard references at global level
@@ -60,8 +62,8 @@ USTRUCT(BlueprintType)
 struct FAttributeDamage
 {
 	GENERATED_USTRUCT_BODY()
-
-		UPROPERTY(BlueprintReadOnly, Category = "Attribute")
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
 		FName AttributeName;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attribute")
@@ -318,7 +320,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Item")
 		TAssetSubclassOf<class AARItem> ItemBlueprint;
-
 };
 /*
 	Keep in mind that those properties, do not really have any real world physical
@@ -361,12 +362,41 @@ struct FARProjectileInfo
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	/*
+		Initial velocity of projectile.
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float InitialVelocity;
+	/*
+		Maximum velocity to which projectile can accellerate
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float MaxVelocity;
+	/*
+		Scale of gravity which affect projectile. 0 - no gravity
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float GravityScale;
+	/*
+		Radius in which projectile will be spawned. Used for Area Spawn. 0 -  directly at impact point.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float MaxRadius;
+	/*
+		Height at which projectile will be spawned.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float MaxHeight;
+	/*
+		Direction in which projectile will be moved from MaxHeigh. 0 - straight line.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float ImpactDirection;
+	/*
+		How many projectiles will be spawned in single burst. 0 - no projectiles will be spawned.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float BurstSize;
 };
 
 /*
@@ -419,4 +449,15 @@ public:
 		TArray<FAttribute> ResourceCost;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability Info")
+};
+
+USTRUCT(BlueprintType)
+struct FARUIDamage
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "UI")
+		float Value;
+	UPROPERTY(BlueprintReadOnly, Category = "UI")
+		FVector Location;
 };

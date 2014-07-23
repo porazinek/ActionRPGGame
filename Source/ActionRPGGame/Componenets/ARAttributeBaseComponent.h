@@ -3,14 +3,33 @@
 #include "../Types/ARStructTypes.h"
 #include "../Types/AREffectTypes.h"
 #include "../Types/AREnumTypes.h"
+#include "../Types/ARAttributeTypes.h"
+
+#include "Slate.h"
+#include "SlateCore.h"
 
 #include "ARAttributeBaseComponent.generated.h"
 //dumb delegates declarations
 //these will need to transfer some properties around.
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttributeDamage, FAttributeChanged, AttributeChanged, FGameplayTagContainer, DamageTag);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInstigatorCausedDamage, FAttributeChanged, AttributeChanged, FGameplayTagContainer, DamageTag);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInstigatorCausedDamage, FAttributeChanged, AttributeChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeDamage, FAttribute, Attribute, class AActor*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
+
+DECLARE_MULTICAST_DELEGATE(FDMDOnInstigatorDamage);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDMDOnPreApplyDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute);
+
+/*
+	Event called when this component receives any damage
+*/
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDMDOnIncomingDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute);
+/*
+	Event called, when instigator (causer), caused any damage. So it is called from component owned
+	by Instigator/Causer.
+*/
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDMDOnOutgoingDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute);
+
 
 /* stubs */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectAppiled, FGameplayTagContainer, OwnedTags);
@@ -74,6 +93,23 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnInstigatorCausedDamage OnInstigatorCausedDamage;
 
+
+	UPROPERTY(ReplicatedUsing = OnRep_CausedDamage)
+	bool CausedDamage;
+	//UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "UI Damage")
+		FDMDOnInstigatorDamage OnInstigatorDamage;
+	
+	UFUNCTION(Client, Unreliable)
+		void ClientOnInstigatorDamage();
+
+	UFUNCTION()
+		void OnRep_CausedDamage();
+	/*
+		Called before damage is appiled, to give a chance to modify it in external objects.
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FDMDOnPreApplyDamage OnPreAppylDamage;
+
 	/*
 		Periodic Effect appiled By Me.
 	*/
@@ -90,7 +126,18 @@ public:
 	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnPeriodicEffectRemoved OnPeriodicEffectRemoved;
-
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FDMDOnIncomingDamage OnIncomingDamage;
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FDMDOnOutgoingDamage OnOutgoingDamage;
+	/*
+	
+	*/
+	UFUNCTION()
+		void SetAttributeForMod(const FGameplayTagContainer& DamageTags, const FAttribute& Attribute);
+	FAttribute CachedAttribute;
+	UFUNCTION(BlueprintCallable, Category = "AR|Attribute Dmage")
+		void SetFinalDmage(const FAttribute& AttributeIn);
 
 public:
 	/* Get Attribute (UProperty), from component class */
@@ -113,8 +160,13 @@ public:
 	virtual void DamageAttribute(FARDamageEvent const& DamageEvent, AActor* EventInstigator, AActor* DamageCauser);
 
 	virtual void HealAttribute();
-	virtual void ChangeAttribute(FName AttributeName, float ModValue, TEnumAsByte<EAttrOp> OperationType);
+	void ChangeAttribute(FName AttributeName, float ModValue, TEnumAsByte<EAttrOp> OperationType);
 	
+	/*
+		AttributeA > AttributeB
+	*/
+	bool CompareAttributes(FName AttributeA, FName AttributeB, TEnumAsByte<ECompareAttribute::Type> Comparsion);
+	bool CompareAttributeValue(float Value, FName Attribute, TEnumAsByte<ECompareAttribute::Type> Comparsion);
 	//virtual void ChangeAttribute(FAttributeChangeEvent const& AttributeEvent, AController* EventInstigator, AActor* DamageCauser);
 
 	/*
@@ -126,8 +178,14 @@ public:
 
 	virtual void SetAttributeChange(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag);
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Attribute")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_InstigatorDamageCaused, Category = "Attribute")
 		FAttributeChanged ChangedAttribute;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = "UI")
+		FARUIDamage UIDamage;
+
+	UFUNCTION()
+		void OnRep_InstigatorDamageCaused();
 
 protected:
 	void SetAttributeModified(float ModValue, FName AttributeName);
@@ -140,6 +198,11 @@ protected:
 private:
 	float AttributeOp(float ModValue, float AttrValueIn, TEnumAsByte<EAttrOp> OpType);
 
+
+	/*
+		Some Slate crap for testing -;-
+	*/
+	
 public:
 	/* Get unsigned integer value is Attribute (UProperty) */
 	int32 GetIntValue(FName AttributeName);

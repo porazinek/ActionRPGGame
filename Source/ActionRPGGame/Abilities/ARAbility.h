@@ -33,6 +33,9 @@ public:
 		If needed just create new ones.
 	*/
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
+		FGameplayTagContainer OwnedTags;
+
 	UPROPERTY(EditAnywhere, Category = "GUI")
 		FSlateBrush AbilityIcon;
 
@@ -42,7 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Cost")
 		TArray<FAttribute> ResourceCost;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	class AARCharacter* OwningCharacter;
 	UPROPERTY()
 	class AARPlayerController* OwiningController;
@@ -50,11 +53,6 @@ public:
 	class UARAttributeComponent* OwnerAttributes;
 	UPROPERTY()
 	class UAREquipmentComponent* OwnerEquipment;
-
-	/* Checks if ability can be used with current weapon */
-	bool CheckWeapon();
-	/* Checks if owner have enough resources to use this ability */
-	bool CheckResourceCost();
 
 	/* [client] OVERIDE from IIARActionState */
 	virtual void InputPressed() override;
@@ -75,6 +73,10 @@ public:
 		It's purerly server-side.
 	*/
 public:
+
+	float GetCurrentCastTime();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+		float MaxCastTime;
 	/*[Client Prediction]*/
 	UPROPERTY(BlueprintReadOnly, Category = "Ability")
 		float CurrentCastTime;
@@ -99,6 +101,15 @@ public:
 	/* Cosmetics */
 	UPROPERTY(EditAnywhere, Category = "Cosmetics")
 		UParticleSystem* TrailFX;
+protected:
+	/*
+		Check if player have active weapon required to use this ability,
+	*/
+	bool CheckWeapon();
+	/*
+		Check if player have resourced needed to use ability, and subtracts them.
+	*/
+	bool CheckResources();
 };
 
 

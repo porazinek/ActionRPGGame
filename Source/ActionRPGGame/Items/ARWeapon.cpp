@@ -32,6 +32,7 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponState->Owner = WeaponOwner;
 	WeaponState->SetNetAddressable();
 	WeaponState->SetIsReplicated(true);
+	WeaponState->OwnedTags = OwnedTags;
 
 	FXEffect = PCIP.CreateDefaultSubobject<UARFXEffectComponent>(this, TEXT("FXEffects"));
 	FXEffect->SetIsReplicated(true);
@@ -48,7 +49,23 @@ void AARWeapon::Tick(float DeltaSeconds)
 	WeaponState->TickMe(DeltaSeconds);
 
 }
+void AARWeapon::Destroy()
+{
+	OnWeaponDeactive();
+	//TArray<USceneComponent*> Componenets;
+	//GetComponents<USceneComponent>(Componenets);
 
+	//for (USceneComponent* comp : Componenets)
+	//{
+	//	comp->Deactivate();
+	//	comp->DestroyComponent();
+	//}
+	Super::Destroy();
+}
+void AARWeapon::Initialize()
+{
+	Execute_OnActionPrepared(this);
+}
 void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

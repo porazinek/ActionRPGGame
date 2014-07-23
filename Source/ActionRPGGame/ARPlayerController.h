@@ -5,7 +5,8 @@
 #include "Types/ARInvItem.h"
 
 #include "Slate.h"
-
+#include "Componenets/ARAttributeComponent.h"
+#include "ARCharacter.h"
 #include "ARPlayerController.generated.h"
 
 UCLASS()
@@ -20,6 +21,9 @@ public:
 	Hook for controller. Controller doesn't have any attributes per se,
 	but attribute component also implements notifications and events,
 	and we'd like to access them from owning conroller as well.
+
+	Update:
+	I'm not sure if I'm going to keep it here. It's way to confusing.
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
 		TSubobjectPtr<class UARAttributeBaseComponent> Attributes;
@@ -32,6 +36,20 @@ public:
 	void InputActionButtonOne();
 	void InputActionButtonTwo();
 
+	template<int Index>
+	void InputActionBar()
+	{
+		if (ActionBarOne[Index].Ability.IsValid())
+		{
+			IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[Index].Ability.Get());
+			if (actionInterface)
+			{
+				actionInterface->InputPressed();
+			}
+		}
+	}
+
+	void InputActivateAbility();
 	/* 
 		Route weapon fire trough Controller
 		Will be useful, when later there will be multiple pawns.
@@ -46,14 +64,6 @@ public:
 
 	void InputSwapLeftWeapon();
 	void InputSwapRightWeapon();
-
-
-	//debug
-
-	void InputAddFeat();
-	void AddFeat();
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddFeat();
 
 	/* GUI Input **/
 	void SetInventoryVisibility();
@@ -170,6 +180,9 @@ public:
 		void OnRep_AbilityInventory();
 		bool UpdateAbilityInventory;
 	/*
+		Abilities
+	*/
+	/*
 		Array which represents action bar. Essentialy hack, it would be better as TMap,
 		but by default TMap is not exposed to reflection and replication.
 	*/
@@ -178,6 +191,9 @@ public:
 	UFUNCTION()
 		void OnRep_ActionBarOne();
 	bool UpdateActionBarOne;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Ability")
+	class AARAbility* ActiveAbility;
 
 	bool AddAbilityToInventory(FAbilityInfo AbilityIn);
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -218,6 +234,60 @@ public:
 		void ServerSetInventoryChanged();
 	UPROPERTY(Replicated)
 	bool IsInventoryChanged;
+
+
+	/**
+		UI Hooks
+	*/
+
+	inline float GetHealth()
+	{
+		if (ARCharacter)
+		{
+			return ARCharacter->Attributes->Health;
+		}
+		return 0;
+	}
+	inline float GetMaxHealth()
+	{
+		if (ARCharacter)
+		{
+			return ARCharacter->Attributes->MaxHealth;
+		}
+		return 0;
+	}
+	inline float GetEnergy()
+	{
+		if (ARCharacter)
+		{
+			return ARCharacter->Attributes->Energy;
+		}
+		return 0;
+	}
+	inline float GetMaxEnergy()
+	{
+		if (ARCharacter)
+		{
+			return ARCharacter->Attributes->MaxEnergy;
+		}
+		return 0;
+	}
+	inline float GetStamina()
+	{
+		if (ARCharacter)
+		{
+			return ARCharacter->Attributes->Stamina;
+		}
+		return 0;
+	}
+	inline float GetMaxStamina()
+	{
+		if (ARCharacter)
+		{
+			return ARCharacter->Attributes->MaxStamina;
+		}
+		return 0;
+	}
 };
 
 

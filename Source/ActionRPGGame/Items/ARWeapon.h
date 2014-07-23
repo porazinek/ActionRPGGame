@@ -7,6 +7,15 @@
 
 #include "ARWeapon.generated.h"
 
+/*
+	Possible refactor.
+
+	Instead of separate weapon class, treat wepons as abilities. And differientate them by simple enum
+	or Tag.
+
+	Another possibility is to leave weapon, but add Ability subobject, which will be used to execute
+	weapon actions.
+*/
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnWeaponInitialized);
 
 UCLASS(minimalapi)
@@ -16,11 +25,17 @@ class AARWeapon : public AARItem, public IIARActionState, public IIARFXEffect
 public:
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void Destroy();
+
+	virtual void Initialize();
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Owner")
 	class AARCharacter* WeaponOwner;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Owner")
 	class AARPlayerController* OwningController;
+
+	UPROPERTY(EditAnywhere, Category = "Tags")
+		FGameplayTagContainer OwnedTags;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = WeaponMesh)
 		TSubobjectPtr<USkeletalMeshComponent> WeaponMesh;
@@ -52,6 +67,12 @@ public:
 		void ServerStopAction();
 	/*[Authorative]*/
 	virtual void StopAction();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnWeaponActive();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnWeaponDeactive();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 		TSubobjectPtr<class UARActionStateComponent> WeaponState;

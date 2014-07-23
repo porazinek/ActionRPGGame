@@ -43,7 +43,7 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	{
 		PlayerCameraManager->ViewPitchMax = 70.0f;
 	}
-	MaxInventorySize = 4;
+	MaxInventorySize = 16;
 	InventorySmall.Reserve(MaxInventorySize);
 	for (int32 i = 0; i < MaxInventorySize; i++)
 	{
@@ -100,6 +100,8 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARPlayerController::InputActionButtonOne);
 	InputComponent->BindAction("ActionButtonTwo", IE_Pressed, this, &AARPlayerController::InputActionButtonTwo);
 
+	InputComponent->BindAction("ActivateAbility", IE_Pressed, this, &AARPlayerController::InputActivateAbility);
+
 	InputComponent->BindAction("FireLeftWeapon", IE_Pressed, this, &AARPlayerController::InputFireLeftWeapon);
 	InputComponent->BindAction("FireRightWeapon", IE_Pressed, this, &AARPlayerController::InputFireRightWeapon);
 	InputComponent->BindAction("FireLeftWeapon", IE_Released, this, &AARPlayerController::InputStopFireLeftWeapon);
@@ -108,7 +110,6 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARPlayerController::InputSwapLeftWeapon);
 	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARPlayerController::InputSwapRightWeapon);
 	InputComponent->BindAction("AddWeapons", IE_Pressed, this, &AARPlayerController::InputTempAddWeapons);
-	InputComponent->BindAction("AddFeats", IE_Pressed, this, &AARPlayerController::InputAddFeat);
 }
 
 void AARPlayerController::PostInitializeComponents()
@@ -127,62 +128,44 @@ void AARPlayerController::InputTempAddWeapons()
 	wep2.ItemSlot = EItemSlot::Item_Weapon;
 	AddItemToInventory(wep2);
 }
-void AARPlayerController::InputAddFeat()
-{
-	AddFeat();
-}
-void AARPlayerController::AddFeat()
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerAddFeat();
-	}
-	else
-	{
-		for (TSubclassOf<UAREffectType> featClass : FeatClasses)
-		{
-			UAREffectType* effect = ConstructObject<UAREffectType>(featClass);
-			if (effect)
-			{
-				effect->EffectTarget = GetPawn();
-				effect->EffectCausedBy = GetPawn();
-				effect->EffectInstigator = this;
-				//effect->AddToRoot();
-				effect->Initialize();
-				Feats.Add(effect);
-			}
-		}
-	}
-}
 
-void AARPlayerController::ServerAddFeat_Implementation()
+void AARPlayerController::InputActivateAbility()
 {
-	AddFeat();
-}
-bool AARPlayerController::ServerAddFeat_Validate()
-{
-	return true;
-}
-void AARPlayerController::InputActionButtonOne()
-{
-	if (ActionBarOne[0].Ability.IsValid())
+	if (ActiveAbility)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[0].Ability.Get());
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActiveAbility);
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();
 		}
+	}
+}
+
+void AARPlayerController::InputActionButtonOne()
+{
+	//second press should deactivate ability and remove it from here.
+	if (ActionBarOne[0].Ability.IsValid())
+	{
+		ActiveAbility = ActionBarOne[0].Ability.Get();
+		ActiveAbility->Initialize();
+		/*IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[0].Ability.Get());
+		if (actionInterface)
+		{
+			actionInterface->InputPressed();
+		}*/
 	}
 }
 void AARPlayerController::InputActionButtonTwo()
 {
 	if (ActionBarOne[1].Ability.IsValid())
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[1].Ability.Get());
-		if (actionInterface)
-		{
-			actionInterface->InputPressed();
-		}
+		ActiveAbility = ActionBarOne[1].Ability.Get();
+		ActiveAbility->Initialize();
+		//IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[1].Ability.Get());
+		//if (actionInterface)
+		//{
+		//	actionInterface->InputPressed();
+		//}
 	}
 }
 void AARPlayerController::InputFireLeftWeapon()
@@ -296,10 +279,12 @@ void AARPlayerController::AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 Sl
 
 					AARAbility* tempAbi = GetWorld()->SpawnActor<AARAbility>(AbilityIn.AbilityType, SpawnInfo);
 					tempAbi->SetOwner(GetPawn());
-
+					tempAbi->OwningCharacter = ARCharacter;
 					abilityBar.AbilityType = AbilityIn.AbilityType;
 					abilityBar.AbilityName = AbilityIn.AbilityName;
 					abilityBar.Ability = tempAbi;
+
+					UpdateActionBarOne = true;
 				}
 			}
 			//}
@@ -331,8 +316,8 @@ bool AARPlayerController::AddAbilityToInventory(FAbilityInfo AbilityIn)
 		//and construct correct struct on server.
 		AbilityIn.SlotID = AbilityInventory.Num() + 1;
 		AbilityInventory.Add(AbilityIn);
-
-		return false;
+		UpdateAbilityInventory = true;
+		return true;
 	}
 	return false;
 }

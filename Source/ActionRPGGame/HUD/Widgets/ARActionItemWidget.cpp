@@ -85,7 +85,7 @@ FText SARActionItemWidget::GetCurrentCooldown() const
 			return FText::AsNumber(CurrentAbility->Ability->CurrentCooldownTime);
 		}
 	}
-	return FText::FromName("");
+	return FText::AsNumber(0);
 }
 
 const FSlateBrush* SARActionItemWidget::GetAbilityIcon() const

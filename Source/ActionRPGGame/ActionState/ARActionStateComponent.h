@@ -3,7 +3,7 @@
 
 #include "ARActionStateComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActionPreCast);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionPreCast, const FGameplayTagContainer&, TagsOwned);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionCastBegin, const FGameplayTagContainer&, TagsOwnedByAction);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnActionCastEnd);
@@ -36,7 +36,8 @@ public:
 	/*
 		Tags Owned by this action (weapon, ability, other).
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Tags")
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Tags")
+	UPROPERTY()
 		FGameplayTagContainer OwnedTags;
 	/*
 		Tags Required by this action (weapon, ability, other).
@@ -121,11 +122,13 @@ public:
 		*/
 	virtual void FireAction();
 
+	inline void SetMaxCastTime(float ValueIn){ MaxCastTime = ValueIn; };
+
 	/*
 		How much time before action will be Fired.
 		Can be used in automatic or charged actions.
 		*/
-	UPROPERTY(EditAnywhere, Category = "Action Usage")
+	UPROPERTY(BlueprintReadOnly, Category = "Action Usage")
 		float MaxCastTime;
 	/*
 		How often should action be perfomed

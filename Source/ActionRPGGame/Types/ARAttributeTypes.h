@@ -4,6 +4,19 @@
 #include "Slate.h"
 #include "ARAttributeTypes.generated.h"
 
+UENUM()
+namespace ECompareAttribute
+{
+	enum Type
+	{
+		Attr_Bigger,
+		Attr_BiggerEqual,
+		Attr_Equal,
+		Attr_Smaller,
+		Attr_SmallerEqual
+	};
+}
+
 USTRUCT(BlueprintType)
 struct FAttribute
 {
@@ -136,6 +149,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
 		UDamageType* DamageType;
+
 };
 
 USTRUCT(BlueprintType)

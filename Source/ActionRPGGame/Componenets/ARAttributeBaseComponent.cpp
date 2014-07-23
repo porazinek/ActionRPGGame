@@ -4,6 +4,8 @@
 
 #include "../Types/ARStructTypes.h"
 #include "../Types/AREnumTypes.h"
+#include "../Types/ARAttributeTypes.h"
+
 #include "../Effects/AREffectPeriodic.h"
 #include "../ARCharacter.h"
 #include "../CosmeticEffects/ARActorCue.h"
@@ -24,6 +26,10 @@ UARAttributeBaseComponent::UARAttributeBaseComponent(const class FPostConstructI
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 	PrimaryComponentTick.bAllowTickOnDedicatedServer = true;
+	OnIncomingDamage.AddDynamic(this, &UARAttributeBaseComponent::SetAttributeForMod);
+	OnOutgoingDamage.AddDynamic(this, &UARAttributeBaseComponent::SetAttributeForMod);
+	CausedDamage = false;
+	//OnInstigatorCausedDamage.AddDynamic(this, &UARAttributeBaseComponent::SetAttributeForMod);
 }
 
 void UARAttributeBaseComponent::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
@@ -35,6 +41,8 @@ void UARAttributeBaseComponent::GetLifetimeReplicatedProps(TArray< class FLifeti
 
 	DOREPLIFETIME(UARAttributeBaseComponent, ModifiedAttribute);
 	DOREPLIFETIME_CONDITION(UARAttributeBaseComponent, ChangedAttribute, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UARAttributeBaseComponent, UIDamage, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UARAttributeBaseComponent, CausedDamage, COND_OwnerOnly);
 }
 void UARAttributeBaseComponent::OnRep_ModifiedAttribute()
 {
@@ -253,20 +261,103 @@ void UARAttributeBaseComponent::SetIntValue(int32 InValue, FName AttributeName)
 
 }
 
-
+void UARAttributeBaseComponent::SetAttributeForMod(const FGameplayTagContainer& DamageTags, const FAttribute& Attribute)
+{
+	CachedAttribute = Attribute;
+}
+void UARAttributeBaseComponent::SetFinalDmage(const FAttribute& AttributeIn)
+{
+	CachedAttribute = AttributeIn;
+}
 //this could be split into multiple functions actially.
 //maybe that would not be OOP, but could be cleaner and do not invovlve casting.
+/*
+	This function is begging me for clean up.
+	It might be right actually.
+*/
 void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEvent, AActor* EventInstigator, AActor* DamageCauser)
 {
+	UARAttributeBaseComponent* attrChar = DamageCauser->FindComponentByClass<UARAttributeBaseComponent>();
+	if (attrChar)
+	{
+		//first parameter is  invalid at this point.
+		/*
+		We give a chance for effects present on instigator to modify damage.
+		I probably should create another delegate for it.
+		As I really need to pass only two parameters at this point.
+		*/
+		attrChar->OnOutgoingDamage.Broadcast(DamageEvent.DamageTag, DamageEvent.Attribute);
+		//attrChar->OnInstigatorCausedDamage.Broadcast(ChangedAttribute, DamageEvent.DamageTag, DamageEvent.Attribute);
+	}
+	FAttribute attrOut;
+	
+	//FPlane plane = FSceneView::Project(GetOwner()->GetActorLocation());
+	
+	/*
+	We should also apply other standard modifcation, which are going to appiled whther
+	both objects have feat or not, these modification might include:
+	1. Increased damage based on attribute, which appiled to all outgoing damage of matching type.
+	2. Damage reduction by Armor/Spell Resistance/Elemental Resitance/etc.
+
+	There are at least three ways by which those can be appiled:
+	1. Weapon/Ability will apply them before passing damage to Apply Damage function.
+	It have bad side, of the fact, where designer must remember to put those function in each
+	ability. For 10 or 20 abilities it easy enough, but for 200-300 ?
+	2. Variation of above. Designer still have to put something in the weapon/ability
+	but this time it is predefined effect, which will catch incoming data, modify it
+	and pass it to this function.
+	It can be useful, because each effect can modify incoming data in different ways,
+	so it easy enough to create lots of variations for different responses for different attributes
+	for each ability/weapon, and then just use them as you see fit.
+	Object are created only for life time needed to modify incoming data, and then immidietly marked
+	for garbage collection, and are quickly enough destroyed.
+	The downside is, it is not really that easy to use in blueprint, where you might be forced to
+	pass informations from one object to another.
+	3. For each player create list of effects (static list ?), which are always present
+	and always listen for events. When there is match, they just modify incoming value, and output
+	modified one, for other effects to apply mods for it.
+	*/
+
+	/*
+	Ok this is an interesting part, that I'm trying to resolve currently.
+
+	Essentialy DamageAttribute doesn't calculate any damage. It just take any incoming value and
+	modify by it attribute. In that case it subtract it.
+	Before we apply damage, we call OnInstigatorCausedDamage delegate on Causer.
+	Now that delegate is inteded for use in two places:
+	1. Slate/UI to display damage done by player.
+	2. Effects. Before damage will be appiled, we should be able to modify in any other object.
+	In that case it will Feat object (UAREffectType base class), which can perform any operation
+	based on incoming DamageTags and value. And then send it back here, to be finally appiled.
+	It should work for causer (for example causer might have feat which will increase damage for
+	all one handed swords), and for affected Target (in the essence this component), for actor possing it
+	might have feat that will reduce all incoming physical damage.
+
+	After both interested objects had chance to modify incoming value, it should be appiled.
+	The order of operation is very important. Causer should always modify incoming value first,
+	as it is point of origin, and player expect that any mods from his character will be appiled first
+	when dealing damage.
+
+	Then any mods on target should appiled.
+	*/
+	attrOut = attrChar->CachedAttribute;
+
+	/*
+	Now we have modified incoming attribute on instigator, we give a chance for effects present on
+	target to modify incoming attribute.
+	*/
+	OnIncomingDamage.Broadcast(DamageEvent.DamageTag, attrOut);
 	if (DamageEvent.IsOfType(FARDamageEvent::ClassID))
 	{
-		SetFloatValue(AttributeOp(DamageEvent.Attribute.ModValue, GetFloatValue(DamageEvent.Attribute.AttributeName), DamageEvent.Attribute.OperationType), DamageEvent.Attribute.AttributeName);
+		//and finally we apply it.
+		SetFloatValue(AttributeOp(CachedAttribute.ModValue, GetFloatValue(CachedAttribute.AttributeName), CachedAttribute.OperationType), CachedAttribute.AttributeName);
+
+		//SetFloatValue(AttributeOp(DamageEvent.Attribute.ModValue, GetFloatValue(DamageEvent.Attribute.AttributeName), DamageEvent.Attribute.OperationType), DamageEvent.Attribute.AttributeName);
 		UDamageType* Damage = nullptr;
 		if (DamageEvent.DamageTypeClass)
 		{
 			Damage = ConstructObject<UDamageType>(DamageEvent.DamageTypeClass);
 		}
-		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
 		/*
 			TODO!!!
 			Part about setting up damage events and data is in need of serious rework!
@@ -274,7 +365,8 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 			2. Add more specialized function for Radial Damage
 			3. Split Damage Info (hit location, radius, damage type) from what was damaged.
 		*/
-		SetAttributeChange(DamageEvent.Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+		UARAttributeBaseComponent* attr = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+		//SetAttributeChange(CachedAttribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
 		//handle death.
 		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
 		if (attrInt)
@@ -285,6 +377,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 				if (GetFloatValue(DamageEvent.Attribute.AttributeName) <= 0 && DamageEvent.Attribute.ModValue > 0) //prolly want to move to interface as well. Different actor might want 
 					//different thresholds.
 				{
+					
 					attrInt->Died();
 				}
 			}
@@ -292,7 +385,15 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 
 		if (attr)
 		{
-			attr->InstigatorAttributeDamageCaused(DamageEvent.Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+			attr->InstigatorAttributeDamageCaused(CachedAttribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+			attr->UIDamage.Value = CachedAttribute.ModValue;
+			attr->UIDamage.Location = GetOwner()->GetActorLocation();
+			attr->OnInstigatorDamage.Broadcast();
+			attr->CausedDamage = true;
+			//attr->ClientOnInstigatorDamage();
+			//OnRep_CausedDamage(); //should be called only in single player.
+			//attr->OnInstigatorCausedDamage.Broadcast(attr->ChangedAttribute, DamageEvent.DamageTag, attr->ChangedAttribute.Attribute);
+
 		}
 		
 		OnAttributeDamage.Broadcast(ChangedAttribute, DamageEvent.DamageTag);
@@ -326,6 +427,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		if (attr)
 		{
 			attr->InstigatorAttributeDamageCaused(Point->Attribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, Point->DamageTag);
+			//attr->OnInstigatorCausedDamage.Broadcast(attr->ChangedAttribute, DamageEvent.DamageTag, attr->ChangedAttribute.Attribute);
 		}
 
 		OnAttributeDamage.Broadcast(ChangedAttribute, Point->DamageTag);
@@ -372,10 +474,151 @@ void UARAttributeBaseComponent::HealAttribute()
 {
 
 }
+void UARAttributeBaseComponent::ClientOnInstigatorDamage_Implementation()
+{
+	OnInstigatorDamage.Broadcast();
+	//if (ChangedAttribute.DamageInstigator)
+	//{
+	//	TWeakObjectPtr<UARAttributeBaseComponent> instAttr = ChangedAttribute.DamageInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+	//	if (instAttr.IsValid())
+	//	{
+	//		instAttr->OnInstigatorDamage.Broadcast();
+	//	}
+	//}
+}
+void UARAttributeBaseComponent::OnRep_CausedDamage()
+{
 
+	CausedDamage = false;
+}
 void UARAttributeBaseComponent::ChangeAttribute(FName AttributeName, float ModValue, TEnumAsByte<EAttrOp> OperationType)
 {
 	SetFloatValue(AttributeOp(ModValue, GetFloatValue(AttributeName), OperationType), AttributeName);
+}
+
+bool UARAttributeBaseComponent::CompareAttributes(FName AttributeA, FName AttributeB, TEnumAsByte<ECompareAttribute::Type> Comparsion)
+{
+	float ValueA = GetFloatValue(AttributeA);
+	float ValueB = GetFloatValue(AttributeB);
+
+	switch (Comparsion)
+	{
+	case ECompareAttribute::Type::Attr_Bigger:
+		if (ValueA > ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_BiggerEqual:
+		if (ValueA >= ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_Equal:
+		if (ValueA == ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_Smaller:
+		if (ValueA < ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_SmallerEqual:
+		if (ValueA <= ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	default:
+		return false;
+	}
+	return false;
+}
+
+bool UARAttributeBaseComponent::CompareAttributeValue(float Value, FName Attribute, TEnumAsByte<ECompareAttribute::Type> Comparsion)
+{
+	float ValueB = GetFloatValue(Attribute);
+
+	switch (Comparsion)
+	{
+	case ECompareAttribute::Type::Attr_Bigger:
+		if (Value > ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_BiggerEqual:
+		if (Value >= ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_Equal:
+		if (Value == ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_Smaller:
+		if (Value < ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	case ECompareAttribute::Type::Attr_SmallerEqual:
+		if (Value <= ValueB)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		break;
+	default:
+		return false;
+	}
+	return false;
 }
 
 void UARAttributeBaseComponent::InstigatorAttributeDamageCaused(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)
@@ -384,10 +627,23 @@ void UARAttributeBaseComponent::InstigatorAttributeDamageCaused(FAttribute Attri
 	ChangedAttribute.HitLocation = HitLocation;
 	ChangedAttribute.DamageCauser = DamageCauser;
 	ChangedAttribute.DamageTarget = DamageTarget;
-	//ChangedAttribute.ChangeInstigator = Instigator;
+	ChangedAttribute.DamageInstigator = Instigator;
 	ChangedAttribute.DamageType = DamageType;
 
-	OnInstigatorCausedDamage.Broadcast(ChangedAttribute, DamageTag);
+	//OnInstigatorCausedDamage.Broadcast(ChangedAttribute, DamageTag, Attribute);
+}
+
+void UARAttributeBaseComponent::OnRep_InstigatorDamageCaused()
+{
+	if (ChangedAttribute.DamageInstigator)
+	{
+		TWeakObjectPtr<UARAttributeBaseComponent> instAttr = ChangedAttribute.DamageInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+		if (instAttr.IsValid())
+		{
+			instAttr->OnInstigatorDamage.Broadcast();
+			instAttr->OnInstigatorCausedDamage.Broadcast(instAttr->ChangedAttribute);
+		}
+	}
 }
 
 void UARAttributeBaseComponent::SetAttributeChange(FAttribute Attribute, FVector HitLocation, AActor* DamageTarget, AActor* DamageCauser, AActor* Instigator, UDamageType* DamageType, FGameplayTagContainer DamageTag)

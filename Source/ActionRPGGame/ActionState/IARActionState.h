@@ -46,6 +46,14 @@ class IIARActionState
 	/*[Server]*/
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 		void OnActionEnd();
+	/*
+		Action is prepared. It means we have equiped it to slot, where we can fire it,
+		but we did not do so yet.
+		Useful when you need to prepare some things before action is used.
+		Like Draw targeting circle, or throwing arc.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+		void OnActionPrepared();
 
 	/*[Client]*/
 	UFUNCTION()

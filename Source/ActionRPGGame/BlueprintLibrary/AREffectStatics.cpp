@@ -4,6 +4,8 @@
 
 #include "../Effects/AREffectPeriodic.h"
 #include "../Effects/AREffectPeriodicO.h"
+#include "../Effects/AREffectType.h"
+
 #include "../Componenets/ARAttributeComponent.h"
 #include "../Types/AREffectTypes.h"
 #include "ARTraceStatics.h"
@@ -15,6 +17,31 @@
 
 UAREffectStatics::UAREffectStatics(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
+{
+
+}
+
+void UAREffectStatics::ApplyEffect(TSubclassOf<class UAREffectType> EffectIn, AActor* EffectCauser, AActor* EffectTarget, const FAttribute& AttributeIn, FAttribute& AttributeOut)
+{
+	if (!EffectIn || !EffectCauser || !EffectTarget)
+		return;
+
+	UAREffectType* tempEffect = ConstructObject<UAREffectType>(EffectIn);
+
+	//probably doesn't need it.
+	if (!tempEffect)
+		return;
+
+	tempEffect->EffectCausedBy = EffectCauser;
+	tempEffect->EffectTarget = EffectTarget;
+	tempEffect->EffectInstigator = EffectCauser;
+	tempEffect->AttributeOut = AttributeIn;
+	tempEffect->Initialize();
+
+	AttributeOut = tempEffect->AttributeOut;
+}
+
+void UAREffectStatics::ApplyInstantEffect(TSubclassOf<class UAREffectType> EffectIn)
 {
 
 }
@@ -153,7 +180,7 @@ void UAREffectStatics::ApplyRadialDamageWithFalloff(FName AttributeName, float B
 	SphereParams.AddIgnoredActors(IgnoreActors);
 	FCollisionResponseParams ResponseParams;
 	//ResponseParams.CollisionResponse.
-	
+
 	TArray<FOverlapResult> Overlaps;
 	//DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, ECollisionChannel::ECC_Pawn, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects));
 	DamageCauser->GetWorld()->OverlapMulti(Overlaps, Origin, FQuat::Identity, Collision, FCollisionShape::MakeSphere(DamageOuterRadius), SphereParams);
@@ -213,7 +240,7 @@ void UAREffectStatics::ApplyMultiBoxDamage(FVector StartLocation, float Range, F
 
 	DamageCauser->GetWorld()->SweepMulti(OutHits, StartLocation, EndTrace, FQuat::Identity, Collision, FCollisionShape::MakeBox(FVector(100, 100, 100)), Params);
 
-	DrawDebugSweptBox(DamageInstigator->GetWorld(), StartLocation, EndTrace, FRotator(0,0,0), FVector(100, 100, 100), FColor::Black, true, 10);
+	DrawDebugSweptBox(DamageInstigator->GetWorld(), StartLocation, EndTrace, FRotator(0, 0, 0), FVector(100, 100, 100), FColor::Black, true, 10);
 }
 
 void UAREffectStatics::DrawDebugSweptBox(const UWorld* InWorld, FVector const& Start, FVector const& End, FRotator const & Orientation, FVector const & HalfSize, FColor const& Color, bool bPersistentLines, float LifeTime, uint8 DepthPriority)
@@ -253,7 +280,7 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 	if (HitResult.bBlockingHit)
 	{
 		const FVector dir = (HitResult.ImpactPoint - Origin).SafeNormal();
-		FTransform SpawnTM(FRotator(0,0,0), Origin);
+		FTransform SpawnTM(FRotator(0, 0, 0), Origin);
 
 		AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
 
@@ -271,30 +298,117 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 
 }
 
-void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, float InitialVelocity, float MaxRadius, float MaxHeight, float ImpactDirection, int32 Amount)
+void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo, int32 Amount)
 {
 	if (HitResult.bBlockingHit)
 	{
 		for (int32 CurAmount = 0; CurAmount < Amount; CurAmount++)
 		{
 			FVector Location = HitResult.ImpactPoint;
-			Location.Z += MaxHeight;
-			Location.Y += FMath::RandRange(-MaxRadius, MaxRadius);
-			Location.X += FMath::RandRange(-MaxRadius, MaxRadius);
+			Location.Z += ProjectileInfo.MaxHeight;
+			Location.Y += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+			Location.X += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
 			FTransform SpawnTM(FRotator(0, 0, 0), Location);
 
 			AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
 
-			FVector FallDirection = FVector(FMath::FRandRange(-ImpactDirection, ImpactDirection), FMath::FRandRange(-ImpactDirection, ImpactDirection), -1);
+			FVector FallDirection = FVector(FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), -1);
 
 			if (proj)
 			{
 				//proj->Instigator = Causer;
 				proj->SetOwner(Causer);
 				proj->Instigator = Instigator;
-				proj->Movement->Velocity = FallDirection * InitialVelocity; // proj->Movement->InitialSpeed;
+				proj->Movement->Velocity = FallDirection * ProjectileInfo.InitialVelocity; // proj->Movement->InitialSpeed;
 				UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
 			}
+		}
+	}
+}
+
+void UAREffectStatics::SpawnProjectileInAreaInterval(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo, int32 Amount, float MinTime, float MaxTime)
+{
+	if (HitResult.bBlockingHit)
+	{
+		FTimerManager& TimerManager = Causer->GetWorld()->GetTimerManager();
+		FTimerManager& DurationTimer = Causer->GetWorld()->GetTimerManager();
+		FTimerHandle IntervalHandle;
+		FTimerHandle DurationHandle;
+		FTimerDelegate del = FTimerDelegate::CreateStatic(&UAREffectStatics::SpawnProjectile, Projectile, Causer, HitResult, ProjectileInfo);
+		TimerManager.SetTimer(IntervalHandle, del, MinTime, true, 0);
+		float duration = Amount * MaxTime + KINDA_SMALL_NUMBER;
+		FTimerDelegate durDel = FTimerDelegate::CreateStatic(&UAREffectStatics::StopTimer, Causer, IntervalHandle.GetHandle());
+		DurationTimer.SetTimer(DurationHandle, durDel, duration, false);
+		float CurrentTime = 0;
+		int32 counter = 0;
+	}
+}
+void UAREffectStatics::StopTimer(AActor* Causer, int32 HandleIn)
+{
+	FTimerHandle Handle = FTimerHandle(HandleIn);
+	FTimerManager& Timer = Causer->GetWorld()->GetTimerManager();
+	Timer.ClearTimer(Handle);
+	//Timer.ClearTimer(TimerHandle);
+}
+void UAREffectStatics::SpawnProjectile(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, FARProjectileInfo ProjectileInfo)
+{
+	//it would be good to add some small delay for spawning projectiles even
+	//when they are spawned at interval.
+	//So if single burst is of 3 projectiles they won't be spawned at seemingly the same time.
+	//FTimerManager& TimerManager = Causer->GetWorld()->GetTimerManager();
+	//FTimerDelegate del = FTimerDelegate::CreateStatic(&UAREffectStatics::SpawnProjectileOne, Projectile, Causer, HitResult, ProjectileInfo);
+	if (HitResult.bBlockingHit)
+	{
+		for (int32 CurAmount = 0; CurAmount < ProjectileInfo.BurstSize; CurAmount++)
+		{
+			//FTimerHandle HandleInt;
+
+			//TimerManager.SetTimer(HandleInt, del, 0.6, false, 0);
+			FVector Location = HitResult.ImpactPoint;
+			Location.Z += FMath::RandRange(ProjectileInfo.MaxHeight - 300, ProjectileInfo.MaxHeight + 300);
+			Location.Y += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+			Location.X += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+			FTransform SpawnTM(FRotator(0, 0, 0), Location);
+
+			AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
+
+			FVector FallDirection = FVector(FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), -1);
+
+			if (proj)
+			{
+				//proj->Instigator = Causer;
+				proj->SetOwner(Causer);
+				proj->Movement->Velocity = FallDirection * ProjectileInfo.InitialVelocity; // proj->Movement->InitialSpeed;
+				UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
+			}
+		}
+	}
+}
+
+void UAREffectStatics::SpawnProjectileOne(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, FARProjectileInfo ProjectileInfo)
+{
+	//it would be good to add some small delay for spawning projectiles even
+	//when they are spawned at interval.
+	//So if single burst is of 3 projectiles they won't be spawned at seemingly the same time.
+
+	if (HitResult.bBlockingHit)
+	{
+		FVector Location = HitResult.ImpactPoint;
+		Location.Z += ProjectileInfo.MaxHeight;
+		Location.Y += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+		Location.X += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+		FTransform SpawnTM(FRotator(0, 0, 0), Location);
+
+		AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
+
+		FVector FallDirection = FVector(FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), -1);
+
+		if (proj)
+		{
+			//proj->Instigator = Causer;
+			proj->SetOwner(Causer);
+			proj->Movement->Velocity = FallDirection * ProjectileInfo.InitialVelocity; // proj->Movement->InitialSpeed;
+			UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
 		}
 	}
 }
@@ -307,7 +421,7 @@ void UAREffectStatics::SpawnField(TSubclassOf<class AARFieldBase> Field, AActor*
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.bNoCollisionFail = true;
 	SpawnInfo.Owner = Instigator;
-	
+
 	//SpawnInfo.Instigator = Instigator;
 
 	//Instigator->GetWorld()->SpawnActor<AARFieldBase>(Field, Location.Location, FRotator(0, 0, 0), SpawnInfo);

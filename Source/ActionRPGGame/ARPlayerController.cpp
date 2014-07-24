@@ -46,44 +46,33 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 		ActionBarOne.Add(ab);
 	}
 
-	IsInventoryChanged = false;
 	if (PlayerCameraManager)
 	{
 		PlayerCameraManager->ViewPitchMax = 70.0f;
 	}
-	MaxInventorySize = 16;
-	InventorySmall.Reserve(MaxInventorySize);
-	for (int32 i = 0; i < MaxInventorySize; i++)
-	{
-		FInventorySlot slot;
-		slot.SlotID = i;
-		slot.ItemID = NAME_None; //no item on that slot.
-		slot.ItemSlot = EItemSlot::Item_Inventory;
-		slot.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
-		InventorySmall.Add(slot);
-	};
-	//initialize slots for left hand weapon.
-	for (int32 i = 0; i < 4; i++)
-	{
-		FInventorySlot in;
-		in.ItemID = NAME_None;
-		in.SlotID = i;
-		in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
-		in.ItemSlot = EItemSlot::Item_Weapon;
-		LeftHandWeapons.Add(in);
-	}
-	LeftHandWeaponsUpdated = false;
 
-	for (int32 i = 0; i < 4; i++)
-	{
-		FInventorySlot in;
-		in.ItemID = NAME_None;
-		in.SlotID = i;
-		in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
-		in.ItemSlot = EItemSlot::Item_Weapon;
-		RightHandWeapons.Add(in);
-	}
-	RightHandWeaponsUpdated = false;
+	//initialize slots for left hand weapon.
+	//for (int32 i = 0; i < 4; i++)
+	//{
+	//	FInventorySlot in;
+	//	in.ItemID = NAME_None;
+	//	in.SlotID = i;
+	//	in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+	//	in.ItemSlot = EItemSlot::Item_Weapon;
+	//	LeftHandWeapons.Add(in);
+	//}
+	//LeftHandWeaponsUpdated = false;
+
+	//for (int32 i = 0; i < 4; i++)
+	//{
+	//	FInventorySlot in;
+	//	in.ItemID = NAME_None;
+	//	in.SlotID = i;
+	//	in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+	//	in.ItemSlot = EItemSlot::Item_Weapon;
+	//	RightHandWeapons.Add(in);
+	//}
+	//RightHandWeaponsUpdated = false;
 
 	PlayerCameraManagerClass = AARPlayerCameraManager::StaticClass();
 
@@ -353,351 +342,6 @@ bool AARPlayerController::ServerAddAbilityToInventory_Validate(FAbilityInfo Abil
 	return true;
 }
 
-void AARPlayerController::OnRep_InventoryChanged()
-{
-	IsInventoryChanged = true;
-}
-
-void AARPlayerController::AddItemToInventory(FInventorySlot Item)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerAddItemToInventory(Item);
-		//IsInventoryChanged = true;
-	}
-	else
-	{
-		if (Feats.Num() > 0)
-		{
-			float g = 0;
-		}
-		if (InventorySmall.Num() <= MaxInventorySize)
-		{
-			for (FInventorySlot& item : InventorySmall)
-			{
-				if (item.ItemID.IsNone())
-				{
-					item.ItemID = Item.ItemID;
-					item.ItemSlot = Item.ItemSlot;
-					item.EEquipmentSlot = Item.EEquipmentSlot;
-					IsInventoryChanged = true;
-					//ClientSetInventoryChanged();
-					return;
-				}
-			}
-		}
-	}
-}
-
-void AARPlayerController::ServerAddItemToInventory_Implementation(FInventorySlot Item)
-{
-	AddItemToInventory(Item);
-}
-bool AARPlayerController::ServerAddItemToInventory_Validate(FInventorySlot Item)
-{
-	//I dunno how I can validate this.
-	//best option would be to never call this directely on client. Just do it indirectly.
-	return true;
-}
-//it's really only used to swap items.
-void AARPlayerController::AddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerAddItemToInventoryOnSlot(Item, SlotID);
-	}
-	else
-	{
-		if (InventorySmall.Num() <= MaxInventorySize)
-		{
-			for (FInventorySlot& item : InventorySmall)
-			{
-				if (item.SlotID == SlotID && item.ItemID != NAME_None)
-				{
-					FInventorySlot oldItemTemp = item;
-					item.ItemID = Item.ItemID;
-					item.ItemSlot = Item.ItemSlot;
-					item.EEquipmentSlot = Item.EEquipmentSlot;
-					for (FInventorySlot& oldItem : InventorySmall)
-					{
-						if (Item.SlotID == oldItem.SlotID)
-						{
-							oldItem.ItemID = oldItemTemp.ItemID;
-							oldItem.ItemSlot = oldItemTemp.ItemSlot;
-							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-							IsInventoryChanged = true;
-							ClientSetInventoryChanged();
-							//OnRep_InventoryChanged();
-							return;
-						}
-					}
-					IsInventoryChanged = true;
-					//OnRep_InventoryChanged();
-					return;
-				}
-				if (item.ItemID == NAME_None && item.SlotID == SlotID)
-				{
-					item.ItemID = Item.ItemID;
-					item.ItemSlot = Item.ItemSlot;
-					item.EEquipmentSlot = Item.EEquipmentSlot;
-					RemoveItemFromInventory(Item.ItemID, Item.OldSlotID);
-					IsInventoryChanged = true;
-					ClientSetInventoryChanged();
-					//RemoveItemFromInventory(Item.ItemID, Item.SlotID);
-					//OnRep_InventoryChanged();
-					return;
-				}
-			}
-		}
-	}
-}
-void AARPlayerController::ServerAddItemToInventoryOnSlot_Implementation(FInventorySlot Item, int32 SlotID)
-{
-	AddItemToInventoryOnSlot(Item, SlotID);
-}
-bool AARPlayerController::ServerAddItemToInventoryOnSlot_Validate(FInventorySlot Item, int32 SlotID)
-{
-	for (FInventorySlot& item : InventorySmall)
-	{
-		if (item.ItemID == item.ItemID)
-		{
-			return true;
-		}
-	}
-	return false;
-	/*
-		Since it is used to swap items, we check it user have particular item in inventory.
-		If he dosn't then he probably is trying to cheat.
-		*/
-}
-
-bool AARPlayerController::RemoveItemFromInventory(FName ItemID, int32 SlotID)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerRemoveItemFromInventory(ItemID, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& item : InventorySmall)
-		{
-			if (item.SlotID == SlotID && item.ItemID != NAME_None)
-			{
-				//we don't remove actually anything from array.
-				//just change ID and slot types, to match an "empty" slot 
-				// in inventory.
-				item.ItemID = NAME_None;
-				item.ItemSlot = EItemSlot::Item_Inventory;
-				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
-				IsInventoryChanged = true;
-				ClientSetInventoryChanged();
-				return true;
-			}
-		}
-	}
-	return false;
-}
-void AARPlayerController::ServerRemoveItemFromInventory_Implementation(FName ItemID, int32 SlotID)
-{
-	RemoveItemFromInventory(ItemID, SlotID);
-}
-bool AARPlayerController::ServerRemoveItemFromInventory_Validate(FName ItemID, int32 SlotID)
-{
-	return true;
-}
-void AARPlayerController::ClientSetInventoryChanged_Implementation()
-{
-	IsInventoryChanged = true;
-}
-
-void AARPlayerController::SetInventoryChanged()
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerSetInventoryChanged();
-	}
-	else
-	{
-		IsInventoryChanged = false;
-	}
-}
-void AARPlayerController::ServerSetInventoryChanged_Implementation()
-{
-	SetInventoryChanged();
-}
-bool AARPlayerController::ServerSetInventoryChanged_Validate()
-{
-	return true;
-}
-
-void AARPlayerController::AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerAddLeftHandWeapon(Weapon, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& weapon : LeftHandWeapons)
-		{
-			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
-			{
-				FInventorySlot oldItemTemp = weapon;
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-				for (FInventorySlot& oldItem : InventorySmall)
-				{
-					if (weapon.SlotID == oldItem.SlotID)
-					{
-						oldItem.ItemID = oldItemTemp.ItemID;
-						oldItem.ItemSlot = oldItemTemp.ItemSlot;
-						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-						return;
-					}
-				}
-				LeftHandWeaponsUpdated = true;
-				//OnRep_InventoryChanged();
-				return;
-			}
-			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
-			{
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-				LeftHandWeaponsUpdated = true;
-				return;
-			}
-		}
-	}
-}
-void AARPlayerController::ServerAddLeftHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
-{
-	AddLeftHandWeapon(Weapon, SlotID);
-}
-bool AARPlayerController::ServerAddLeftHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
-{
-	return true;
-}
-
-bool AARPlayerController::RemoveLeftHandWeapon(FName ItemID, int32 SlotID)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerRemoveLeftHandWeapon(ItemID, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& item : LeftHandWeapons)
-		{
-			if (item.SlotID == SlotID && item.ItemID != NAME_None)
-			{
-				//we don't remove actually anything from array.
-				//just change ID and slot types, to match an "empty" slot 
-				// in inventory.
-				item.ItemID = NAME_None;
-				item.ItemSlot = EItemSlot::Item_Inventory;
-				item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
-				LeftHandWeaponsUpdated = true;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-void AARPlayerController::ServerRemoveLeftHandWeapon_Implementation(FName ItemID, int32 SlotID)
-{
-	RemoveLeftHandWeapon(ItemID, SlotID);
-}
-bool AARPlayerController::ServerRemoveLeftHandWeapon_Validate(FName ItemID, int32 SlotID)
-{
-	return true;
-}
-
-void AARPlayerController::AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerAddRightHandWeapon(Weapon, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& weapon : RightHandWeapons)
-		{
-			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
-			{
-				FInventorySlot oldItemTemp = weapon;
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-				for (FInventorySlot& oldItem : InventorySmall)
-				{
-					if (weapon.SlotID == oldItem.SlotID)
-					{
-						oldItem.ItemID = oldItemTemp.ItemID;
-						oldItem.ItemSlot = oldItemTemp.ItemSlot;
-						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-						return;
-					}
-				}
-				RightHandWeaponsUpdated = true;
-				//OnRep_InventoryChanged();
-				return;
-			}
-			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
-			{
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-
-				RightHandWeaponsUpdated = true;
-				return;
-			}
-		}
-	}
-}
-void AARPlayerController::ServerAddRightHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
-{
-	AddRightHandWeapon(Weapon, SlotID);
-}
-bool AARPlayerController::ServerAddRightHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
-{
-	return true;
-}
-
-bool AARPlayerController::RemoveRightHandWeapon(FName ItemID, int32 SlotID)
-{
-	if (Role < ROLE_Authority)
-	{
-		ServerRemoveRightHandWeapon(ItemID, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& item : RightHandWeapons)
-		{
-			if (item.SlotID == SlotID && item.ItemID != NAME_None)
-			{
-				//we don't remove actually anything from array.
-				//just change ID and slot types, to match an "empty" slot 
-				// in inventory.
-				item.ItemID = NAME_None;
-				item.ItemSlot = EItemSlot::Item_Inventory;
-				item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
-				RightHandWeaponsUpdated = true;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-void AARPlayerController::ServerRemoveRightHandWeapon_Implementation(FName ItemID, int32 SlotID)
-{
-	RemoveRightHandWeapon(ItemID, SlotID);
-}
-bool AARPlayerController::ServerRemoveRightHandWeapon_Validate(FName ItemID, int32 SlotID)
-{
-	return true;
-}
 
 void AARPlayerController::OnRep_ActionBarOne()
 {
@@ -707,28 +351,14 @@ void AARPlayerController::OnRep_AbilityInventory()
 {
 	UpdateAbilityInventory = true;
 }
-void AARPlayerController::OnRep_LeftHandWeapons()
-{
-	LeftHandWeaponsUpdated = true;
-}
-void AARPlayerController::OnRep_RightHandWeapons()
-{
-	RightHandWeaponsUpdated = true;
-}
+
 void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(AARPlayerController, MaxInventorySize, COND_OwnerOnly);
-
-	DOREPLIFETIME_CONDITION(AARPlayerController, InventorySmall, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AARPlayerController, IsInventoryChanged, COND_OwnerOnly);
-
 	DOREPLIFETIME_CONDITION(AARPlayerController, AbilityInventory, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, ActionBarOne, COND_OwnerOnly);
 
-	DOREPLIFETIME_CONDITION(AARPlayerController, LeftHandWeapons, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(AARPlayerController, RightHandWeapons, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, UIDamage, COND_OwnerOnly);
 }
 

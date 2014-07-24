@@ -28,6 +28,9 @@ public:
 	UPROPERTY(Replicated)
 	class AARPlayerController* TargetController;
 
+	UPROPERTY(Replicated)
+	class UARInventoryComponent* Inventory;
+
 	virtual void InitializeComponent() override;
 	virtual void BeginDestroy() override;
 	//this is placeholder. inventory should use different data struct
@@ -37,27 +40,82 @@ public:
 	//we need!
 
 	/* Inventory Handling **/
-
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_Inventory, Category = "Inventory")
-		TArray<FARItemInfo> Inventory;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 		TArray<class AARItem*> EquippedItems;
 
-	//UPROPERTY(BlueprintReadOnly, Replicated, Category = "Inventory")
-	//	TArray<FARItemInfo> EquippedItems;
-
 	int8 MaxEquippedItems;
+	
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-		void AddItemToInventory(FInventorySlot NewItem);
+	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.
+		TArray<FInventorySlot> LeftHandWeapons;
+	UFUNCTION()
+		void OnRep_LeftHandWeapons();
+	/*
+		Indicates whether there is some change in LeftHandWeapons
+	*/
+	bool LeftHandWeaponsUpdated;
+	/* 
+		[client] [server] - Add left hand weapon to LeftHandWeapons
+	*/
+	void AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
+
+	/* 
+		[server] - Calls AddLeftHandWeapon On server. 
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
+
+	/* 
+		[client] [server] - Remove left hand weapon to list of equiped weapons.
+		Return true if something has been removed.
+	*/
+	bool RemoveLeftHandWeapon(FName ItemID, int32 SlotID);
+
+	/* 
+		[server] - Calls RemoveLeftHandWeapon On server. 
+		
+		@param ItemID - ID of item remove.
+		@param SlotID - ID of Inventory slot, which item occupy.
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemoveLeftHandWeapon(FName ItemID, int32 SlotID);
+
+	/*
+		List of weapon which can be equiped to right hand
+	*/
+	UPROPERTY(ReplicatedUsing = OnRep_RightHandWeapons)
+		TArray<FInventorySlot> RightHandWeapons;
+	UFUNCTION()
+		void OnRep_RightHandWeapons();
+	/*
+		Indicates whether there is some change in RightHandWeapons
+	*/
+	bool RightHandWeaponsUpdated;
+
+	/* 
+		[client] [server] - Add right hand weapon to RightHandWeapons
+	*/
+	void AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddItemToInventory(FInventorySlot NewItem);
-	void AddItemToInventoryRep();
+		void ServerAddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
-	UFUNCTION()
-		TArray<FARItemInfo> GetItems();
+	/*
+		[client] [server] - Remove right hand weapon from RightHandWeapons.
+		Return true if something has been removed.
+	*/
+	bool RemoveRightHandWeapon(FName ItemID, int32 SlotID);
+	/* 
+		[server] - Calls RemoveRightHandWeapon On server. 
+	*/
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemoveRightHandWeapon(FName ItemID, int32 SlotID);
+
+	/*
+		Items which are equiped, like chest, gloves neckles etc. whitout assigning them to specific slot.
+	*/
+	//UPROPERTY()
+	//	TArray<FInventorySlot> EquippedItemsInfo;
 
 	UFUNCTION()
 		void OnRep_Inventory();
@@ -65,17 +123,6 @@ public:
 	void SortEquipedItemsByAttribute(FName AttributeName);
 
 	/* Weapon Handling **/
-	/**
-		These weapons are equiped in character sheet,
-		but are not active. Player can choose from these weapons in combat.
-		To make these weapons active.
-	*/
-	UPROPERTY() //not sure but I think we shouldn't really replicate this back.
-		TArray<FInventorySlot> LeftHandWeapons;
-
-	UPROPERTY()
-		TArray<FInventorySlot> RightHandWeapons;
-
 	int32 MaxWeapons;
 
 	/*
@@ -93,12 +140,6 @@ public:
 	UPROPERTY()
 	TArray<class AARWeapon*> ActiveWeapons;
 
-	/* [Server][Client] - Add weapon to equiped weapons list**/
-	UFUNCTION()
-		void AddLeftHandWeapon(FName ItemName);
-	/* [Server] - Add weapon to equiped weapons list **/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddLeftHandWeapon(FName ItemName);
 	int32 MaxEquipedWeapons;
 
 	/*

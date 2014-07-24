@@ -98,6 +98,14 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	//SetRootComponent(Mesh);
 }
 
+void AARCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Equipment->SetIsReplicated(true);
+	Attributes->SetIsReplicated(true);
+}
+
 void AARCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -146,7 +154,13 @@ void AARCharacter::OnRep_Controller()
 	Super::OnRep_Controller();
 	Equipment->TargetCharacter = this;
 	Equipment->TargetController = Cast<AARPlayerController>(GetController());
-
+	/*
+		It's very bad way of doing this!
+	*/
+	if (Equipment->TargetController)
+	{
+		Equipment->Inventory = Equipment->TargetController->Inventory;
+	}
 	Abilities->OwningCharacter = this;
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
 
@@ -157,7 +171,10 @@ void AARCharacter::PossessedBy(class AController* NewController)
 	Super::PossessedBy(NewController);
 	Equipment->TargetCharacter = this;
 	Equipment->TargetController = Cast<AARPlayerController>(GetController());
-
+	if (Equipment->TargetController)
+	{
+		Equipment->Inventory = Equipment->TargetController->Inventory;
+	}
 	Abilities->OwningCharacter = this;
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
 

@@ -147,29 +147,24 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 	TSharedPtr<FInventoryDragDrop> Operation = DragDropEvent.GetOperationAs<FInventoryDragDrop>();
 	if (this->EquipmentSlot == EEquipmentSlot::Item_Chest)
 	{
-		if (PlayerController.IsValid() && Operation.IsValid())
+		if (Equipment.IsValid() && Operation.IsValid())
 		{
-			TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
+			int32 tempSlotID = Operation->PickedItem->SlotID;
+			Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_Chest;
+			Operation->LastItemSlot->ItemInSlot.Reset();
+			Operation->LastItemSlot->InventoryItem.Reset();
+			InventoryItem = Operation->PickedItem;
+			ItemInSlot = Operation->InventoryItemObj;
+			Equipment->ChangeItem(*Operation->PickedItem, tempSlotID);
 
-			if (MyChar.IsValid())
-			{
-				int32 tempSlotID = Operation->PickedItem->SlotID;
-				Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_Chest;
-				Operation->LastItemSlot->ItemInSlot.Reset();
-				Operation->LastItemSlot->InventoryItem.Reset();
-				InventoryItem = Operation->PickedItem;
-				ItemInSlot = Operation->InventoryItemObj;
-				MyChar->Equipment->ChangeItem(*Operation->PickedItem, tempSlotID);
-
-				//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
-				return FReply::Handled();
-			}
+			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
+			return FReply::Handled();
 		}
 	}
 	//check type of current InventorySlot type.
 	if (this->EquipmentSlot == EEquipmentSlot::Item_LeftHandOne)
 	{
-		if (PlayerController.IsValid() && Operation.IsValid())
+		if (Equipment.IsValid() && Operation.IsValid())
 		{
 			//check last slot from which item has be dragged.
 			//if it is Item_RightHandOne we will remove this item from
@@ -179,12 +174,10 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			//this is RPC call!
 			if (Operation->PickedItem->EEquipmentSlot == EEquipmentSlot::Item_RightHandOne)
 			{
-				PlayerController->RemoveRightHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
-				TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
-				if (MyChar.IsValid())
-				{
-					MyChar->Equipment->UnEquipRightHandWeapon(Operation->PickedItem->ItemID);
-				}
+				Equipment->RemoveRightHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
+
+					Equipment->UnEquipRightHandWeapon(Operation->PickedItem->ItemID);
+
 			}
 			//store current slot ID;
 			int32 tempSlotID = this->InventoryItem->SlotID;
@@ -208,7 +201,7 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			Operation->LastItemSlot->InventoryItem.Reset();
 
 			//add it to inventory.
-			PlayerController->AddLeftHandWeapon(item, tempSlotID);
+			Equipment->AddLeftHandWeapon(item, tempSlotID);
 
 			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
 			return FReply::Handled();
@@ -217,16 +210,14 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 	}
 	if (this->EquipmentSlot == EEquipmentSlot::Item_RightHandOne)
 	{
-		if (PlayerController.IsValid() && Operation.IsValid())
+		if (Equipment.IsValid() && Operation.IsValid())
 		{
 			if (Operation->PickedItem->EEquipmentSlot == EEquipmentSlot::Item_LeftHandOne)
 			{
-				PlayerController->RemoveLeftHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
-				TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
-				if (MyChar.IsValid())
-				{
-					MyChar->Equipment->UnEquipLeftHandWeapon(Operation->PickedItem->ItemID);
-				}
+				Equipment->RemoveLeftHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
+
+				Equipment->UnEquipLeftHandWeapon(Operation->PickedItem->ItemID);
+
 			}
 			int32 tempSlotID = this->InventoryItem->SlotID;
 			Operation->PickedItem->EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
@@ -244,7 +235,7 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			Operation->LastItemSlot->ItemInSlot.Reset();
 			Operation->LastItemSlot->InventoryItem.Reset();
 
-			PlayerController->AddRightHandWeapon(item, tempSlotID);
+			Equipment->AddRightHandWeapon(item, tempSlotID);
 
 
 			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
@@ -270,10 +261,10 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 
 			if (Operation->LastItemSlot->SlotType != EItemSlot::Item_Inventory)
 			{
-				const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(PlayerController->GetPawn());
-				if (MyChar.IsValid())
+
+				if (Equipment.IsValid())
 				{
-					MyChar->Equipment->UnEquipItem(*InventoryItem);
+					Equipment->UnEquipItem(*InventoryItem);
 				}
 				Operation->LastItemSlot->InventoryItem.Reset();
 				//InventoryItem = NULL

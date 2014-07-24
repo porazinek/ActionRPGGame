@@ -14,6 +14,8 @@
 #include "../Items/ARItemPickup.h"
 #include "../BlueprintLibrary/ARTraceStatics.h"
 
+#include "../Items/ARInventoryComponent.h"
+
 #include "Net/UnrealNetwork.h"
 
 #include "AREquipmentComponent.h"
@@ -32,6 +34,8 @@ UAREquipmentComponent::UAREquipmentComponent(const class FPostConstructInitializ
 	*/
 	ActiveRightHandWeapon = nullptr;
 	ActiveLeftHandWeapon = nullptr;
+	LeftHandWeaponsUpdated = false;
+	RightHandWeaponsUpdated = false;
 }
 
 void UAREquipmentComponent::InitializeComponent()
@@ -61,6 +65,26 @@ void UAREquipmentComponent::InitializeComponent()
 				ActiveRightHandWeapon->OwningController = TargetController;
 			}
 		}
+		for (int32 i = 0; i < 4; i++)
+		{
+			FInventorySlot in;
+			in.ItemID = NAME_None;
+			in.SlotID = i;
+			in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+			in.ItemSlot = EItemSlot::Item_Weapon;
+			LeftHandWeapons.Add(in);
+		}
+		
+		for (int32 i = 0; i < 4; i++)
+		{
+			FInventorySlot in;
+			in.ItemID = NAME_None;
+			in.SlotID = i;
+			in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+			in.ItemSlot = EItemSlot::Item_Weapon;
+			RightHandWeapons.Add(in);
+		}
+		
 	}
 }
 void UAREquipmentComponent::BeginDestroy()
@@ -75,16 +99,193 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 	DOREPLIFETIME(UAREquipmentComponent, TargetCharacter);
 	DOREPLIFETIME(UAREquipmentComponent, TargetController);
 
-	//DOREPLIFETIME(UAREquipmentComponent, IsInventoryChanged);
-
 	DOREPLIFETIME_CONDITION(UAREquipmentComponent, Inventory, COND_OwnerOnly);
-	//DOREPLIFETIME(UAREquipmentComponent, InventoryData);
 
 	DOREPLIFETIME(UAREquipmentComponent, ActiveLeftHandWeapon);
 	DOREPLIFETIME(UAREquipmentComponent, ActiveRightHandWeapon);
 
 	DOREPLIFETIME(UAREquipmentComponent, ChestItem);
+
+	DOREPLIFETIME_CONDITION(UAREquipmentComponent, LeftHandWeapons, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UAREquipmentComponent, RightHandWeapons, COND_OwnerOnly);
 }
+void UAREquipmentComponent::OnRep_LeftHandWeapons()
+{
+	LeftHandWeaponsUpdated = true;
+}
+void UAREquipmentComponent::OnRep_RightHandWeapons()
+{
+	RightHandWeaponsUpdated = true;
+}
+void UAREquipmentComponent::AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerAddLeftHandWeapon(Weapon, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& weapon : LeftHandWeapons)
+		{
+			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+			{
+				FInventorySlot oldItemTemp = weapon;
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				for (FInventorySlot& oldItem : Inventory->Inventory)
+				{
+					if (weapon.SlotID == oldItem.SlotID)
+					{
+						oldItem.ItemID = oldItemTemp.ItemID;
+						oldItem.ItemSlot = oldItemTemp.ItemSlot;
+						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+						return;
+					}
+				}
+				LeftHandWeaponsUpdated = true;
+				//OnRep_InventoryChanged();
+				return;
+			}
+			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+			{
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				LeftHandWeaponsUpdated = true;
+				return;
+			}
+		}
+	}
+}
+void UAREquipmentComponent::ServerAddLeftHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
+{
+	AddLeftHandWeapon(Weapon, SlotID);
+}
+bool UAREquipmentComponent::ServerAddLeftHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+{
+	return true;
+}
+
+bool UAREquipmentComponent::RemoveLeftHandWeapon(FName ItemID, int32 SlotID)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerRemoveLeftHandWeapon(ItemID, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& item : LeftHandWeapons)
+		{
+			if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			{
+				//we don't remove actually anything from array.
+				//just change ID and slot types, to match an "empty" slot 
+				// in inventory.
+				item.ItemID = NAME_None;
+				item.ItemSlot = EItemSlot::Item_Inventory;
+				item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+				LeftHandWeaponsUpdated = true;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+void UAREquipmentComponent::ServerRemoveLeftHandWeapon_Implementation(FName ItemID, int32 SlotID)
+{
+	RemoveLeftHandWeapon(ItemID, SlotID);
+}
+bool UAREquipmentComponent::ServerRemoveLeftHandWeapon_Validate(FName ItemID, int32 SlotID)
+{
+	return true;
+}
+
+void UAREquipmentComponent::AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerAddRightHandWeapon(Weapon, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& weapon : RightHandWeapons)
+		{
+			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+			{
+				FInventorySlot oldItemTemp = weapon;
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+				for (FInventorySlot& oldItem : Inventory->Inventory)
+				{
+					if (weapon.SlotID == oldItem.SlotID)
+					{
+						oldItem.ItemID = oldItemTemp.ItemID;
+						oldItem.ItemSlot = oldItemTemp.ItemSlot;
+						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+						return;
+					}
+				}
+				RightHandWeaponsUpdated = true;
+				//OnRep_InventoryChanged();
+				return;
+			}
+			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+			{
+				weapon.ItemID = Weapon.ItemID;
+				weapon.ItemSlot = Weapon.ItemSlot;
+				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+
+				RightHandWeaponsUpdated = true;
+				return;
+			}
+		}
+	}
+}
+void UAREquipmentComponent::ServerAddRightHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
+{
+	AddRightHandWeapon(Weapon, SlotID);
+}
+bool UAREquipmentComponent::ServerAddRightHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+{
+	return true;
+}
+
+bool UAREquipmentComponent::RemoveRightHandWeapon(FName ItemID, int32 SlotID)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerRemoveRightHandWeapon(ItemID, SlotID);
+	}
+	else
+	{
+		for (FInventorySlot& item : RightHandWeapons)
+		{
+			if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			{
+				//we don't remove actually anything from array.
+				//just change ID and slot types, to match an "empty" slot 
+				// in inventory.
+				item.ItemID = NAME_None;
+				item.ItemSlot = EItemSlot::Item_Inventory;
+				item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+				RightHandWeaponsUpdated = true;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+void UAREquipmentComponent::ServerRemoveRightHandWeapon_Implementation(FName ItemID, int32 SlotID)
+{
+	RemoveRightHandWeapon(ItemID, SlotID);
+}
+bool UAREquipmentComponent::ServerRemoveRightHandWeapon_Validate(FName ItemID, int32 SlotID)
+{
+	return true;
+}
+
 
 void UAREquipmentComponent::OnRep_AtiveLeftHandWeapon()
 {
@@ -151,72 +352,7 @@ void UAREquipmentComponent::SortEquipedItemsByAttribute(FName AttributeName)
 	//}
 }
 /* Inventory Handling **/
-void UAREquipmentComponent::AddItemToInventory(FInventorySlot NewItem)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerAddItemToInventory(NewItem);
-	}
-	else
-	{
-		//if (TargetController)
-		//{
-		//	if (ItemSlot == EItemSlot::Item_Chest)
-		//	{
-		//		UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *ChestItemDataAssetPath, NULL, LOAD_None, NULL));
 
-		//		if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
-		//		{
-		//			for (FARItemInfo& item : ItemDataAsset->Items)
-		//			{
-		//				if (item.ItemID == ItemID)
-		//				{
-		//					FInventorySlot it;
-		//					it.ItemID = item.ItemID;
-		//					it.ItemSlot = item.ItemSlot;
-
-		//					TargetController->InventorySmall.Add(it);
-		//					//TargetController->Inventory.Add(item);
-		//					break;
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-	}
-}
-void UAREquipmentComponent::ServerAddItemToInventory_Implementation(FInventorySlot NewItem)
-{
-	if (TargetController)
-	{
-		if (NewItem.ItemSlot == EItemSlot::Item_Chest)
-		{
-			FString usless;
-			FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(NewItem.ItemID, usless);
-			if (data)
-			{
-				TargetController->AddItemToInventory(NewItem);
-			}
-		}
-		if (NewItem.ItemSlot == EItemSlot::Item_Weapon)
-		{
-			FString usless;
-			FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(NewItem.ItemID, usless);
-			if (data)
-			{
-				TargetController->AddItemToInventory(NewItem);
-			}
-		}
-	}
-}
-bool UAREquipmentComponent::ServerAddItemToInventory_Validate(FInventorySlot NewItem)
-{
-	return true;
-}
-TArray<FARItemInfo> UAREquipmentComponent::GetItems()
-{
-	return Inventory;
-}
 
 void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName SocketName)
 {
@@ -260,8 +396,8 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 				tempItem.ItemSlot = eqItem->ItemSlotEquipped;
 				//if there is, Unequip it. Before we proceed.
 				UnEquipItem(ItemIn);
-				itemRemoved = TargetController->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
-				TargetController->AddItemToInventoryOnSlot(tempItem, OldItemSlotID);
+				itemRemoved = Inventory->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+				Inventory->AddItemToInventoryOnSlot(tempItem, OldItemSlotID);
 			}
 		}
 		switch (ItemIn.EEquipmentSlot)
@@ -272,7 +408,7 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 			{
 				if (!itemRemoved)
 				{
-					TargetController->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+					Inventory->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
 					break;
 				}
 			}
@@ -280,7 +416,11 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 		}
 		case EEquipmentSlot::Item_LeftHandOne:
 		{
-			AddLeftHandWeapon(ItemIn.ItemID);
+			AddLeftHandWeapon(ItemIn, OldItemSlotID);
+		}
+		case EEquipmentSlot::Item_RightHandOne:
+		{
+			AddRightHandWeapon(ItemIn, OldItemSlotID);
 		}
 		default:
 			break;
@@ -452,33 +592,6 @@ void UAREquipmentComponent::DoAsyncLegChange()
 
 /* Weapon Handling **/
 
-void UAREquipmentComponent::AddLeftHandWeapon(FName ItemName)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerAddLeftHandWeapon(ItemName);
-	}
-	else
-	{
-		for (FInventorySlot& weapon : TargetController->InventorySmall)
-		{
-			if (weapon.ItemID == ItemName)
-			{
-				LeftHandWeapons.Add(weapon);
-				return;
-			}
-		}
-	}
-}
-void UAREquipmentComponent::ServerAddLeftHandWeapon_Implementation(FName ItemName)
-{
-	AddLeftHandWeapon(ItemName);
-}
-bool UAREquipmentComponent::ServerAddLeftHandWeapon_Validate(FName ItemName)
-{
-	return true;
-}
-
 void UAREquipmentComponent::SwapLeftWeapon()
 {
 	if (GetOwnerRole() < ROLE_Authority)
@@ -487,7 +600,7 @@ void UAREquipmentComponent::SwapLeftWeapon()
 	}
 	else
 	{
-		for (FInventorySlot& weapon : TargetController->LeftHandWeapons)
+		for (FInventorySlot& weapon : LeftHandWeapons)
 		{
 			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveLeftHandWeaponStruct.ItemID)
 			{
@@ -589,7 +702,7 @@ void UAREquipmentComponent::SwapRightWeapon()
 	}
 	else
 	{
-		for (FInventorySlot& weapon : TargetController->RightHandWeapons)
+		for (FInventorySlot& weapon : RightHandWeapons)
 		{
 			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveRightHandWeaponStruct.ItemID)
 			{

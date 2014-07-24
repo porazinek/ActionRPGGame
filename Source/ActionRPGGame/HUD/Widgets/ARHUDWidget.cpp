@@ -123,6 +123,8 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						[
 							SNew(SARCharacterSheetWidget)
 							.MyPC(MyPC)
+							.Character(MyChar)
+							.Equipment(MyChar->Equipment.Get())
 						]
 					]
 				]

@@ -15,6 +15,10 @@ public:
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARHUD>, OwnerHUD)
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
+
+		SLATE_ARGUMENT(TWeakObjectPtr<class AARCharacter>, Character)
+
+		SLATE_ARGUMENT(TWeakObjectPtr<class UAREquipmentComponent>, Equipment)
 	SLATE_END_ARGS()
 
 public:
@@ -28,6 +32,10 @@ private:
 	TWeakObjectPtr<class AARHUD> OwnerHUD;
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;
+
+	TWeakObjectPtr<class AARCharacter> Character;
+
+	TWeakObjectPtr<class UAREquipmentComponent> Equipment;
 
 	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> LeftWeapon;
 	TSharedRef<ITableRow> MakeLeftHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);

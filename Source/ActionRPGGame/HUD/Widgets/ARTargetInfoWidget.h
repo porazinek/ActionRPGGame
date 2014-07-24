@@ -16,7 +16,7 @@ public:
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
 
-		SLATE_ARGUMENT(TWeakObjectPtr<class UARAttributeComponent>, MyAttrComp)
+		SLATE_ATTRIBUTE(TWeakObjectPtr<class UARAttributeComponent>, MyAttrComp)
 
 		SLATE_ARGUMENT(float, HealthBarWidth)
 

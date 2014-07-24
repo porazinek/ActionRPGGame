@@ -149,6 +149,8 @@ void AARCharacter::OnRep_Controller()
 
 	Abilities->OwningCharacter = this;
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
+
+	Attributes->PlayerController = Cast<AARPlayerController>(GetController());
 }
 void AARCharacter::PossessedBy(class AController* NewController)
 {
@@ -158,6 +160,8 @@ void AARCharacter::PossessedBy(class AController* NewController)
 
 	Abilities->OwningCharacter = this;
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
+
+	Attributes->PlayerController = Cast<AARPlayerController>(GetController());
 }
 
 

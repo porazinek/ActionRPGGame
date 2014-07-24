@@ -8,6 +8,7 @@
 
 #include "../../Abilities/ARAbility.h"
 #include "../../ActionState/ARActionStateComponent.h"
+#include "../../Componenets/ARAttributeBaseComponent.h"
 
 #include "ARInventoryWidget.h"
 #include "ARInventoryItemWidget.h"
@@ -17,6 +18,7 @@
 #include "ARCastingBarWidget.h"
 #include "ARFloatingCombatTextWidget.h"
 #include "ARResourceWidget.h"
+#include "ARTargetInfoWidget.h"
 
 #include "ARHUDWidget.h"
 
@@ -31,8 +33,8 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 	CastbarHeight = InArgs._CastbarHeight;
 	CastbarPositionX = InArgs._CastbarPositionX;
 	CastbarPositionY = InArgs._CastbarPositionY;
-	FCTPositionVector.Bind(this, &SARHUDWidget::GetFCTPosition);
-	MyAttrComp->OnInstigatorDamage.AddRaw(this, &SARHUDWidget::CreateFCTWidget);
+
+	//MyAttrComp->OnInstigatorDamage.AddRaw(this, &SARHUDWidget::CreateFCTWidget);
 	ChildSlot
 		[
 			SNew(SOverlay)
@@ -64,28 +66,26 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						.MyAttrComp(MyAttrComp)
 					]
 				]
-			+ SOverlay::Slot()
-				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Fill)
-				[
-					SAssignNew(FCTBox, SOverlay)
-					//SAssignNew(FCTCanvas, SCanvas)
-					//SNew(SCanvas)
-					//+ SCanvas::Slot()
-					//.Position(TAttribute<FVector2D>(this, &SARHUDWidget::GetFCTPosition))
-					////.Position(FVector2D(600, 300))
-					//.Size(FVector2D(400,400))
-					//[
-						//SNew(SBox)
-						////.Visibility(TAttribute<EVisibility>(this, &SARHUDWidget::GetFCTVisibility))
-						//[
-						//	SNew(SARFloatingCombatTextWidget)
-						//	.OwnerHUD(OwnerHUD)
-						//	.MyPC(MyPC)
-						//	.MyAttrComp(MyAttrComp)
-						//]
-					//]
-				]
+			//+ SOverlay::Slot()
+			//	.HAlign(HAlign_Fill)
+			//	.VAlign(VAlign_Fill)
+			//	[
+			//		//SAssignNew(FCTCanvas, SCanvas)
+			//		SNew(SCanvas)
+			//		+ SCanvas::Slot()
+			//		.Position(FVector2D(600, 300))
+			//		.Size(FVector2D(400,400))
+			//		[
+			//			SNew(SBox)
+			//			//.Visibility(TAttribute<EVisibility>(this, &SARHUDWidget::GetFCTVisibility))
+			//			[
+			//				SNew(SARTargetInfoWidget)
+			//				.OwnerHUD(OwnerHUD)
+			//				.MyPC(MyPC)
+			//				.MyAttrComp(TAttribute<TWeakObjectPtr<UARAttributeComponent>>(this, &SARHUDWidget::GetTargetAttrComp))
+			//			]
+			//		]
+			//	]
 			+ SOverlay::Slot()
 			.HAlign(HAlign_Left)
 			.VAlign(VAlign_Top)
@@ -159,31 +159,12 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						]
 					]
 				]
-			//target resources
-			//+ SOverlay::Slot()
-			//	.HAlign(HAlign_Right)
-			//	.VAlign(VAlign_Top)
-			//	[
-			//		SNew(SBox)
-			//		//.HeightOverride(CastbarHeight)
-			//		.WidthOverride(200)
-			//		[
-			//			SNew(SARResourceWidget)
-			//			.OwnerHUD(OwnerHUD)
-			//			.MyPC(MyPC)
-			//		]
-			//	]
 		];
 }
-FVector2D SARHUDWidget::GetFCTPosition() const
+TWeakObjectPtr<class UARAttributeComponent> SARHUDWidget::GetTargetAttrComp() const
 {
-	return FCTPosition.Get();
+	return TargetAttrComp.Get();
 }
-EVisibility SARHUDWidget::GetFCTVisibility() const
-{
-	return FCTVisibility.Get();
-}
-
 void SARHUDWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
 {
 	SWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
@@ -191,30 +172,6 @@ void SARHUDWidget::Tick(const FGeometry& AllottedGeometry, const double InCurren
 	//{
 	//	//FCTBox->GetChildren()->GetChildAt(Index);
 	//}
-}
-
-void SARHUDWidget::CreateFCTWidget()
-{
-	FVector2D pos = FCTPositionVector.Get();
-	TSharedPtr<SBox> can = SNew(SBox)
-		//+ SCanvas::Slot()
-		//.Position(TAttribute<FVector2D>(this, &SARHUDWidget::GetFCTPosition))
-		//.Position(FCTPositionVector)
-		//.Size(FVector2D(400, 400))
-		[
-			SNew(SARFloatingCombatTextWidget)
-			.OwnerHUD(OwnerHUD)
-			.MyPC(MyPC)
-			.MyAttrComp(MyAttrComp)
-			.TargetActor(MyAttrComp->ChangedAttribute.DamageTarget)
-			.DisplayNumber(MyAttrComp->UIDamage.Value)
-		];
-	FCTBox->AddSlot()
-		[
-			can.ToSharedRef()
-		];
-
-	
 }
 
 EVisibility SARHUDWidget::GetInventoryVisibility() const

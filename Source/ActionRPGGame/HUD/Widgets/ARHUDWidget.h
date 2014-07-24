@@ -20,6 +20,8 @@ public:
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class UARAttributeComponent>, MyAttrComp)
 
+		SLATE_ATTRIBUTE(TWeakObjectPtr<class UARAttributeComponent>, TargetAttrComp)
+
 		SLATE_ARGUMENT(float, CastbarWidth)
 
 		SLATE_ARGUMENT(float, CastbarHeight)
@@ -36,16 +38,9 @@ public:
 	void Construct(const FArguments& InArgs);
 	virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 	void SetTargetResourceVisibility(EVisibility ValueIn);
-	TAttribute<FVector2D> FCTPosition;
-	TAttribute<EVisibility> FCTVisibility;
+	TAttribute < TWeakObjectPtr<class UARAttributeComponent> > TargetAttrComp;
 private:
-	TSharedPtr<SOverlay> FCTBox;
-	TSharedPtr<SCanvas> FCTCanvas;
-	TArray<TSharedPtr<SCanvas>> FCTWidgets;
-	void CreateFCTWidget();
-	TAttribute<FVector2D> FCTPositionVector;
-	FVector2D GetFCTPosition() const;
-	EVisibility GetFCTVisibility() const;
+
 	EVisibility GetInventoryVisibility() const;
 	EVisibility GetAbilityInventoryVisibility() const;
 	EVisibility GetCharacterSheetVisibility() const;
@@ -58,6 +53,8 @@ private:
 	TWeakObjectPtr<class AARCharacter> MyChar;
 
 	TWeakObjectPtr<class UARAttributeComponent> MyAttrComp;
+
+	TWeakObjectPtr<class UARAttributeComponent> GetTargetAttrComp() const;
 
 	EVisibility GetTargetResourceVisibility() const;
 	EVisibility TargetResourceVisibility;

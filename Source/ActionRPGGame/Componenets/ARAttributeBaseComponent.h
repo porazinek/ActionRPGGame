@@ -16,10 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttributeDamage, FAttributeChang
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInstigatorCausedDamage, FAttributeChanged, AttributeChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams(FOnPointAttributeDamage, FAttribute, Attribute, class AActor*, InstigatedBy, FVector, HitLocation, class UPrimitiveComponent*, FHitComponent, FName, BoneName, FVector, ShotFromDirection, const class UDamageType*, DamageType, class AActor*, DamageCauser);
 
-DECLARE_MULTICAST_DELEGATE(FDMDOnInstigatorDamage);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDMDOnPreApplyDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute);
-
+DECLARE_MULTICAST_DELEGATE_OneParam(FDMDOnInstigatorDamage, FARUIDamage);
 /*
 	Event called when this component receives any damage
 */
@@ -55,7 +52,22 @@ class UARAttributeBaseComponent : public UActorComponent
 	GENERATED_UCLASS_BODY()
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+	/**
+		Common Properties
+	**/
+	/*
+		Controller From actor who owns this component.
+	*/
+	UPROPERTY()
+	class AARPlayerController* PlayerController;
 
+
+	/**
+		Effects
+	**/
+	/*
+		these needs to be cleaned up. Periodic effects are to be redone.
+	*/
 	UPROPERTY(Replicated, RepRetry, BlueprintReadOnly, Category = "Effect")
 		FActivePeriodicEffects ActivePeriodicEffects;
 
@@ -84,32 +96,6 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerRemovePeriodicEffect(class AAREffectPeriodic* PeriodicEffect);
 
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnAttributeDamage OnAttributeDamage;
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnPointAttributeDamage OnPointAttributeDamage;
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FOnInstigatorCausedDamage OnInstigatorCausedDamage;
-
-
-	UPROPERTY(ReplicatedUsing = OnRep_CausedDamage)
-	bool CausedDamage;
-	//UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "UI Damage")
-		FDMDOnInstigatorDamage OnInstigatorDamage;
-	
-	UFUNCTION(Client, Unreliable)
-		void ClientOnInstigatorDamage();
-
-	UFUNCTION()
-		void OnRep_CausedDamage();
-	/*
-		Called before damage is appiled, to give a chance to modify it in external objects.
-	*/
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
-		FDMDOnPreApplyDamage OnPreAppylDamage;
-
 	/*
 		Periodic Effect appiled By Me.
 	*/
@@ -126,8 +112,53 @@ public:
 	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FOnPeriodicEffectRemoved OnPeriodicEffectRemoved;
+
+	/**
+		Attribute Handling
+	**/
+	/*
+		Called when any damage to attribute is appilied.
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnAttributeDamage OnAttributeDamage;
+	/*
+		Called when point damage to attribute is appilied.
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnPointAttributeDamage OnPointAttributeDamage;
+	/*
+		Called on instigator of damage. PROBABLY REMOVE IT!
+	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
+		FOnInstigatorCausedDamage OnInstigatorCausedDamage;
+
+	/*
+		This for UI. PROBABLY REMOVE IT.
+	*/
+	FDMDOnInstigatorDamage OnInstigatorDamage;
+
+	/*
+		We need two Delegate Events OnOutgoingDamage and OnIncomingDamage, becasue if we only had one
+		all events would be fired up, and would modify Damage on Instigator and Target.
+		It would create strange situation, where Armor Effect on Instigator, would reduce damage
+		taken by Target.
+
+		This system still needs more fleshing out, and testing.
+	*/
+	/*
+		Called when damage is incoming to this component.
+		Ie. it's going to change attribute on this component.
+	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FDMDOnIncomingDamage OnIncomingDamage;
+	/*
+		In case of my implementation it calls SetAttributeForMod, on damage instigator.
+		So any effects/mods/etc. present on instigator have chance to modify damage,
+		before it's going to appilied on target.
+	*/
+	/*
+		Damage is going from instigator component. 
+	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FDMDOnOutgoingDamage OnOutgoingDamage;
 	/*
@@ -135,10 +166,19 @@ public:
 	*/
 	UFUNCTION()
 		void SetAttributeForMod(const FGameplayTagContainer& DamageTags, const FAttribute& Attribute);
+	/*
+		Store current damage value. In conjuction with SetAttributeForMod and SetFinalDmage.
+	*/
 	FAttribute CachedAttribute;
+
+	/*
+		Helper function. When Effect modify damage, this function should be called,
+		and it will set new damage to CachedAttribute;
+	*/
 	UFUNCTION(BlueprintCallable, Category = "AR|Attribute Dmage")
 		void SetFinalDmage(const FAttribute& AttributeIn);
-
+private:
+	void SetDamageReplication(UARAttributeBaseComponent* Comp);
 public:
 	/* Get Attribute (UProperty), from component class */
 	UProperty* GetAttribute(FName AttributeName);
@@ -181,9 +221,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_InstigatorDamageCaused, Category = "Attribute")
 		FAttributeChanged ChangedAttribute;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category = "UI")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_UIDamage, Category = "UI")
 		FARUIDamage UIDamage;
-
+	UFUNCTION()
+		void OnRep_UIDamage();
 	UFUNCTION()
 		void OnRep_InstigatorDamageCaused();
 

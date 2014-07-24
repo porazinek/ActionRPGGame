@@ -20,7 +20,7 @@ void SARTargetInfoWidget::Construct(const FArguments& InArgs)
 {
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
-	MyAttrComp = InArgs._MyAttrComp;
+	MyAttrComp = InArgs._MyAttrComp.Get();
 	HealthBarWidth = InArgs._HealthBarWidth;
 	HealthBarHeight = InArgs._HealthBarHeight;
 	HealthBarPosX = InArgs._HealthBarPosX;

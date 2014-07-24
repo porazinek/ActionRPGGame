@@ -17,6 +17,11 @@ private:
 	UPROPERTY()
 	class AARCharacter* ARCharacter;
 public:
+
+	UPROPERTY(ReplicatedUsing=OnRep_UIDamage)
+	FARUIDamage UIDamage;
+	UFUNCTION()
+		void OnRep_UIDamage();
 	/*
 	Hook for controller. Controller doesn't have any attributes per se,
 	but attribute component also implements notifications and events,

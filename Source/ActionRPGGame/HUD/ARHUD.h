@@ -1,9 +1,11 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 
+#include "../Types/ARStructTypes.h"
+
 #include "ARHUD.generated.h"
 
-const float DAMAGE_FADE_DURATION = 1.0f;
+const float DAMAGE_FADE_DURATION = 3.0f;
 
 USTRUCT(BlueprintType)
 struct FARHUDTargetInfo
@@ -27,8 +29,8 @@ USTRUCT()
 struct FDamageHudIndicator
 {
 	GENERATED_USTRUCT_BODY()
-
-		UPROPERTY()
+public:
+	UPROPERTY()
 		float RotationAngle;
 
 	UPROPERTY()
@@ -37,13 +39,97 @@ struct FDamageHudIndicator
 	UPROPERTY()
 		float FadeTime;
 
+	UPROPERTY()
+		FVector Location;
+
+	UPROPERTY()
+		FVector2D CurrentLocation;
+
+	UPROPERTY()
+		FVector2D AnimDirection;
+
 	FDamageHudIndicator()
 		: RotationAngle(0.0f)
 		, DamageAmount(0.0f)
 		, FadeTime(0.0f)
+		, Location(FVector::ZeroVector)
 	{
 	}
 };
+
+USTRUCT(BlueprintType)
+struct FFCTDisplaySettings
+{
+	GENERATED_USTRUCT_BODY();
+public:
+	UPROPERTY(EditAnywhere, Category = "FCT")
+		float FontScale;
+	UPROPERTY(EditAnywhere, Category = "FCT")
+		FLinearColor FontColor;
+	UPROPERTY(EditAnywhere, Category = "FCT")
+		UFont* FontType;
+
+	UPROPERTY(EditAnywhere, Category = "FCT")
+		float FCTLifeTime;
+
+	UPROPERTY(EditAnywhere, Category = "FCT")
+		float RandomOffset;
+};
+
+USTRUCT(BlueprintType)
+struct FOwnerResourceBars
+{
+	GENERATED_USTRUCT_BODY();
+public:
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D Position;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor HealthColor;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D HealthSize;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor EnergyColor;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D EnergySize;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor StaminaColor;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D StaminaSize;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor BackgroundColor;
+};
+
+USTRUCT(BlueprintType)
+struct FUITargetInfo
+{
+	GENERATED_USTRUCT_BODY();
+public:
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D Position;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor HealthColor;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D HealthSize;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor EnergyColor;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D EnergySize;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor StaminaColor;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D StaminaSize;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor BackgroundColor;
+};
+
 UCLASS()
 class AARHUD : public AHUD
 {
@@ -60,8 +146,21 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, Category = "UI Settings")
+		FFCTDisplaySettings FCTSettings;
+
+	UPROPERTY(EditAnywhere, Category = "UI Settings")
+		FOwnerResourceBars ResourceBars;
+
+	UPROPERTY(EditAnywhere, Category = "UI Settings")
+		FUITargetInfo TargetInfo;
+
 	void DrawDamageIndicators();
-	void PawnDamaged(FVector HitLocation, float DamageAmount, TSubclassOf<UDamageType> DamageClass);
+	void PawnDamaged(FARUIDamage UIDamage);
+
+	UPROPERTY(EditAnywhere, Category = "FCT")
+	FVector2D FCTAnimDirection;
+
 	UPROPERTY()
 		TArray<struct FDamageHudIndicator> DamageIndicators;
 
@@ -95,21 +194,27 @@ protected:
 		float SCTLifeTime;
 	float CurrentSCTLifeTime;
 
+	TWeakObjectPtr<class UARAttributeComponent> GetTargetAttributes() const;
+
 	/*
 		Draws slate widget Health/Stamina/Energy for current Target.
 		I probably wouldn't want this in my game, but it will be here for reference ;).
 	*/
 	void DrawResourceWidgetForTarget();
+
+	
+
 	UFUNCTION()
-	void DrawResourceBars();
+		void DrawResourceBar(float CurrentValue, float MaxValue, FVector2D Size, float PosX, float PosY, FVector2D Offset, FLinearColor Foreground, FLinearColor Background);
 
-	void DrawFloatingTextWidget();
+	void DrawTargetHealth();
 
-	FVector2D GetFCTPosition() const;
+	/*
+		Draw Health, Energy and Stamina bars.
+	*/
+	void DrawOwnerResources();
 
-	FVector2D FCTPosition;
-
-	EVisibility GetFCTVisibility() const;
+	//void DrawFloatingTextWidget();
 
 private:
 	UTexture2D* CrosshairTex;

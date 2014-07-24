@@ -8,6 +8,8 @@
 #include "Abilities/ARAbility.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
 
+#include "HUD/ARHUD.h"
+
 #include "Effects/AREffectType.h"
 
 #include "Net/UnrealNetwork.h"
@@ -151,7 +153,7 @@ void AARPlayerController::InputActionButtonOne()
 		/*IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[0].Ability.Get());
 		if (actionInterface)
 		{
-			actionInterface->InputPressed();
+		actionInterface->InputPressed();
 		}*/
 	}
 }
@@ -445,7 +447,7 @@ bool AARPlayerController::ServerAddItemToInventoryOnSlot_Validate(FInventorySlot
 	/*
 		Since it is used to swap items, we check it user have particular item in inventory.
 		If he dosn't then he probably is trying to cheat.
-	*/
+		*/
 }
 
 bool AARPlayerController::RemoveItemFromInventory(FName ItemID, int32 SlotID)
@@ -706,4 +708,14 @@ void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProp
 
 	DOREPLIFETIME_CONDITION(AARPlayerController, LeftHandWeapons, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(AARPlayerController, RightHandWeapons, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(AARPlayerController, UIDamage, COND_OwnerOnly);
+}
+
+void AARPlayerController::OnRep_UIDamage()
+{
+	//AARHUD* hud = Cast<AARHUD>(GetHUD());
+	//if (hud)
+	//{
+	//	hud->PawnDamaged(UIDamage.Location, UIDamage.Value, UDamageType::StaticClass());
+	//}
 }

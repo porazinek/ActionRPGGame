@@ -460,4 +460,7 @@ public:
 		float Value;
 	UPROPERTY(BlueprintReadOnly, Category = "UI")
 		FVector Location;
+
+	UPROPERTY()
+		AActor* DamageInstigator;
 };

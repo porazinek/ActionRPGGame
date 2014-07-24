@@ -11,6 +11,9 @@
 #include "../ARPlayerController.h"
 #include "../Componenets/AREquipmentComponent.h"
 #include "../Componenets/ARAttributeComponent.h"
+#include "../Componenets/ARAttributeBaseComponent.h"
+
+#include "../Types/ARStructTypes.h"
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
 
@@ -23,11 +26,8 @@ AARHUD::AARHUD(const class FPostConstructInitializeProperties& PCIP)
 	CrosshairTex = CrosshairTexObj.Object;
 
 	DrawInventoryWidget = false;
-	FCTPosition = FVector2D::ZeroVector;
-	SCTLifeTime = 0.4;
-	CurrentSCTLifeTime = 0;
 
-
+	FCTAnimDirection = FVector2D(1, 1);
 	DamageIndicators.AddZeroed(10);
 }
 
@@ -48,18 +48,18 @@ void AARHUD::DrawHUD()
 		TileItem.BlendMode = SE_BLEND_Translucent;
 		Canvas->DrawItem(TileItem);
 	}
-	if (!HUDWidget.IsValid() && GetOwningPawn())
+
+	if (GetOwningPawn() && !OwnerChar.IsValid())
+	{
+		OwnerChar = Cast<AARCharacter>(GetOwningPawn());
+	}
+	if (!HUDWidget.IsValid() && OwnerChar.IsValid())
 	{
 		AARPlayerController* MyPC = Cast<AARPlayerController>(GetOwningPlayerController());
 		//null on BeginPlay
-		AARCharacter* Character = Cast<AARCharacter>(GetOwningPawn());
-		OwnerChar = Character;
+
 		//TWeakObjectPtr<UARAttributeComponent> MyAttr = Character->Attributes.Get();
-		if (MyPC)
-		{
-			Character = Cast<AARCharacter>(MyPC->GetPawn());
-		}
-		SAssignNew(HUDWidget, SARHUDWidget).OwnerHUD(this).IsEnabled(true).MyPC(MyPC).MyChar(Character).MyAttrComp(Character->Attributes.Get()).CastbarHeight(CastbarHeight)
+		SAssignNew(HUDWidget, SARHUDWidget).OwnerHUD(this).IsEnabled(true).MyPC(MyPC).MyChar(OwnerChar).MyAttrComp(OwnerChar->Attributes.Get()).CastbarHeight(CastbarHeight)
 			.CastbarWidth(CastbarWidth).CastbarPositionX(Canvas->ClipX*CastbarPositionX).CastbarPositionY(Canvas->ClipY*CastbarPositionY);
 
 
@@ -77,25 +77,29 @@ void AARHUD::DrawHUD()
 			//////////////////////////////////////////////////////////////////////////////////////////////////
 			///Set widget's properties as visible (sets child widget's properties recursively)
 			HUDWidget->SetVisibility(EVisibility::Visible);
-			HUDWidget->FCTPosition.BindUObject(this, &AARHUD::GetFCTPosition);
-			HUDWidget->FCTVisibility.BindUObject(this, &AARHUD::GetFCTVisibility);
+			HUDWidget->TargetAttrComp.BindUObject(this, &AARHUD::GetTargetAttributes);
 		}
 	}
-
-	DrawResourceWidgetForTarget();
+	DrawOwnerResources();
+	DrawTargetHealth();
+	//DrawResourceWidgetForTarget();
+	DrawDamageIndicators();
 	if (OwnerChar.IsValid())
 	{
+		if (!OwnerChar->Attributes->OnInstigatorDamage.IsBoundToObject(this))
+		{
+			OwnerChar->Attributes->OnInstigatorDamage.AddUObject(this, &AARHUD::PawnDamaged);
+		}
+		
 		if (Canvas)
 		{
 			//FVector temp = Canvas->Project(OwnerChar->Attributes->ChangedAttribute.DamageTarget->GetActorLocation());
 			FVector temp = Canvas->Project(OwnerChar->Attributes->UIDamage.Location);
-			FCTPosition.X = temp.X;
-			FCTPosition.Y = temp.Y;
 		}
 	}
 }
 
-void AARHUD::PawnDamaged(FVector HitLocation, float DamageAmount, TSubclassOf<UDamageType> DamageClass)
+void AARHUD::PawnDamaged(FARUIDamage UIDamage)
 {
 	// Calculate the rotation 	
 	//AUTCharacter* UTC = UTPlayerOwner->GetUTCharacter();
@@ -105,7 +109,7 @@ void AARHUD::PawnDamaged(FVector HitLocation, float DamageAmount, TSubclassOf<UD
 		FRotator CharacterRotation;
 
 		OwnerChar->GetActorEyesViewPoint(CharacterLocation, CharacterRotation);
-		FVector HitSafeNormal = (HitLocation - CharacterLocation).SafeNormal2D();
+		FVector HitSafeNormal = (UIDamage.Location - CharacterLocation).SafeNormal2D();
 		float Ang = FMath::Acos(FVector::DotProduct(CharacterRotation.Vector().SafeNormal2D(), HitSafeNormal)) * (180.0f / PI);
 
 		// Figure out Left/Right....
@@ -118,6 +122,8 @@ void AARHUD::PawnDamaged(FVector HitLocation, float DamageAmount, TSubclassOf<UD
 			if (DamageIndicators[i].FadeTime <= 0.0f)
 			{
 				BestIndex = i;
+				DamageIndicators[i].CurrentLocation = FVector2D::ZeroVector;
+				DamageIndicators[i].AnimDirection = FVector2D::ZeroVector;
 				break;
 			}
 			else
@@ -130,9 +136,12 @@ void AARHUD::PawnDamaged(FVector HitLocation, float DamageAmount, TSubclassOf<UD
 			}
 		}
 
-		DamageIndicators[BestIndex].FadeTime = DAMAGE_FADE_DURATION;
+		DamageIndicators[BestIndex].FadeTime = FCTSettings.FCTLifeTime;
 		DamageIndicators[BestIndex].RotationAngle = FinalAng;
-		DamageIndicators[BestIndex].DamageAmount = DamageAmount;
+		DamageIndicators[BestIndex].DamageAmount = UIDamage.Value;
+		DamageIndicators[BestIndex].Location = UIDamage.Location;
+		DamageIndicators[BestIndex].AnimDirection.X = FMath::FRandRange(-FCTAnimDirection.X, FCTAnimDirection.X);
+		DamageIndicators[BestIndex].AnimDirection.Y = FMath::FRandRange(-FCTAnimDirection.Y, FCTAnimDirection.Y);
 		//		UUTHUDWidget_WeaponCrosshair* CrossHairWidget =
 
 
@@ -146,18 +155,23 @@ void AARHUD::DrawDamageIndicators()
 	{
 		if (DamageIndicators[i].FadeTime > 0.0f)
 		{
-			DrawColor.A = 1.0 * (DamageIndicators[i].FadeTime / DAMAGE_FADE_DURATION);
+			DrawColor.A = 1.0 * (DamageIndicators[i].FadeTime / FCTSettings.FCTLifeTime);
 
 			float Size = 384 * (Canvas->ClipY / 720.0f);
 			float Half = Size * 0.5;
-			FCanvasTextItem TextItem;
-			TextItem.Text = FText::AsNumber(DamageIndicators[i].DamageAmount);
-			TextItem.Scale = 2;
-			TextItem.Position = FVector2D((Canvas->ClipX * 0.5) - Half, (Canvas->ClipY * 0.5) - Half);
-			//FCanvasTileItem ImageItem(FVector2D((Canvas->ClipX * 0.5) - Half, (Canvas->ClipY * 0.5) - Half), DamageIndicatorTexture->Resource, FVector2D(Size, Size), FVector2D(0, 0), FVector2D(1, 1), DrawColor);
-			//ImageItem.Rotation = FRotator(0, DamageIndicators[i].RotationAngle, 0);
-			//ImageItem.PivotPoint = FVector2D(0.5, 0.5);
-			//ImageItem.BlendMode = ESimpleElementBlendMode::SE_BLEND_Translucent;
+			FVector vecTemp = Canvas->Project(DamageIndicators[i].Location);
+			FVector2D vec2d;
+			DamageIndicators[i].CurrentLocation.X += DamageIndicators[i].AnimDirection.X;
+			DamageIndicators[i].CurrentLocation.Y += DamageIndicators[i].AnimDirection.Y;
+			vec2d.X += FMath::FRandRange(-FCTSettings.RandomOffset, FCTSettings.RandomOffset);
+			vec2d.Y += FMath::FRandRange(-FCTSettings.RandomOffset, FCTSettings.RandomOffset);
+			vec2d.X = vecTemp.X + DamageIndicators[i].CurrentLocation.X;
+			vec2d.Y = vecTemp.Y + DamageIndicators[i].CurrentLocation.Y;
+			//FVector2D((Canvas->ClipX * 0.5) - Half, (Canvas->ClipY * 0.5) - Half)
+			FCanvasTextItem TextItem = FCanvasTextItem(vec2d, FText::AsNumber(DamageIndicators[i].DamageAmount), FCTSettings.FontType, FCTSettings.FontColor);
+			
+			TextItem.Scale = FVector2D(FCTSettings.FontScale, FCTSettings.FontScale);
+
 			Canvas->DrawItem(TextItem);
 
 			DamageIndicators[i].FadeTime -= RenderDelta;
@@ -165,22 +179,6 @@ void AARHUD::DrawDamageIndicators()
 	}
 }
 
-
-FVector2D AARHUD::GetFCTPosition() const
-{
-	return FCTPosition;
-}
-EVisibility AARHUD::GetFCTVisibility() const
-{
-	if (OwnerChar.IsValid())
-	{
-		if (OwnerChar->Attributes->ChangedAttribute.DamageTarget)
-		{
-			return EVisibility::Visible;
-		}
-	}
-	return EVisibility::Collapsed;
-}
 void AARHUD::BeginPlay()
 {
 	//ScreenSizeX = Canvas->ClipX;
@@ -211,62 +209,100 @@ void AARHUD::BeginPlay()
 	//	HUDWidget->SetVisibility(EVisibility::Visible);
 	//}
 }
-void AARHUD::DrawResourceBars()
+void AARHUD::DrawResourceBar(float CurrentValue, float MaxValue, FVector2D Size, float PosX, float PosY, FVector2D Offset, FLinearColor Foreground, FLinearColor Background)
 {
+	float HealthBarPrecentage = (CurrentValue / MaxValue);
+	FCanvasTileItem TileItem = FCanvasTileItem(FVector2D((Canvas->ClipX*PosX) + Offset.X, (Canvas->ClipY*PosY) + Offset.Y),
+		Size, Background);
+	TileItem.BlendMode = SE_BLEND_Translucent;
+	Canvas->DrawItem(TileItem);
+	
+	TileItem.Size = FVector2D(200 * HealthBarPrecentage, 20);
+	TileItem.SetColor(Foreground);
 
+	Canvas->DrawItem(TileItem);
 }
 
-void AARHUD::DrawResourceWidgetForTarget()
+void AARHUD::DrawTargetHealth()
 {
-	if (!GetOwningPawn())
+	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
+	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
+
+	if (TargetChar)
+	{
+		DrawResourceBar(TargetChar->Attributes->Health, TargetChar->Attributes->MaxHealth, TargetInfo.HealthSize, 
+			TargetInfo.Position.X, TargetInfo.Position.Y, FVector2D(0, 0), TargetInfo.HealthColor,
+			ResourceBars.BackgroundColor);
+	}
+}
+
+void AARHUD::DrawOwnerResources()
+{
+	if (!OwnerChar.IsValid())
 		return;
 
-	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
+	//Draw Health
+	DrawResourceBar(OwnerChar->Attributes->Health, OwnerChar->Attributes->MaxHealth, ResourceBars.HealthSize,
+		ResourceBars.Position.X, ResourceBars.Position.Y, FVector2D(0, 0), 
+		ResourceBars.HealthColor, ResourceBars.BackgroundColor);
 
-	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
-	if (!TargetInfoWidget.IsValid() && TargetChar)
-	{
-		SAssignNew(TargetInfoWidget, SARTargetInfoWidget).OwnerHUD(this).IsEnabled(true).MyAttrComp(TargetChar->Attributes.Get())
-			.HealthBarWidth(HUDTargetInfo.HealthBarWidth).HealthBarHeight(HUDTargetInfo.HealthBarHeight)
-			.HealthBarPosX(Canvas->ClipX*HUDTargetInfo.HealthBarPosX)
-			.HealthBarPosY(Canvas->ClipY*HUDTargetInfo.HealthBarPosY);
+	DrawResourceBar(OwnerChar->Attributes->Energy, OwnerChar->Attributes->MaxEnergy, ResourceBars.EnergySize,
+		ResourceBars.Position.X, ResourceBars.Position.Y, FVector2D(0, ResourceBars.EnergySize.Y),
+		ResourceBars.EnergyColor, ResourceBars.BackgroundColor);
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		///Pass our viewport a weak ptr to our widget
-		if (GEngine->IsValidLowLevel())
-		{
-			GEngine->GameViewport->AddViewportWidgetContent(SNew(SWeakWidget).PossiblyNullContent(TargetInfoWidget.ToSharedRef()));
-			/*Viewport's weak ptr will not give Viewport ownership of Widget*/
-		}
-
-		if (TargetInfoWidget.IsValid())
-		{
-			//////////////////////////////////////////////////////////////////////////////////////////////////
-			///Set widget's properties as visible (sets child widget's properties recursively)
-			TargetInfoWidget->SetVisibility(EVisibility::Visible);
-		}
-	}
-	//else
-	//{
-	//	if (TargetInfoWidget.IsValid())
-	//	{
-	//		//TargetInfoWidget->SetVisibility(EVisibility::Collapsed);
-	//		//TargetInfoWidget.Reset();
-	//	}
-	//}
-	if (TargetInfoWidget.IsValid())
-	{
-		if (!TargetChar)
-		{
-			TargetInfoWidget->SetVisibility(EVisibility::Collapsed);
-			TargetInfoWidget.Reset();
-		}
-	}
-
+	DrawResourceBar(OwnerChar->Attributes->Stamina, OwnerChar->Attributes->MaxStamina, ResourceBars.StaminaSize,
+		ResourceBars.Position.X, ResourceBars.Position.Y, FVector2D(0, ResourceBars.StaminaSize.Y + ResourceBars.EnergySize.Y),
+		ResourceBars.StaminaColor, ResourceBars.BackgroundColor);
 }
 
-
-void AARHUD::DrawFloatingTextWidget()
+TWeakObjectPtr<class UARAttributeComponent> AARHUD::GetTargetAttributes() const
 {
+	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
+	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
 
+	if (TargetChar)
+	{
+		return TargetChar->Attributes.Get();
+	}
+	return nullptr;
 }
+//void AARHUD::DrawResourceWidgetForTarget()
+//{
+//	if (!GetOwningPawn())
+//		return;
+//
+//	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
+//
+//	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
+//	if (!TargetInfoWidget.IsValid() && TargetChar)
+//	{
+//		SAssignNew(TargetInfoWidget, SARTargetInfoWidget).OwnerHUD(this).IsEnabled(true).MyAttrComp(TargetChar->Attributes.Get())
+//			.HealthBarWidth(HUDTargetInfo.HealthBarWidth).HealthBarHeight(HUDTargetInfo.HealthBarHeight)
+//			.HealthBarPosX(Canvas->ClipX*HUDTargetInfo.HealthBarPosX)
+//			.HealthBarPosY(Canvas->ClipY*HUDTargetInfo.HealthBarPosY);
+//
+//		////////////////////////////////////////////////////////////////////////////////////////////////////
+//		///Pass our viewport a weak ptr to our widget
+//		if (GEngine->IsValidLowLevel())
+//		{
+//			GEngine->GameViewport->AddViewportWidgetContent(SNew(SWeakWidget).PossiblyNullContent(TargetInfoWidget.ToSharedRef()));
+//			/*Viewport's weak ptr will not give Viewport ownership of Widget*/
+//		}
+//
+//		if (TargetInfoWidget.IsValid())
+//		{
+//			//////////////////////////////////////////////////////////////////////////////////////////////////
+//			///Set widget's properties as visible (sets child widget's properties recursively)
+//			TargetInfoWidget->SetVisibility(EVisibility::Visible);
+//		}
+//	}
+//	if (TargetInfoWidget.IsValid())
+//	{
+//		if (!TargetChar)
+//		{
+//			TargetInfoWidget->SetVisibility(EVisibility::Collapsed);
+//			TargetInfoWidget.Reset();
+//		}
+//	}
+//
+//}

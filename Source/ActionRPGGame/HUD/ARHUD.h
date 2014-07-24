@@ -4,7 +4,14 @@
 #include "../Types/ARStructTypes.h"
 
 #include "ARHUD.generated.h"
-
+/*
+	For the record.
+	I want to use Slate for entire UI.
+	But I dunno how UMG will handle my Slate Widgets if at all.
+	So for now I will have some duplicated functionality in Canvas and Slate, and some exclusive Slate
+	Functionality. Like Inventory, because it's so much easier to do interactive UI in Slate.
+	In any case I won't push slate UI much, until there is more info about Slate C++ Widgets, UMG Interaction.
+*/
 const float DAMAGE_FADE_DURATION = 3.0f;
 
 USTRUCT(BlueprintType)
@@ -130,6 +137,23 @@ public:
 		FLinearColor BackgroundColor;
 };
 
+USTRUCT(BlueprintType)
+struct FUICastingBar
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D Position;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor Color;
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FVector2D Size;
+
+	UPROPERTY(EditAnywhere, Category = "Bars")
+		FLinearColor BackgroundColor;
+};
+
 UCLASS()
 class AARHUD : public AHUD
 {
@@ -155,6 +179,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "UI Settings")
 		FUITargetInfo TargetInfo;
 
+	UPROPERTY(EditAnywhere, Category = "UI Settings")
+		FUICastingBar CastingBar;
 	void DrawDamageIndicators();
 	void PawnDamaged(FARUIDamage UIDamage);
 
@@ -166,6 +192,9 @@ public:
 
 	UPROPERTY()
 		TWeakObjectPtr<class AARCharacter> OwnerChar;
+
+	UPROPERTY()
+		TWeakObjectPtr<class AARPlayerController> OwnerPC;
 
 	UPROPERTY(BlueprintReadWrite, Category = "HUD|Inventory")
 		bool DrawInventoryWidget;
@@ -213,6 +242,8 @@ protected:
 		Draw Health, Energy and Stamina bars.
 	*/
 	void DrawOwnerResources();
+
+	void DrawCastingBar();
 
 	//void DrawFloatingTextWidget();
 

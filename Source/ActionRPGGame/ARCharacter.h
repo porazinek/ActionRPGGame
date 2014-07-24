@@ -112,8 +112,6 @@ protected:
 	UFUNCTION()
 		void InputActionButtonOne();
 
-	void PickupItem();
-
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;

@@ -56,11 +56,6 @@ public:
 		void ServerAddItemToInventory(FInventorySlot NewItem);
 	void AddItemToInventoryRep();
 
-	void PickupItem();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerPickupItem();
-
 	UFUNCTION()
 		TArray<FARItemInfo> GetItems();
 

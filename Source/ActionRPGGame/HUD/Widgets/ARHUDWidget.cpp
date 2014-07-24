@@ -9,6 +9,7 @@
 #include "../../Abilities/ARAbility.h"
 #include "../../ActionState/ARActionStateComponent.h"
 #include "../../Componenets/ARAttributeBaseComponent.h"
+#include "../../Items/ARInventoryComponent.h"
 
 #include "ARInventoryWidget.h"
 #include "ARInventoryItemWidget.h"
@@ -101,8 +102,10 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 					[
 						SNew(SARInventoryWidget)
 						.PlayerController(MyPC)
+						.Character(MyChar)
 						.InventoryColumns(5)
 						.InventoryRows(10)
+						.Inventory(MyPC->Inventory.Get())
 					]
 				]
 			]

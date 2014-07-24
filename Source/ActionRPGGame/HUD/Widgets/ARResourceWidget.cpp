@@ -12,9 +12,8 @@
 #include "../../Abilities/ARAbility.h"
 #include "../../ActionState/ARActionStateComponent.h"
 
-#include "ARHealthBarWidget.h"
-#include "AREnergyBarWidget.h"
-#include "ARStaminaBarWidget.h"
+#include "ARResourceBarWidget.h"
+
 
 #include "ARResourceWidget.h"
 
@@ -35,7 +34,7 @@ void SARResourceWidget::Construct(const FArguments& InArgs)
 				//.WidthOverride(100)
 				.HeightOverride(20)
 				[
-					SNew(SARHealthBarWidget)
+					SNew(SARResourceBarWidget)
 					.MyPC(MyPC)
 					.OwnerHUD(OwnerHUD)
 					.MyAttrComp(MyAttrComp)
@@ -49,7 +48,7 @@ void SARResourceWidget::Construct(const FArguments& InArgs)
 					//.WidthOverride(100)
 					.HeightOverride(20)
 					[
-						SNew(SAREnergyBarWidget)
+						SNew(SARResourceBarWidget)
 						.MyPC(MyPC)
 						.OwnerHUD(OwnerHUD)
 						.MyAttrComp(MyAttrComp)
@@ -61,7 +60,7 @@ void SARResourceWidget::Construct(const FArguments& InArgs)
 					//.WidthOverride(100)
 					.HeightOverride(20)
 					[
-						SNew(SARStaminaBarWidget)
+						SNew(SARResourceBarWidget)
 						.MyPC(MyPC)
 						.OwnerHUD(OwnerHUD)
 						.MyAttrComp(MyAttrComp)

@@ -8,6 +8,7 @@
 #include "../../Items/ARItem.h"
 #include "../../Items/ARWeapon.h"
 #include "../../Componenets/AREquipmentComponent.h"
+#include "../../Items/ARInventoryComponent.h"
 
 #include "SlateDynamicImageBrush.h"
 
@@ -24,6 +25,9 @@ void SARInventoryItemWidget::Construct(const FArguments& InArgs)
 {
 	PlayerController = InArgs._PlayerController;
 	InventoryItem = InArgs._InventoryItem;
+	Inventory = InArgs._Inventory;
+	Equipment = InArgs._Equipment;
+
 	TextColor = FSlateColor(FLinearColor(1, 0, 0, 1));
 	SlotType = InArgs._SlotType;
 	SlotName = InArgs._SlotName;
@@ -250,7 +254,7 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 	}
 	if (this->EquipmentSlot == EEquipmentSlot::Item_Inventory)
 	{
-		if (PlayerController.IsValid() && Operation.IsValid())
+		if (Inventory.IsValid() && Operation.IsValid())
 		{
 			int32 tempSlot = InventoryItem->SlotID;
 			InventoryItem = Operation->PickedItem;
@@ -262,7 +266,7 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			item.ItemSlot = Operation->PickedItem->ItemSlot;
 			item.EEquipmentSlot = Operation->PickedItem->EEquipmentSlot;
 
-			PlayerController->AddItemToInventoryOnSlot(item, tempSlot);
+			Inventory->AddItemToInventoryOnSlot(item, tempSlot);
 
 			if (Operation->LastItemSlot->SlotType != EItemSlot::Item_Inventory)
 			{

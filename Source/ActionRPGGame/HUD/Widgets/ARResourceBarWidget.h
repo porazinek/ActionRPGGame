@@ -6,10 +6,10 @@
 
 #include "Slate.h"
 
-class SARHealthBarWidget : public SCompoundWidget
+class SARResourceBarWidget : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SARHealthBarWidget)
+	SLATE_BEGIN_ARGS(SARResourceBarWidget)
 	{}
 	/*See private declaration of OwnerHUD below.*/
 	SLATE_ARGUMENT(TWeakObjectPtr<class AARHUD>, OwnerHUD)

@@ -12,10 +12,10 @@
 #include "../../Abilities/ARAbility.h"
 #include "../../ActionState/ARActionStateComponent.h"
 
-#include "ARHealthBarWidget.h"
+#include "ARResourceBarWidget.h"
 
 
-void SARHealthBarWidget::Construct(const FArguments& InArgs)
+void SARResourceBarWidget::Construct(const FArguments& InArgs)
 {
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
@@ -37,7 +37,7 @@ void SARHealthBarWidget::Construct(const FArguments& InArgs)
 	//	];
 }
 
-int32 SARHealthBarWidget::OnPaint(const FGeometry& AllottedGeometry, const FSlateRect& MyClippingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+int32 SARResourceBarWidget::OnPaint(const FGeometry& AllottedGeometry, const FSlateRect& MyClippingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
 	const FSlateBrush* BrushResource = new FSlateBrush();
 	

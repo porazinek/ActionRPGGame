@@ -13,6 +13,8 @@
 #include "../Componenets/ARAttributeComponent.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
 
+#include "../Abilities/ARAbility.h"
+
 #include "../Types/ARStructTypes.h"
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
@@ -53,6 +55,15 @@ void AARHUD::DrawHUD()
 	{
 		OwnerChar = Cast<AARCharacter>(GetOwningPawn());
 	}
+
+	if (GetOwningPlayerController() && !OwnerPC.IsValid())
+	{
+		OwnerPC = Cast<AARPlayerController>(GetOwningPlayerController());
+	}
+	/*
+		Don't draw if we don't have proper character.
+		WE REALLY NEED PROPER CHARACTER!!!!
+	*/
 	if (!HUDWidget.IsValid() && OwnerChar.IsValid())
 	{
 		AARPlayerController* MyPC = Cast<AARPlayerController>(GetOwningPlayerController());
@@ -84,6 +95,7 @@ void AARHUD::DrawHUD()
 	DrawTargetHealth();
 	//DrawResourceWidgetForTarget();
 	DrawDamageIndicators();
+	DrawCastingBar();
 	if (OwnerChar.IsValid())
 	{
 		if (!OwnerChar->Attributes->OnInstigatorDamage.IsBoundToObject(this))
@@ -255,6 +267,20 @@ void AARHUD::DrawOwnerResources()
 		ResourceBars.StaminaColor, ResourceBars.BackgroundColor);
 }
 
+void AARHUD::DrawCastingBar()
+{
+	if (!OwnerPC.IsValid())
+		return;
+
+	if (OwnerPC->ActiveAbility)
+	{
+		DrawResourceBar(OwnerPC->ActiveAbility->CurrentCastTime, OwnerPC->ActiveAbility->MaxCastTime,
+			CastingBar.Size, CastingBar.Position.X, CastingBar.Position.Y, FVector2D(0, 0),
+			CastingBar.Color, CastingBar.BackgroundColor
+			);
+	}
+}
+
 TWeakObjectPtr<class UARAttributeComponent> AARHUD::GetTargetAttributes() const
 {
 	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
@@ -266,43 +292,3 @@ TWeakObjectPtr<class UARAttributeComponent> AARHUD::GetTargetAttributes() const
 	}
 	return nullptr;
 }
-//void AARHUD::DrawResourceWidgetForTarget()
-//{
-//	if (!GetOwningPawn())
-//		return;
-//
-//	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
-//
-//	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
-//	if (!TargetInfoWidget.IsValid() && TargetChar)
-//	{
-//		SAssignNew(TargetInfoWidget, SARTargetInfoWidget).OwnerHUD(this).IsEnabled(true).MyAttrComp(TargetChar->Attributes.Get())
-//			.HealthBarWidth(HUDTargetInfo.HealthBarWidth).HealthBarHeight(HUDTargetInfo.HealthBarHeight)
-//			.HealthBarPosX(Canvas->ClipX*HUDTargetInfo.HealthBarPosX)
-//			.HealthBarPosY(Canvas->ClipY*HUDTargetInfo.HealthBarPosY);
-//
-//		////////////////////////////////////////////////////////////////////////////////////////////////////
-//		///Pass our viewport a weak ptr to our widget
-//		if (GEngine->IsValidLowLevel())
-//		{
-//			GEngine->GameViewport->AddViewportWidgetContent(SNew(SWeakWidget).PossiblyNullContent(TargetInfoWidget.ToSharedRef()));
-//			/*Viewport's weak ptr will not give Viewport ownership of Widget*/
-//		}
-//
-//		if (TargetInfoWidget.IsValid())
-//		{
-//			//////////////////////////////////////////////////////////////////////////////////////////////////
-//			///Set widget's properties as visible (sets child widget's properties recursively)
-//			TargetInfoWidget->SetVisibility(EVisibility::Visible);
-//		}
-//	}
-//	if (TargetInfoWidget.IsValid())
-//	{
-//		if (!TargetChar)
-//		{
-//			TargetInfoWidget->SetVisibility(EVisibility::Collapsed);
-//			TargetInfoWidget.Reset();
-//		}
-//	}
-//
-//}

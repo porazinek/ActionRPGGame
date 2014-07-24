@@ -12,7 +12,7 @@
 #include "../../Abilities/ARAbility.h"
 #include "../../ActionState/ARActionStateComponent.h"
 
-#include "ARHealthBarWidget.h"
+#include "ARResourceBarWidget.h"
 #include "ARTargetInfoWidget.h"
 
 
@@ -47,7 +47,7 @@ void SARTargetInfoWidget::Construct(const FArguments& InArgs)
 					//.WidthOverride(HealthBarWidth)
 					//.HeightOverride(HealthBarHeight)
 					//[
-					SNew(SARHealthBarWidget)
+					SNew(SARResourceBarWidget)
 					.MyPC(MyPC)
 					.OwnerHUD(OwnerHUD)
 					.MyAttrComp(MyAttrComp)

@@ -26,6 +26,7 @@ UARTargetingDecal::UARTargetingDecal(const class FPostConstructInitializePropert
 	bAutoRegister = true;
 	UpdateInterval = 0.1f;
 	DecalSize = FVector(200, 200, 100);
+	
 }
 
 void UARTargetingDecal::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -55,7 +56,6 @@ void UARTargetingDecal::Initialize(APawn* OwningCharacterIn)
 	OwningCharacter = OwningCharacterIn;
 	FHitResult HitLocation = UARTraceStatics::GetHitResult(10000, NAME_None, OwningCharacterIn, false, false, EARTraceType::Trace_Weapon);
 	DecalComponent = UGameplayStatics::SpawnDecalAtLocation(OwningCharacterIn, DecalMaterial, DecalSize, HitLocation.Location, FRotator(-90, 0, 0));
-	
 }
 
 void UARTargetingDecal::UpdateDecalComponentPosition()

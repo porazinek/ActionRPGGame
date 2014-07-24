@@ -37,6 +37,7 @@ UAREquipmentComponent::UAREquipmentComponent(const class FPostConstructInitializ
 void UAREquipmentComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+	//bReplicates = true;
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		if (ActiveLeftHandWeapon)
@@ -150,37 +151,6 @@ void UAREquipmentComponent::SortEquipedItemsByAttribute(FName AttributeName)
 	//}
 }
 /* Inventory Handling **/
-void UAREquipmentComponent::PickupItem()
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerPickupItem();
-	}
-	else
-	{
-		FHitResult HitResult = UARTraceStatics::GetHitResult(1000.0f, "PickItem", TargetCharacter, false, false, EARTraceType::Trace_UI);
-
-		if (HitResult.GetActor())
-		{
-			AARItemPickup* pickedItem = Cast<AARItemPickup>(HitResult.GetActor());
-			{
-				if (pickedItem)
-				{
-					pickedItem->GiveAllItemsTo(TargetController);
-				}
-			}
-		}
-	}
-}
-void UAREquipmentComponent::ServerPickupItem_Implementation()
-{
-	PickupItem();
-}
-
-bool UAREquipmentComponent::ServerPickupItem_Validate()
-{
-	return true;
-}
 void UAREquipmentComponent::AddItemToInventory(FInventorySlot NewItem)
 {
 	if (GetOwnerRole() < ROLE_Authority)

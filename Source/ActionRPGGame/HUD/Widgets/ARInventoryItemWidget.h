@@ -18,6 +18,11 @@ public:
 			Controller which owns Inventory
 		*/
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, PlayerController)
+		
+		SLATE_ARGUMENT(TWeakObjectPtr<class UARInventoryComponent>, Inventory)
+
+		SLATE_ARGUMENT(TWeakObjectPtr<class UAREquipmentComponent>, Equipment)
+
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARCharacter>, Character)
 
 		/*
@@ -67,6 +72,11 @@ public:
 		Controller which owns Inventory
 	*/
 	TWeakObjectPtr<class AARPlayerController> PlayerController;
+
+	TWeakObjectPtr<class UARInventoryComponent> Inventory;
+
+	TWeakObjectPtr<class UAREquipmentComponent> Equipment;
+
 	TWeakObjectPtr<class AARCharacter> Character;
 	/*
 		Information about current item slot in inventory.

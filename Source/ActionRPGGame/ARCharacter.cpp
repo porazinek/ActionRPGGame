@@ -227,8 +227,6 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	//Action Bar
 	//InputComponent->BindAction("ActionButtonOne", IE_Pressed, this, &AARCharacter::InputActionButtonOne);
 
-	InputComponent->BindAction("PickupItem", IE_Pressed, this, &AARCharacter::PickupItem);
-
 	//Add weapon switch for left and right hand.
 	//InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
 	//InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARCharacter::InputSwapRightWeapon);
@@ -313,10 +311,6 @@ void AARCharacter::InputActionButtonOne()
 	}
 }
 
-void AARCharacter::PickupItem()
-{
-	Equipment->PickupItem();
-}
 
 void AARCharacter::InputSwapLeftWeapon()
 {

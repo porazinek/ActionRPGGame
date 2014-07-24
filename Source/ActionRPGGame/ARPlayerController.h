@@ -7,6 +7,7 @@
 #include "Slate.h"
 #include "Componenets/ARAttributeComponent.h"
 #include "ARCharacter.h"
+
 #include "ARPlayerController.generated.h"
 
 UCLASS()
@@ -17,6 +18,11 @@ private:
 	UPROPERTY()
 	class AARCharacter* ARCharacter;
 public:
+
+	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+		TSubobjectPtr<class UARInventoryComponent> Inventory;
 
 	UPROPERTY(ReplicatedUsing=OnRep_UIDamage)
 	FARUIDamage UIDamage;
@@ -69,6 +75,12 @@ public:
 
 	void InputSwapLeftWeapon();
 	void InputSwapRightWeapon();
+
+	/*
+		Route item picup trough controller.
+		We might pick up directly in controller, or route to other object.
+	*/
+	void InputPickupItem();
 
 	/* GUI Input **/
 	void SetInventoryVisibility();

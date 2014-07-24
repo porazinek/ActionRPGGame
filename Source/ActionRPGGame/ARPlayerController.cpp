@@ -8,6 +8,8 @@
 #include "Abilities/ARAbility.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
 
+#include "Items/ARInventoryComponent.h"
+
 #include "HUD/ARHUD.h"
 
 #include "Effects/AREffectType.h"
@@ -27,6 +29,10 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	Attributes = PCIP.CreateDefaultSubobject<UARAttributeBaseComponent>(this, TEXT("Attributes"));
 	Attributes->SetIsReplicated(true);
 	Attributes->SetNetAddressable();
+
+	Inventory = PCIP.CreateDefaultSubobject<UARInventoryComponent>(this, TEXT("Inventory"));
+	Inventory->SetIsReplicated(true);
+	Inventory->SetNetAddressable();
 
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;
@@ -83,7 +89,17 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 
 	//Inventory.AddZeroed(MaxInventorySize);
 }
+void AARPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	/*
+		For whatever reason, telling it to replicate in constructor is not enough.
+		We must do so also in BeginPlay().
 
+		Maybe somwhere else in hierarchy call would also work, like PostInitializeComponents.
+	*/
+	Inventory->SetIsReplicated(true);
+}
 void AARPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
@@ -124,11 +140,11 @@ void AARPlayerController::InputTempAddWeapons()
 	FInventorySlot wep1;
 	wep1.ItemID = "RedWeapon";
 	wep1.ItemSlot = EItemSlot::Item_Weapon;
-	AddItemToInventory(wep1);
+	Inventory->AddItemToInventory(wep1);
 	FInventorySlot wep2;
 	wep2.ItemID = "TestWeapon";
 	wep2.ItemSlot = EItemSlot::Item_Weapon;
-	AddItemToInventory(wep2);
+	Inventory->AddItemToInventory(wep2);
 }
 
 void AARPlayerController::InputActivateAbility()
@@ -212,6 +228,11 @@ void AARPlayerController::InputSwapLeftWeapon()
 	{
 		ARCharacter->InputSwapLeftWeapon();
 	}
+}
+
+void AARPlayerController::InputPickupItem()
+{
+
 }
 void AARPlayerController::SetInventoryVisibility()
 {

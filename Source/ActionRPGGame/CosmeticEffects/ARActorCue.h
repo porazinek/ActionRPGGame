@@ -25,10 +25,12 @@ public:
 	TWeakObjectPtr<AActor> AttachTo;
 	UPROPERTY()
 	FName AttachName;
+	UPROPERTY()
+		FName CueHandle;
 
 	UPROPERTY()
 	TWeakObjectPtr<class UParticleSystem> ParticleSystem;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Effect")
 	TWeakObjectPtr<class UParticleSystemComponent> ParticleSystemComp;
 };
 

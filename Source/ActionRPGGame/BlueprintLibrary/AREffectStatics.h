@@ -18,7 +18,7 @@ public:
 		static void ApplyInstantEffect(TSubclassOf<class UAREffectType> EffectIn);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
-		static FEffectSpec CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType, FEffectCue EffectCue, TSubclassOf<class AARActorCue> ActorCue);
+		static FEffectSpec CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType, const FEffectCue& EffectCue, TSubclassOf<class AARActorCue> ActorCue);
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
 		static void ActivatePeriodicEffect(FPeriodicEffect PeriodicEffect);
 
@@ -68,7 +68,7 @@ public:
 	
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
-		static void ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult);
+		static void ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult, TArray<AActor*> ActorToIgnore);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Spawn Helpers")
 		static void SpawnProjectileInArea(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo, int32 Amount);

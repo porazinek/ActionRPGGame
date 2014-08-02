@@ -7,7 +7,7 @@
 #include "Particles/ParticleSystemComponent.h"
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
-
+#include "../Types/AREnumTypes.h"
 #include "../ARCharacter.h"
 
 #include "ARTargetingDecal.h"
@@ -54,13 +54,13 @@ void UARTargetingDecal::Initialize(APawn* OwningCharacterIn)
 {
 	Activate();
 	OwningCharacter = OwningCharacterIn;
-	FHitResult HitLocation = UARTraceStatics::GetHitResult(10000, NAME_None, OwningCharacterIn, false, false, EARTraceType::Trace_Weapon);
+	FHitResult HitLocation = UARTraceStatics::GetHitResult(10000, NAME_None, OwningCharacterIn, false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
 	DecalComponent = UGameplayStatics::SpawnDecalAtLocation(OwningCharacterIn, DecalMaterial, DecalSize, HitLocation.Location, FRotator(-90, 0, 0));
 }
 
 void UARTargetingDecal::UpdateDecalComponentPosition()
 {
-	FHitResult HitLocation = UARTraceStatics::GetHitResult(10000, NAME_None, OwningCharacter, false, false, EARTraceType::Trace_Weapon);
+	FHitResult HitLocation = UARTraceStatics::GetHitResult(10000, NAME_None, OwningCharacter, false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
 
 	DecalComponent->SetWorldLocation(HitLocation.Location);
 }

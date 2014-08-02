@@ -153,8 +153,9 @@ void AARPlayerController::InputActionButtonOne()
 	//second press should deactivate ability and remove it from here.
 	if (ActionBarOne[0].Ability.IsValid())
 	{
-		ActiveAbility = ActionBarOne[0].Ability.Get();
-		ActiveAbility->Initialize();
+		SetActiveAbility(ActionBarOne[0].Ability.Get());
+		//ActiveAbility = ActionBarOne[0].Ability.Get();
+		//ActiveAbility->Initialize();
 		/*IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[0].Ability.Get());
 		if (actionInterface)
 		{
@@ -166,8 +167,9 @@ void AARPlayerController::InputActionButtonTwo()
 {
 	if (ActionBarOne[1].Ability.IsValid())
 	{
-		ActiveAbility = ActionBarOne[1].Ability.Get();
-		ActiveAbility->Initialize();
+		SetActiveAbility(ActionBarOne[1].Ability.Get());
+		//ActiveAbility = ActionBarOne[1].Ability.Get();
+		//ActiveAbility->Initialize();
 		//IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[1].Ability.Get());
 		//if (actionInterface)
 		//{
@@ -259,6 +261,27 @@ void AARPlayerController::SetAbilityInventoryVisibility()
 	}
 }
 
+void AARPlayerController::ServerSetActiveAbility_Implementation(class AARAbility* AbilityIn)
+{
+	SetActiveAbility(AbilityIn);
+}
+bool AARPlayerController::ServerSetActiveAbility_Validate(class AARAbility* AbilityIn)
+{
+	return true;
+}
+void AARPlayerController::SetActiveAbility(class AARAbility* AbilityIn)
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerSetActiveAbility(AbilityIn);
+	}
+	else
+	{
+		ActiveAbility = AbilityIn;
+		ActiveAbility->Initialize();
+	}
+}
+
 void AARPlayerController::AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID)
 {
 	if (Role < ROLE_Authority)
@@ -295,7 +318,9 @@ void AARPlayerController::AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 Sl
 					abilityBar.AbilityType = AbilityIn.AbilityType;
 					abilityBar.AbilityName = AbilityIn.AbilityName;
 					abilityBar.Ability = tempAbi;
+					abilityBar.Ability->Initialize();
 
+					OnAbilityEquiped.Broadcast(abilityBar.Ability.Get());
 					UpdateActionBarOne = true;
 				}
 			}
@@ -360,6 +385,8 @@ void AARPlayerController::GetLifetimeReplicatedProps(TArray< class FLifetimeProp
 	DOREPLIFETIME_CONDITION(AARPlayerController, ActionBarOne, COND_OwnerOnly);
 
 	DOREPLIFETIME_CONDITION(AARPlayerController, UIDamage, COND_OwnerOnly);
+
+	DOREPLIFETIME(AARPlayerController, ActiveAbility);
 }
 
 void AARPlayerController::OnRep_UIDamage()

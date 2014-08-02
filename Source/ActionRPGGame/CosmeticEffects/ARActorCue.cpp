@@ -16,6 +16,7 @@ AARActorCue::AARActorCue(const class FPostConstructInitializeProperties& PCIP)
 	//AttachRootComponentToActor(AttachTo.Get(), AttachName, EAttachLocation::SnapToTarget);
 	ArrowRoot = PCIP.CreateDefaultSubobject<UArrowComponent>(this, TEXT("ArrowRoot"));
 	SetRootComponent(ArrowRoot);
+
 }
 
 void AARActorCue::InitializeAttachment(AActor* AttachToIn, FName AttachNameIn)
@@ -27,5 +28,7 @@ void AARActorCue::InitializeAttachment(AActor* AttachToIn, FName AttachNameIn)
 		return;
 	//AttachRootComponentToActor(AttachToIn, AttachNameIn, EAttachLocation::KeepWorldPosition);
 	
-	ParticleSystemComp = UGameplayStatics::SpawnEmitterAttached(ParticleSystem.Get(), this->ArrowRoot, NAME_None, FVector(0, 0, 0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
+	ParticleSystemComp = UGameplayStatics::SpawnEmitterAttached(ParticleSystem.Get(), this->ArrowRoot, NAME_None, FVector(0, 0, 0), FRotator(0, 0, 0), EAttachLocation::SnapToTarget);
+
+	
 }

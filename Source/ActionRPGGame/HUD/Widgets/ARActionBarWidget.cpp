@@ -6,7 +6,7 @@
 #include "../../Types/ARStructTypes.h"
 #include "../../ARPlayerController.h"
 #include "../../ARCharacter.h"
-#include "../../Componenets/ARAbilityComponent.h"
+#include "../../Abilities/ARAbilityComponent.h"
 
 #include "ARActionItemWidget.h"
 

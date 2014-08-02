@@ -174,10 +174,9 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			//this is RPC call!
 			if (Operation->PickedItem->EEquipmentSlot == EEquipmentSlot::Item_RightHandOne)
 			{
-				Equipment->RemoveRightHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
+				Equipment->RemoveWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID, 1);
 
-					Equipment->UnEquipRightHandWeapon(Operation->PickedItem->ItemID);
-
+				Equipment->UnEquipWeapon(Operation->PickedItem->ItemID, 1);
 			}
 			//store current slot ID;
 			int32 tempSlotID = this->InventoryItem->SlotID;
@@ -201,7 +200,7 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			Operation->LastItemSlot->InventoryItem.Reset();
 
 			//add it to inventory.
-			Equipment->AddLeftHandWeapon(item, tempSlotID);
+			Equipment->AddWeapon(item, tempSlotID, 0);
 
 			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);
 			return FReply::Handled();
@@ -214,9 +213,9 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 		{
 			if (Operation->PickedItem->EEquipmentSlot == EEquipmentSlot::Item_LeftHandOne)
 			{
-				Equipment->RemoveLeftHandWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID);
+				Equipment->RemoveWeapon(Operation->PickedItem->ItemID, Operation->PickedItem->SlotID, 0);
 
-				Equipment->UnEquipLeftHandWeapon(Operation->PickedItem->ItemID);
+				Equipment->UnEquipWeapon(Operation->PickedItem->ItemID, 0);
 
 			}
 			int32 tempSlotID = this->InventoryItem->SlotID;
@@ -235,7 +234,7 @@ FReply SARInventoryItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDr
 			Operation->LastItemSlot->ItemInSlot.Reset();
 			Operation->LastItemSlot->InventoryItem.Reset();
 
-			Equipment->AddRightHandWeapon(item, tempSlotID);
+			Equipment->AddWeapon(item, tempSlotID, 1);
 
 
 			//Operation->LastItemSlot->PlayerController->RemoveItemFromInventory(Operation->LastItemSlot->InventoryItem->ItemID, Operation->LastItemSlot->InventoryItem->SlotID);

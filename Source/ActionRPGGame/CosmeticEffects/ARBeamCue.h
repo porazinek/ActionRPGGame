@@ -11,6 +11,10 @@ class UARBeamCue : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 public:
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+	virtual void InitializeComponent() override;
+	virtual void DestroyComponent() override;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Beam Effect")
 		UParticleSystem* TrailFX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Beam Effect")
@@ -21,6 +25,18 @@ public:
 		FName ImpactParam;
 	UPROPERTY(ReplicatedUsing = OnRep_Hit, BlueprintReadWrite, Category="Hit Info")
 		FHitInfo HitInfo;
+
+	UPROPERTY(EditAnywhere, Category = "Beam Effect")
+		float UpdateInterval;
+
+	float CurrentUpdateTime;
+
+	UPROPERTY()
+	TWeakObjectPtr<UParticleSystemComponent> BeamPSC;
+
+	UPROPERTY(BlueprintReadWrite, Replicated, Category = "Beam Effect")
+		bool IsFiring;
+
 	UFUNCTION()
 		void OnRep_Hit();
 	void SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocket);

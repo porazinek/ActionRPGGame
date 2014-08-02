@@ -21,7 +21,7 @@ void SARFloatingTextWidget::Construct(const FArguments& InArgs)
 	MyAttrComp = InArgs._MyAttrComp;
 }
 
-int32 SARFloatingTextWidget::OnPaint(const FGeometry& AllottedGeometry, const FSlateRect& MyClippingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+int32 SARFloatingTextWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyClippingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
 	const FSlateBrush* BrushResource = new FSlateBrush();
 	
@@ -51,5 +51,5 @@ int32 SARFloatingTextWidget::OnPaint(const FGeometry& AllottedGeometry, const FS
 					);
 	}
 
-	return SCompoundWidget::OnPaint(AllottedGeometry, MyClippingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
+	return SCompoundWidget::OnPaint(Args, AllottedGeometry, MyClippingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 }

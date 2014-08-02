@@ -4,15 +4,20 @@
 #include "../Types/ARStructTypes.h"
 
 #include "../Types/ARAttributeTypes.h"
-#include "ARTrailCue.generated.h"
+#include "ARTrailImpactCue.generated.h"
 
 
 /*
 	TODO::
 	Figure out why trail doesn't spawn, when actor is out of sight of other actors!.
 */
+/*
+	Spawn two particle systems:
+	1. Trail
+	2. Impact on hit object.
+*/
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), editinlinenew, meta = (BlueprintSpawnableComponent))
-class UARTrailCue : public UActorComponent
+class UARTrailImpactCue : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 public:
@@ -21,8 +26,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
 		UParticleSystem* TrailFX;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
+		UParticleSystem* ImpactFX;
+
 	UPROPERTY()
 		UParticleSystemComponent* TrailPSC;
+//	UPROPERTY()
+//		UParticleSystemComponent* ImpactPSC;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
 		FName StartSocket;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trail Effect")
@@ -35,6 +46,9 @@ public:
 	
 	UPROPERTY()
 	class AARWeapon* OriginWeapon;
+	UPROPERTY()
+	class AARCharacter* OwnerChar;
+
 	UFUNCTION()
 		void OnRep_Hit();
 	/*

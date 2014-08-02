@@ -46,18 +46,20 @@ void UAREffectStatics::ApplyInstantEffect(TSubclassOf<class UAREffectType> Effec
 
 }
 
-FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType, FEffectCue EffectCue, TSubclassOf<class AARActorCue> ActorCue)
+FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor* EffectCauser, float Duration, TSubclassOf<class AAREffectPeriodic> EffectType, const FEffectCue& EffectCue, TSubclassOf<class AARActorCue> ActorCue)
 {
 	FEffectSpec PeriodicEffect;
-	if (!EffectTarget && !EffectCauser)
+	if (!EffectTarget || !EffectCauser)
 		return PeriodicEffect;
 	UARAttributeComponent* attrComp = EffectTarget->FindComponentByClass<UARAttributeComponent>();
+	if (!attrComp)
+		return PeriodicEffect;
 
 	if (attrComp->ActiveEffects.Effects.Num() > 0)
 	{
 		for (FEffectSpec& effect : attrComp->ActiveEffects.Effects)
 		{
-			if (effect.ActorEffect && effect.ActorEffect->GetClass() == EffectType)
+			if (effect.ActorEffect.IsValid() && effect.ActorEffect->GetClass() == EffectType)
 			{
 				//reality. Do check if effect is stackable or something.
 				return PeriodicEffect;
@@ -70,7 +72,9 @@ FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor*
 	SpawnInfo.Owner = EffectTarget;
 	//SpawnInfo.Instigator = EffectCauser;
 
-	AAREffectPeriodic* effecTemp = EffectTarget->GetWorld()->SpawnActor<AAREffectPeriodic>(EffectType, SpawnInfo);
+	TWeakObjectPtr<AAREffectPeriodic> effecTemp = EffectTarget->GetWorld()->SpawnActor<AAREffectPeriodic>(EffectType, SpawnInfo);
+	
+	FString GUId = FGuid::NewGuid().ToString();
 	effecTemp->EffectCauser = EffectCauser;
 	effecTemp->EffectTarget = EffectTarget;
 	effecTemp->MaxDuration = Duration;
@@ -78,7 +82,8 @@ FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor*
 	PeriodicEffect.MaxDuration = Duration;
 	PeriodicEffect.CurrentDuration = 0;
 	PeriodicEffect.EffectCue = EffectCue;
-	PeriodicEffect.ActorCue = ActorCue;
+	PeriodicEffect.EffectCue.CueHandle = FName();
+	PeriodicEffect.ActorCues.Add(ActorCue);
 	attrComp->AddPeriodicEffect(PeriodicEffect);
 
 	return PeriodicEffect;
@@ -131,6 +136,8 @@ void UAREffectStatics::ApplyDamage(AActor* DamageTarget, float BaseDamage, FName
 		return;
 
 	TWeakObjectPtr<UARAttributeBaseComponent> attr = DamageTarget->FindComponentByClass<UARAttributeBaseComponent>();
+	if (!attr.IsValid())
+		return;
 
 	FAttribute Attribute;
 	Attribute.AttributeName = AttributeName;
@@ -271,16 +278,16 @@ void UAREffectStatics::DrawDebugSweptBox(const UWorld* InWorld, FVector const& S
 	::DrawDebugBox(InWorld, End, HalfSize, CapsuleRot, Color, bPersistentLines, LifeTime, DepthPriority);
 }
 
-void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult)
+void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projectile, FVector Origin, AActor* Causer, FName StartSocket, const FARProjectileInfo& Data, const FHitResult& HitResult, TArray<AActor*> ActorToIgnore)
 {
 	APawn* pawn = Cast<APawn>(Causer);
 	if (!pawn)
 		return;
-
+	
 	if (HitResult.bBlockingHit)
 	{
 		const FVector dir = (HitResult.ImpactPoint - Origin).SafeNormal();
-		FTransform SpawnTM(FRotator(0, 0, 0), Origin);
+		FTransform SpawnTM(FRotator(0, 0, 0), Origin + pawn->GetActorForwardVector() * 15.0f);
 
 		AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
 
@@ -289,6 +296,13 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 		{
 			//proj->Instigator = Causer;
 			proj->SetOwner(Causer);
+			proj->Collision->IgnoreActorWhenMoving(Causer, true);
+
+			for (AActor* ignore : ActorToIgnore)
+			{
+				proj->Collision->IgnoreActorWhenMoving(ignore, true);
+			}
+
 			proj->Movement->Velocity = dir * Data.InitialVelocity;
 			proj->Movement->MaxSpeed = Data.MaxVelocity;
 			proj->Movement->ProjectileGravityScale = Data.GravityScale;
@@ -337,17 +351,17 @@ void UAREffectStatics::SpawnProjectileInAreaInterval(TSubclassOf<class AARProjec
 		FTimerDelegate del = FTimerDelegate::CreateStatic(&UAREffectStatics::SpawnProjectile, Projectile, Causer, HitResult, ProjectileInfo);
 		TimerManager.SetTimer(IntervalHandle, del, MinTime, true, 0);
 		float duration = Amount * MaxTime + KINDA_SMALL_NUMBER;
-		FTimerDelegate durDel = FTimerDelegate::CreateStatic(&UAREffectStatics::StopTimer, Causer, IntervalHandle.GetHandle());
-		DurationTimer.SetTimer(DurationHandle, durDel, duration, false);
+		//FTimerDelegate durDel = FTimerDelegate::CreateStatic(&UAREffectStatics::StopTimer, Causer, IntervalHandle.GetHandle());
+		//DurationTimer.SetTimer(DurationHandle, durDel, duration, false);
 		float CurrentTime = 0;
 		int32 counter = 0;
 	}
 }
 void UAREffectStatics::StopTimer(AActor* Causer, int32 HandleIn)
 {
-	FTimerHandle Handle = FTimerHandle(HandleIn);
+	//FTimerHandle Handle = FTimerHandle(HandleIn);
 	FTimerManager& Timer = Causer->GetWorld()->GetTimerManager();
-	Timer.ClearTimer(Handle);
+	//Timer.ClearTimer(Handle);
 	//Timer.ClearTimer(TimerHandle);
 }
 void UAREffectStatics::SpawnProjectile(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, FHitResult HitResult, FARProjectileInfo ProjectileInfo)

@@ -6,6 +6,13 @@
 
 #include "ARAbility.generated.h"
 
+UENUM()
+enum EAbilityOrigin
+{
+	OpositeHandToWeapon,
+	UseWeaponLocation
+};
+
 UCLASS(hidecategories = (Input, Movement, Collision, Rendering, "Utilities|Transformation"), MinimalAPI, Blueprintable, notplaceable)
 class AARAbility : public AActor, public IIARActionState
 {
@@ -15,9 +22,6 @@ public:
 
 	//Mainly used on server. To assign Owner properties;
 	virtual void Initialize();
-
-	UPROPERTY(Replicated)
-	bool BlankRep;
 
 	/* 
 		Currently Active weapon, must have any of these tags.
@@ -44,6 +48,33 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Cost")
 		TArray<FAttribute> ResourceCost;
+	/*
+		Does ability require two weapons to be activate ?
+	*/
+	UPROPERTY(EditAnywhere, Category = "Reuired Weapons")
+		bool MustHaveTwoWeaponActive;
+
+	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Cosmetics")
+		FName LeftHandSocket;
+	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Cosmetics")
+		FName RightHandSocket;
+	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Cosmetics")
+		FName WeaponSocket;
+	/*
+		Origin point will be in opposite Hand, to the one currently holding weapon.
+	*/
+	//UPROPERTY(EditAnywhere, Category = "Cosmetics")
+	//	bool OpositeHandToWeapon;
+	/*
+		Origin will be on weapon socket.
+	*/
+	//UPROPERTY(EditAnywhere, Category = "Cosmetics")
+	//	bool UseWeaponLocation;
+	UPROPERTY(EditAnywhere, Category = "Cosmetics")
+		TEnumAsByte<EAbilityOrigin>  StartLocation;
+
+	UFUNCTION(BlueprintCallable, Category="AR|Ability")
+		FVector GetOriginLocation();
 
 	UPROPERTY(Replicated)
 	class AARCharacter* OwningCharacter;
@@ -53,6 +84,9 @@ public:
 	class UARAttributeComponent* OwnerAttributes;
 	UPROPERTY()
 	class UAREquipmentComponent* OwnerEquipment;
+
+	UPROPERTY(Replicated)
+	class AARWeapon* CurrentWeapon;
 
 	/* [client] OVERIDE from IIARActionState */
 	virtual void InputPressed() override;

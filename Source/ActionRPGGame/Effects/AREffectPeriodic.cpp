@@ -9,6 +9,8 @@
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 
+#include "../CosmeticEffects/ARActorCue.h"
+
 #include "AREffectPeriodic.h"
 
 AAREffectPeriodic::AAREffectPeriodic(const class FPostConstructInitializeProperties& PCIP)
@@ -112,15 +114,19 @@ void AAREffectPeriodic::OnRep_EffectActive()
 
 	if (IsEffectActive)
 	{
-
+		//for (TSubclassOf<AARActorCue> cue : ActorCues)
+		//{
+		//	AARActorCue* cueObj = EffectTarget->GetWorld()->SpawnActor<AARActorCue>(cue);
+		//	cueObj->AttachRootComponentToActor(EffectTarget, AttachLocation, EAttachLocation::SnapToTarget);
+		//}
 		for (FEffectCue& cue : EffectCues)
 		{
 
 		}
-		if (PresitentFX)
-		{
-			MyChar->PresistentParticle = UGameplayStatics::SpawnEmitterAttached(PresitentFX, MyChar->Mesh, AttachLocation, FVector(0,0,0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
-		}
+		////if (PresitentFX)
+		//{
+		//	MyChar->PresistentParticle = UGameplayStatics::SpawnEmitterAttached(PresitentFX, MyChar->Mesh, AttachLocation, FVector(0,0,0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
+		//}
 	}
 	else
 	{

@@ -10,6 +10,8 @@
 
 #include "ARPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnAbilityEquiped, class AARAbility*, Ability);
+
 UCLASS()
 class AARPlayerController : public APlayerController
 {
@@ -123,6 +125,8 @@ public:
 		bool UpdateAbilityInventory;
 	/*
 		Abilities
+
+		this is going to seprate component. Later.
 	*/
 	/*
 		Array which represents action bar. Essentialy hack, it would be better as TMap,
@@ -134,7 +138,7 @@ public:
 		void OnRep_ActionBarOne();
 	bool UpdateActionBarOne;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Ability")
+	UPROPERTY(Replicated, BlueprintReadOnly, Replicated, Category="Ability")
 	class AARAbility* ActiveAbility;
 
 	bool AddAbilityToInventory(FAbilityInfo AbilityIn);
@@ -146,60 +150,16 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerAddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID);
 
-
-
-	/**
-		UI Hooks
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSetActiveAbility(class AARAbility* AbilityIn);
+	UFUNCTION()
+		void SetActiveAbility(class AARAbility* AbilityIn);
+	/*
+		Event called when ability is aded to action bar.
 	*/
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Ability")
+		FDMDOnAbilityEquiped OnAbilityEquiped;
 
-	inline float GetHealth()
-	{
-		if (ARCharacter)
-		{
-			return ARCharacter->Attributes->Health;
-		}
-		return 0;
-	}
-	inline float GetMaxHealth()
-	{
-		if (ARCharacter)
-		{
-			return ARCharacter->Attributes->MaxHealth;
-		}
-		return 0;
-	}
-	inline float GetEnergy()
-	{
-		if (ARCharacter)
-		{
-			return ARCharacter->Attributes->Energy;
-		}
-		return 0;
-	}
-	inline float GetMaxEnergy()
-	{
-		if (ARCharacter)
-		{
-			return ARCharacter->Attributes->MaxEnergy;
-		}
-		return 0;
-	}
-	inline float GetStamina()
-	{
-		if (ARCharacter)
-		{
-			return ARCharacter->Attributes->Stamina;
-		}
-		return 0;
-	}
-	inline float GetMaxStamina()
-	{
-		if (ARCharacter)
-		{
-			return ARCharacter->Attributes->MaxStamina;
-		}
-		return 0;
-	}
 };
 
 

@@ -189,6 +189,9 @@ public:
 		FName ItemID;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
+		bool IsAttached;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
 		TEnumAsByte<EItemSlot> ItemSlot; //to check which datasset we should query.
 
 	UPROPERTY(EditAnywhere, Category = "Item")
@@ -463,4 +466,38 @@ public:
 
 	UPROPERTY()
 		AActor* DamageInstigator;
+};
+
+USTRUCT(BlueprintType)
+struct FARAttachmentSocket
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Socket")
+		FName SocketName;
+
+	UPROPERTY()
+		FName LastItemID;
+	/*
+		What kind of item can be attached to this socket.
+	*/
+	UPROPERTY(EditAnywhere, Category = "Socket")
+		TEnumAsByte<EAttachmentType> AttachType;
+
+	UPROPERTY(EditAnywhere, Category = "Socket")
+		TEnumAsByte<ESocketSideType> SocketSide;
+	/*
+		Detailed type of socket.
+	*/
+	UPROPERTY(EditAnywhere, Category = "Socket")
+		TEnumAsByte<EAttachSocketType> SocketType;
+
+	UPROPERTY(EditAnywhere, Category = "Socket")
+		bool IsSlotAvailable;
+	/*
+		Montage to play when attaching/detaching from this socket.
+		Maybe split it into two montages ?
+	*/
+	UPROPERTY(EditAnywhere, Category = "Socket")
+		UAnimMontage* EquipMontage;
 };

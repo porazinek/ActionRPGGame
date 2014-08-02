@@ -4,8 +4,11 @@
 #include "ARAttributeBaseComponent.h"
 #include "../Types/ARStructTypes.h"
 
-
 #include "ARAttributeComponent.generated.h"
+
+/*
+	Add this component to player controller or character ?
+*/
 
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), editinlinenew, meta = (BlueprintSpawnableComponent))
 class UARAttributeComponent : public UARAttributeBaseComponent
@@ -17,6 +20,11 @@ public:
 	virtual void OnRegister() override;
 
 	virtual void InitializeComponent() override;
+
+	/*
+		Called after properties are set and replicated. From actor which owns component.
+	*/
+	virtual void Initialize() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_Health, Category = "Derived Attribute")
 		float Health;
@@ -39,6 +47,8 @@ public:
 
 	UFUNCTION()
 		void OnRep_Health();
+
+	TArray<class UAREffectType*> DefaultEffects;
 
 };
 

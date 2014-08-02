@@ -18,9 +18,19 @@ public:
 		return Handle != Other.Handle;
 	};
 
+	inline FName GetHandle()
+	{
+		return Handle;
+	};
+
+	inline void SetHandle(FName NewHandle)
+	{
+		Handle = NewHandle;
+	};
+
 	FEffectHandle() {};
 private:
-	int32 Handle;
+	FName Handle;
 };
 
 /*
@@ -33,6 +43,11 @@ struct FEffectCue
 public:
 	UPROPERTY(EditAnywhere, Category = "Effect Cue")
 		FName CueName;
+	UPROPERTY(EditAnywhere, Category = "Effect Cue")
+		FName AttachLocation;
+	UPROPERTY()
+		FName CueHandle;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Cue")
 		TWeakObjectPtr<UParticleSystem> ParticleSystem;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Cue")
@@ -64,9 +79,9 @@ public:
 		FGameplayTagContainer OwnedTags;
 
 	UPROPERTY() //really don't think that this is needed.
-		TSubclassOf<class AARActorCue> ActorCue;
+		TArray<TSubclassOf<class AARActorCue>> ActorCues;
 	UPROPERTY()
-	class AAREffectPeriodic* ActorEffect;
+		TWeakObjectPtr<class AAREffectPeriodic> ActorEffect;
 	UPROPERTY()
 		bool IsActive;
 

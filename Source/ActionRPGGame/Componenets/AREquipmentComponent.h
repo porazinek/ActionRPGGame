@@ -33,56 +33,66 @@ public:
 
 	virtual void InitializeComponent() override;
 	virtual void BeginDestroy() override;
-	//this is placeholder. inventory should use different data struct
-	//to componesante for myriads of possible item types, not just armor in this case.
-	//It doesn't even allow to keep weapons!
-	//Hmm or maybe... change it to inventory of Ints! or FNames, and then just query DataAsset for whatever
-	//we need!
 
+	/*
+		Consolidate all Left/Right Hand function.
+		0 - left hand 
+		1 - right Hand
+		0  1  - makes sense right ?
+	*/
 	/* Inventory Handling **/
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 		TArray<class AARItem*> EquippedItems;
 
 	int8 MaxEquippedItems;
 	
+	/*
+		To consolidate it into single array,
+		I would need new struct which would indicate which slot is left hand and which slot if right hand.
+		It would make it harder to display, and I'm not sure if that is worth the effort honestly.
+	*/
+	/*
+		List of sockets to which weapon might be attached. After equiping it, but while it is not active.
+	*/
+	UPROPERTY(EditAnywhere, Category = "Cosmetics")
+	TArray<FARAttachmentSocket> WeaponSockets;
 
 	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.
 		TArray<FInventorySlot> LeftHandWeapons;
+	/*
+		List of equiped weapons. They are not active but can be quickly switched.
+	*/
+	TArray<AARWeapon*> EquipedWeapons;
+
+	/*
+		Change it to NetMulticast and push it directly without Repnotify ?
+	*/
+	void AttacheSheathedWeapon(TArray<FInventorySlot> WeaponsIn, TArray<FARAttachmentSocket> WeaponSocketsIn, int32 HandIn);
+	
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastAttacheSheathedWeapon(FInventorySlot WeaponsIn, int32 HandIn);
+	UFUNCTION(NetMulticast, Reliable)
+		void AttachSheathhWeaponOnSwap(class AARWeapon* LastWeapon, const TArray<FARAttachmentSocket>& WeaponSocketsIn, int32 HandIn);
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastDetachWeaponSlotSwap(FName WeaponID, int32 HandIn);
+	
+	void DetachSheathedWeapon(class AARWeapon* WeaponToDetach);
+	
+	void AddWeapon(FInventorySlot Weapon, int32 SlotID, int32 Hand);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerAddWeapon(FInventorySlot Weapon, int32 SlotID, int32 Hand);
+
+	bool RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerRemoveWeapon(FName Weapon, int32 SlotID, int32 Hand);
+
 	UFUNCTION()
 		void OnRep_LeftHandWeapons();
 	/*
 		Indicates whether there is some change in LeftHandWeapons
 	*/
 	bool LeftHandWeaponsUpdated;
-	/* 
-		[client] [server] - Add left hand weapon to LeftHandWeapons
-	*/
-	void AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
 
-	/* 
-		[server] - Calls AddLeftHandWeapon On server. 
-	*/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID);
-
-	/* 
-		[client] [server] - Remove left hand weapon to list of equiped weapons.
-		Return true if something has been removed.
-	*/
-	bool RemoveLeftHandWeapon(FName ItemID, int32 SlotID);
-
-	/* 
-		[server] - Calls RemoveLeftHandWeapon On server. 
-		
-		@param ItemID - ID of item remove.
-		@param SlotID - ID of Inventory slot, which item occupy.
-	*/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerRemoveLeftHandWeapon(FName ItemID, int32 SlotID);
-
-	/*
-		List of weapon which can be equiped to right hand
-	*/
 	UPROPERTY(ReplicatedUsing = OnRep_RightHandWeapons)
 		TArray<FInventorySlot> RightHandWeapons;
 	UFUNCTION()
@@ -91,36 +101,6 @@ public:
 		Indicates whether there is some change in RightHandWeapons
 	*/
 	bool RightHandWeaponsUpdated;
-
-	/* 
-		[client] [server] - Add right hand weapon to RightHandWeapons
-	*/
-	void AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
-
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddRightHandWeapon(FInventorySlot Weapon, int32 SlotID);
-
-	/*
-		[client] [server] - Remove right hand weapon from RightHandWeapons.
-		Return true if something has been removed.
-	*/
-	bool RemoveRightHandWeapon(FName ItemID, int32 SlotID);
-	/* 
-		[server] - Calls RemoveRightHandWeapon On server. 
-	*/
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerRemoveRightHandWeapon(FName ItemID, int32 SlotID);
-
-	/*
-		Items which are equiped, like chest, gloves neckles etc. whitout assigning them to specific slot.
-	*/
-	//UPROPERTY()
-	//	TArray<FInventorySlot> EquippedItemsInfo;
-
-	UFUNCTION()
-		void OnRep_Inventory();
-
-	void SortEquipedItemsByAttribute(FName AttributeName);
 
 	/* Weapon Handling **/
 	int32 MaxWeapons;
@@ -137,6 +117,16 @@ public:
 		Curremt;y equiped weapons ready to use with input.
 		Again. TMap would best for it. Indexes are not really reliable, unlike Keys in TMap.
 	*/
+
+
+	void SwapWeapon(int32 Hand);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSwapWeapon(int32 Hand);
+
+	void SetWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon, int32 Hand);
+	void UnEquipWeapon(FName ItemID, int32 Hand);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerUnEquipWeapon(FName ItemID, int32 Hand);
 	UPROPERTY()
 	TArray<class AARWeapon*> ActiveWeapons;
 
@@ -152,6 +142,7 @@ public:
 	*/
 	UPROPERTY()
 		FInventorySlot ActiveLeftHandWeaponStruct;
+
 	/*
 		Socket to which left hand weapon will be attached.
 	*/
@@ -159,24 +150,6 @@ public:
 		FName LeftWeaponSocket;
 	UFUNCTION()
 		void OnRep_AtiveLeftHandWeapon();
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerSwapLeftWeapon();
-	/*
-		Swap left hand weapon from list of equiped weapons in
-		PlayerController->LeftHandWeapons.
-	*/
-	void SwapLeftWeapon();
-	/*
-		Set weapon from LeftHandWeapons to ActiveLeftHandWeapon
-	*/
-	void SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
-
-	/*
-		UnEquip current ActiveLeftHandWeapon making it impossible to use, until it is equiped again.
-	*/
-	void UnEquipLeftHandWeapon(FName ItemID);
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerUnEquipLeftHandWeapon(FName ItemID);
 
 	//Right Hand Weapon
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_ActiveRightHandWeapon, Category="Active Weapons")
@@ -187,23 +160,14 @@ public:
 		FName RightWeaponSocket;
 	UFUNCTION()
 		void OnRep_ActiveRightHandWeapon();
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerSwapRightWeapon();
-	void SwapRightWeapon();
-	void SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon);
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
 		FDMDOnRightWeaponActive OnRightWeaponActive;
 
-	/*
-	UnEquip current ActiveLeftHandWeapon making it impossible to use, until it is equiped again.
-	*/
-	void UnEquipRightHandWeapon(FName ItemID);
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerUnEquipRightHandWeapon(FName ItemID);
-
 	//Weapon general
 	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
+
+	void SetSeathedWeapon(class AARWeapon* WeaponIn, FName SocketNameIn);
 
 	/* Other Equipment Handling **/
 
@@ -235,6 +199,10 @@ public:
 	void DoAsyncLegChange();
 	FStringAssetReference LegMeshToLoad;
 
+	/*
+		Helper functions.
+	*/
+	void SortEquipedItemsByAttribute(FName AttributeName);
 };
 
 

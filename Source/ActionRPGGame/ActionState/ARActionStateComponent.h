@@ -73,7 +73,7 @@ public:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Casting)
 		bool IsCasting;
-	UPROPERTY(ReplicatedUsing=OnRep_Recharing)
+	UPROPERTY(Replicated)
 		bool IsRecharing;
 
 	/*
@@ -85,13 +85,25 @@ public:
 
 	UFUNCTION()
 		void OnRep_Casting();
-	UFUNCTION()
-		void OnRep_Recharing();
 
 	UFUNCTION(Server, Unreliable, WithValidation)
 		void ServerSetCastingState(bool State);
 	UFUNCTION(NetMulticast, Unreliable)
 		void MulticastPlayAnimation();
+
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastPlayAnimation2();
+
+	UFUNCTION(NetMulticast, Reliable)
+		void MulticastStopAnimation();
+
+	UFUNCTION()
+		void PlayCastingAnimation();
+	UFUNCTION()
+		void PlayLoop();
+
+	UFUNCTION()
+		void StopCastingAnimation();
 	/*
 		[server] ActionState. What will happen when we receive input.
 		*/
@@ -146,6 +158,10 @@ public:
 		float CurrentCastTime;
 	UPROPERTY(BlueprintReadOnly, Category = "Action Usage")
 		float CurrentCooldownTime;
+
+	UPROPERTY()
+		bool IsOnCooldown;
+
 
 	/*[client] - [server]*/
 	UFUNCTION()

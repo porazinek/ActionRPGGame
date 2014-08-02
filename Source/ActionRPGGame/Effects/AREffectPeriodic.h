@@ -44,6 +44,10 @@ public:
 		AActor* EffectTarget;
 	UPROPERTY(EditAnywhere, Category = "Particles")
 		TArray<FEffectCue> EffectCues;
+
+	UPROPERTY(EditAnywhere, Category = "Effect Cues")
+		TArray<TSubclassOf<class AARActorCue>> ActorCues;
+
 	UPROPERTY(EditAnywhere, Category = "Particles")
 		UParticleSystem* PresitentFX;
 	UPROPERTY(EditAnywhere, Category = "Particles")

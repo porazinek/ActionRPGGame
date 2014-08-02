@@ -4,6 +4,14 @@
 #include "AREnumTypes.generated.h"
 
 UENUM()
+enum EWeaponHand
+{
+	WeaponLeft = 0,
+	WeaponRight = 1,
+	NoWeapon = 2
+};
+
+UENUM()
 enum EAttrOp
 {
 	Attr_Add,
@@ -65,3 +73,32 @@ namespace EEquipmentSlot
 		Item_MAX
 	};
 }
+
+UENUM(BlueprintType)
+enum EAttachmentType
+{
+	Attach_TwoHanded,
+	Attach_OneHanded,
+	Attach_Small
+};
+
+
+UENUM(BlueprintType)
+enum EAttachSocketType
+{
+	BackLeftTwoHanded,
+	PelvisLeftOneHanded,
+	BackRightTwoHanded,
+	PelvisRightOneHanded,
+	BackLeftOneHanded,
+	BackRightOneHanded
+};
+
+UENUM(BlueprintType)
+enum ESocketSideType
+{
+	Socket_Left = 0,
+	Socket_Right = 1
+};
+
+

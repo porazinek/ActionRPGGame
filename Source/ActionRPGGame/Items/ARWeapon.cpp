@@ -34,10 +34,7 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponState->SetIsReplicated(true);
 	WeaponState->OwnedTags = OwnedTags;
 
-	FXEffect = PCIP.CreateDefaultSubobject<UARFXEffectComponent>(this, TEXT("FXEffects"));
-	FXEffect->SetIsReplicated(true);
-	FXEffect->SetNetAddressable();
-	TraceHit = PCIP.CreateDefaultSubobject<UARActionHitTrace>(this, TEXT("TraceHit"));
+	LastAttachmentSocket = NAME_None;
 
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;
@@ -62,9 +59,18 @@ void AARWeapon::Destroy()
 	//}
 	Super::Destroy();
 }
+
+void AARWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	WeaponState->SetIsReplicated(true);
+	WeaponState->Owner = WeaponOwner;
+}
 void AARWeapon::Initialize()
 {
 	Execute_OnActionPrepared(this);
+	WeaponState->SetIsReplicated(true);
+	WeaponState->Owner = WeaponOwner;
 }
 void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {

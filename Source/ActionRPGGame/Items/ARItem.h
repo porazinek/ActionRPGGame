@@ -29,9 +29,13 @@ class AARItem : public AActor
 	class AARCharacter* ItemOwner;
 
 	//Set when adding to equipped items.
+	UPROPERTY(Replicated)
 	FName ItemID;
+
 	TEnumAsByte<EItemSlot> ItemSlotEquipped;
 
+	UPROPERTY(EditAnywhere, Category = "Cosmetics")
+		TEnumAsByte<EAttachSocketType> SocketType;
 
 	//bool operator==(const AARItem& Other) const
 	//{

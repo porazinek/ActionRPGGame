@@ -10,6 +10,9 @@
 #include "../ARCharacter.h"
 #include "../Items/ARWeapon.h"
 #include "../Componenets/AREquipmentComponent.h"
+#include "../Items/ARWeapon.h"
+
+#include "../BlueprintLibrary/ARTraceStatics.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -18,6 +21,7 @@
 AARAbility::AARAbility(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	MustHaveTwoWeaponActive = false;
 	bReplicates = true;
 	SetReplicates(true);
 	CastingSpeed = 1;
@@ -32,14 +36,18 @@ AARAbility::AARAbility(const class FPostConstructInitializeProperties& PCIP)
 	ActionState->SetMaxCastTime(MaxCastTime);
 	ActionState->SetNetAddressable();
 	ActionState->SetIsReplicated(true);
+
+	LeftHandSocket = "LeftHandSocket";
+	RightHandSocket = "RightHandSocket";
+	WeaponSocket = "WeaponSocket";
 }
 void AARAbility::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AARAbility, BlankRep);
 	DOREPLIFETIME(AARAbility, CastingSpeed);
 	DOREPLIFETIME(AARAbility, OwningCharacter);
+	DOREPLIFETIME(AARAbility, CurrentWeapon);
 }
 
 void AARAbility::Tick(float DeltaSeconds)
@@ -82,6 +90,32 @@ void AARAbility::Tick(float DeltaSeconds)
 void AARAbility::Initialize()
 {
 	Execute_OnActionPrepared(this);
+	ActionState->Owner = OwningCharacter;
+}
+
+FVector AARAbility::GetOriginLocation()
+{
+	FVector Origin = FVector::ZeroVector;
+	if (StartLocation == EAbilityOrigin::OpositeHandToWeapon)
+	{
+		if (CurrentWeapon->WeaponHand == EWeaponHand::WeaponLeft)
+		{
+			return UARTraceStatics::GetStartLocationFromCharacter(RightHandSocket, OwningCharacter, EWeaponHand::NoWeapon);
+		}
+		else if (CurrentWeapon->WeaponHand == EWeaponHand::WeaponRight)
+		{
+			return UARTraceStatics::GetStartLocationFromCharacter(LeftHandSocket, OwningCharacter, EWeaponHand::NoWeapon);
+		}
+	}
+	else if (StartLocation == EAbilityOrigin::UseWeaponLocation)
+	{
+		if (!CurrentWeapon)
+			return Origin;
+
+		return UARTraceStatics::GetStartLocationFromCharacter(WeaponSocket, OwningCharacter, CurrentWeapon->WeaponHand);
+	}
+
+	return Origin;
 }
 
 void AARAbility::InputPressed()
@@ -96,22 +130,30 @@ void AARAbility::InputPressed()
 	{
 		StartAction(); //we are on server, we just call normal version.
 	}
+	SetCurrentWeapon(OwningCharacter->Equipment->ActiveLeftHandWeapon);
 	//this is for client side prediction.
 	//only cosmetic stuff.
-	if (CheckWeapon())
-	{
-		if (CheckResources())
-		{
-			if (!IsOnCooldown)
-			{
-				//Execute_ServerOnActionStart(this);
-				//Execute_ClientOnActionStart(this);
 
-				//if (Role < ROLE_Authority)
-				//{
-				//	ActionState->CastBegin();
-				//}
-				IsBeingUsed = true;
+	if (GetNetMode() == ENetMode::NM_Standalone)
+		return;
+
+	if (!IsOnCooldown)
+	{
+		if (CheckWeapon())
+		{
+			if (CheckResources())
+			{
+				if (!IsOnCooldown)
+				{
+					//Execute_ServerOnActionStart(this);
+					//Execute_ClientOnActionStart(this);
+
+					//if (Role < ROLE_Authority)
+					//{
+					//	ActionState->CastBegin();
+					//}
+					IsBeingUsed = true;
+				}
 			}
 		}
 	}
@@ -129,12 +171,18 @@ void AARAbility::StartAction()
 	// 4. We probably want to do it on client and on server. 
 	// 5. On client because player can get message quicker than waiting for server to response.
 	// 6. Though server have full authority.
-	if (CheckWeapon())
+	SetCurrentWeapon(OwningCharacter->Equipment->ActiveLeftHandWeapon);
+	if (!ActionState->IsRecharing)
 	{
-		if (CheckResources())
+		if (CheckWeapon())
 		{
-			Execute_ServerOnActionStart(this);
-			ActionState->StartAction();
+			if (CheckResources())
+			{
+				if (GetNetMode() == ENetMode::NM_Standalone)
+					IsBeingUsed = true;
+				Execute_ServerOnActionStart(this);
+				ActionState->StartAction();
+			}
 		}
 	}
 }
@@ -155,6 +203,9 @@ bool AARAbility::CheckWeapon()
 		Move Owned Tags from Component to Weapon.
 		Profit ?
 	*/
+	/*
+		What if, ability require two weapon of specific type to be equiped ?
+	*/
 	if (!OwningCharacter->Equipment->ActiveLeftHandWeapon && !OwningCharacter->Equipment->ActiveRightHandWeapon)
 		return false;
 
@@ -162,6 +213,7 @@ bool AARAbility::CheckWeapon()
 	{
 		if (WeaponRequiredTags.MatchesAny(OwningCharacter->Equipment->ActiveLeftHandWeapon->WeaponState->OwnedTags, false))
 		{
+			CurrentWeapon = OwningCharacter->Equipment->ActiveLeftHandWeapon;
 			return true;
 		}
 	}
@@ -169,6 +221,7 @@ bool AARAbility::CheckWeapon()
 	{
 		if (WeaponRequiredTags.MatchesAny(OwningCharacter->Equipment->ActiveRightHandWeapon->WeaponState->OwnedTags, false))
 		{
+			CurrentWeapon = OwningCharacter->Equipment->ActiveRightHandWeapon;
 			return true;
 		}
 	}

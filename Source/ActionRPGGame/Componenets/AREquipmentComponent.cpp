@@ -31,7 +31,7 @@ UAREquipmentComponent::UAREquipmentComponent(const class FPostConstructInitializ
 	/*
 		I should do some default initialization for these pointer at startup.
 		Otherwise everything is messed up.
-	*/
+		*/
 	ActiveRightHandWeapon = nullptr;
 	ActiveLeftHandWeapon = nullptr;
 	LeftHandWeaponsUpdated = false;
@@ -72,9 +72,10 @@ void UAREquipmentComponent::InitializeComponent()
 			in.SlotID = i;
 			in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
 			in.ItemSlot = EItemSlot::Item_Weapon;
+			in.IsAttached = false;
 			LeftHandWeapons.Add(in);
 		}
-		
+
 		for (int32 i = 0; i < 4; i++)
 		{
 			FInventorySlot in;
@@ -82,9 +83,10 @@ void UAREquipmentComponent::InitializeComponent()
 			in.SlotID = i;
 			in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
 			in.ItemSlot = EItemSlot::Item_Weapon;
+			in.IsAttached = false;
 			RightHandWeapons.Add(in);
 		}
-		
+
 	}
 }
 void UAREquipmentComponent::BeginDestroy()
@@ -105,194 +107,435 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 	DOREPLIFETIME(UAREquipmentComponent, ActiveRightHandWeapon);
 
 	DOREPLIFETIME(UAREquipmentComponent, ChestItem);
+	/*
+		This shit is very heavy, but... For 8 players coop, who cares ?
 
-	DOREPLIFETIME_CONDITION(UAREquipmentComponent, LeftHandWeapons, COND_OwnerOnly);
-	DOREPLIFETIME_CONDITION(UAREquipmentComponent, RightHandWeapons, COND_OwnerOnly);
+		*/
+	DOREPLIFETIME(UAREquipmentComponent, LeftHandWeapons);
+	DOREPLIFETIME(UAREquipmentComponent, RightHandWeapons);
 }
 void UAREquipmentComponent::OnRep_LeftHandWeapons()
 {
 	LeftHandWeaponsUpdated = true;
+	//AttacheSheathedWeapon(LeftHandWeapons, WeaponSockets, 0);
 }
 void UAREquipmentComponent::OnRep_RightHandWeapons()
 {
 	RightHandWeaponsUpdated = true;
+	//AttacheSheathedWeapon(RightHandWeapons, WeaponSockets, 1);
 }
-void UAREquipmentComponent::AddLeftHandWeapon(FInventorySlot Weapon, int32 SlotID)
+
+void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FInventorySlot WeaponIn, int32 HandIn)
+{
+	FString usless = "";
+
+	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(WeaponIn.ItemID, usless);
+
+	if (data)
+	{
+		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+		if (!gen)
+			return;
+
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.bNoCollisionFail = true;
+		SpawnInfo.Owner = TargetCharacter;
+		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		weaponBase->ItemName = WeaponIn.ItemID;
+		weaponBase->ItemID = WeaponIn.ItemID;
+		weaponBase->SetOwner(TargetCharacter);
+		weaponBase->Instigator = TargetCharacter;
+		weaponBase->WeaponOwner = TargetCharacter;
+		if (HandIn == 0)
+			weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
+		else if (HandIn == 1)
+			weaponBase->WeaponHand = EWeaponHand::WeaponRight;
+		/*
+		I definetly need more nested if's here!
+		*/
+		for (FARAttachmentSocket& socket : WeaponSockets)
+		{
+			if (weaponBase->AttachmentType == socket.AttachType)
+			{
+				if (socket.IsSlotAvailable)
+				{
+					if (socket.SocketSide != HandIn)
+					{
+						socket.IsSlotAvailable = false;
+						socket.LastItemID = WeaponIn.ItemID;
+						EquipedWeapons.Add(weaponBase);
+						//WeaponIn.IsAttached = true;
+						SetSeathedWeapon(weaponBase, socket.SocketName);
+						weaponBase->LastAttachmentSocket = socket.SocketName;
+					}
+				}
+			}
+		}
+
+
+
+	}
+}
+
+/*
+	Need to implement weapon attaching to character when adding to equipment list.
+	*/
+void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32 Hand)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		ServerAddLeftHandWeapon(Weapon, SlotID);
+		ServerAddWeapon(Weapon, SlotID, Hand);
 	}
 	else
 	{
-		for (FInventorySlot& weapon : LeftHandWeapons)
+		if (Hand == 0)
 		{
-			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+			for (FInventorySlot& weapon : LeftHandWeapons)
 			{
-				FInventorySlot oldItemTemp = weapon;
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-				for (FInventorySlot& oldItem : Inventory->Inventory)
+				if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
 				{
-					if (weapon.SlotID == oldItem.SlotID)
+					FInventorySlot oldItemTemp = weapon;
+					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemSlot = Weapon.ItemSlot;
+					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					weapon.IsAttached = true;
+					for (FInventorySlot& oldItem : Inventory->Inventory)
 					{
-						oldItem.ItemID = oldItemTemp.ItemID;
-						oldItem.ItemSlot = oldItemTemp.ItemSlot;
-						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-						return;
+						if (weapon.SlotID == oldItem.SlotID)
+						{
+							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemSlot = oldItemTemp.ItemSlot;
+							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							return;
+						}
 					}
+					MulticastAttacheSheathedWeapon(Weapon, Hand);
+					LeftHandWeaponsUpdated = true;
+					//OnRep_InventoryChanged();
+					return;
 				}
-				LeftHandWeaponsUpdated = true;
-				//OnRep_InventoryChanged();
-				return;
+				if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+				{
+					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemSlot = Weapon.ItemSlot;
+					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					weapon.IsAttached = true;
+					MulticastAttacheSheathedWeapon(Weapon, Hand);
+					LeftHandWeaponsUpdated = true;
+					return;
+				}
 			}
-			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+		}
+		else if (Hand == 1)
+		{
+			for (FInventorySlot& weapon : RightHandWeapons)
 			{
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-				LeftHandWeaponsUpdated = true;
-				return;
+				if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+				{
+					FInventorySlot oldItemTemp = weapon;
+					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemSlot = Weapon.ItemSlot;
+					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					for (FInventorySlot& oldItem : Inventory->Inventory)
+					{
+						if (weapon.SlotID == oldItem.SlotID)
+						{
+							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemSlot = oldItemTemp.ItemSlot;
+							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							return;
+						}
+					}
+					MulticastAttacheSheathedWeapon(Weapon, Hand);
+					RightHandWeaponsUpdated = true;
+					//OnRep_InventoryChanged();
+					return;
+				}
+				if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+				{
+					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemSlot = Weapon.ItemSlot;
+					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					MulticastAttacheSheathedWeapon(Weapon, Hand);
+					RightHandWeaponsUpdated = true;
+					return;
+				}
 			}
 		}
 	}
 }
-void UAREquipmentComponent::ServerAddLeftHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
+void UAREquipmentComponent::ServerAddWeapon_Implementation(FInventorySlot Weapon, int32 SlotID, int32 Hand)
 {
-	AddLeftHandWeapon(Weapon, SlotID);
+	AddWeapon(Weapon, SlotID, Hand);
 }
-bool UAREquipmentComponent::ServerAddLeftHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+bool UAREquipmentComponent::ServerAddWeapon_Validate(FInventorySlot Weapon, int32 SlotID, int32 Hand)
 {
 	return true;
 }
+/*
+	There are two ways of doing it:
+	1. We spawn attached weapon for each client on replication.
+	2. We spawn attached weapon on server, and then replicate list of spawned weapons back to clients.
 
-bool UAREquipmentComponent::RemoveLeftHandWeapon(FName ItemID, int32 SlotID)
+	1. When equiping weapon, we destroy attached weapon on each client, and immidietly spawn new
+	one in hand.
+	2. We don't destroy anything, we just detach weapon from attachment point,
+	attach it to hand, and make it active.
+
+	First option is more replication friendly, as we just replicate struct with fairly simple properties.
+	Second option could be more accurate, and we wouldn't need to spawn/destroy actor every time.
+	*/
+/*
+	Left hand weapons - right attachment slots.
+	Right Hand weapons - left attachment slots.
+	*/
+void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> WeaponsIn, TArray<FARAttachmentSocket> WeaponSocketsIn, int32 HandIn)
+{
+	FString usless = "";
+
+	for (FInventorySlot& Weapon : WeaponsIn)
+	{
+		//if (Weapon.IsAttached)
+		//{
+		FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
+
+		if (data)
+		{
+			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+			if (!gen)
+				return;
+
+			FActorSpawnParameters SpawnInfo;
+			SpawnInfo.bNoCollisionFail = true;
+			SpawnInfo.Owner = TargetCharacter;
+			AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+			weaponBase->ItemName = Weapon.ItemID;
+			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->SetOwner(TargetCharacter);
+			weaponBase->Instigator = TargetCharacter;
+			weaponBase->WeaponOwner = TargetCharacter;
+			if (HandIn == 0)
+				weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
+			else if (HandIn == 1)
+				weaponBase->WeaponHand = EWeaponHand::WeaponRight;
+			/*
+				I definetly need more nested if's here!
+				*/
+			for (FARAttachmentSocket& socket : WeaponSockets)
+			{
+				if (weaponBase->AttachmentType == socket.AttachType)
+				{
+					if (socket.IsSlotAvailable)
+					{
+						if (socket.SocketSide != HandIn)
+						{
+							socket.IsSlotAvailable = false;
+							socket.LastItemID = Weapon.ItemID;
+							EquipedWeapons.Add(weaponBase);
+							Weapon.IsAttached = true;
+							SetSeathedWeapon(weaponBase, socket.SocketName);
+							weaponBase->LastAttachmentSocket = socket.SocketName;
+						}
+					}
+				}
+			}
+
+
+
+		}
+
+
+		//}
+	}
+}
+void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWeapon* LastWeapon, const TArray<FARAttachmentSocket>& WeaponSocketsIn, int32 HandIn)
+{
+	FString usless = "";
+
+	//if (!WeaponIn.IsAttached)
+	//{
+	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(LastWeapon->ItemID, usless);
+
+	if (data)
+	{
+		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+		if (!gen)
+			return;
+
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.bNoCollisionFail = true;
+		SpawnInfo.Owner = TargetCharacter;
+		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		weaponBase->ItemName = LastWeapon->ItemID;
+		weaponBase->ItemID = LastWeapon->ItemID;
+		weaponBase->SetOwner(TargetCharacter);
+		weaponBase->Instigator = TargetCharacter;
+		weaponBase->WeaponOwner = TargetCharacter;
+		weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
+
+		for (FARAttachmentSocket& socket : WeaponSockets)
+		{
+			if (weaponBase->AttachmentType == socket.AttachType)
+			{
+				if (socket.IsSlotAvailable)
+				{
+					if (socket.SocketSide != HandIn)
+					{
+						socket.IsSlotAvailable = false;
+						socket.LastItemID = LastWeapon->ItemID;
+						EquipedWeapons.Add(weaponBase);
+						//Weapon.IsAttached = true;
+						SetSeathedWeapon(weaponBase, socket.SocketName);
+						weaponBase->LastAttachmentSocket = socket.SocketName;
+					}
+				}
+			}
+		}
+
+	}
+	//}
+}
+
+void UAREquipmentComponent::DetachSheathedWeapon(AARWeapon* WeaponToDetach)
+{
+	for (AARWeapon* weap : EquipedWeapons)
+	{
+		if (weap->ItemID == WeaponToDetach->ItemID)
+		{
+			//for (FInventorySlot& weapInfo : )
+			//We need to clear socket info from RightHandWeapons and LeftHandWeapons
+
+			for (FARAttachmentSocket& socket : WeaponSockets)
+			{
+				if (socket.SocketName == weap->LastAttachmentSocket)
+				{
+					socket.IsSlotAvailable = true;
+				}
+			}
+
+			EquipedWeapons.Remove(weap);
+			weap->Destroy();
+			return;
+		}
+	}
+}
+
+void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName SocketName)
+{
+	if (Weapon)
+	{
+		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+		if (MyChar)
+		{
+			Weapon->WeaponMesh->AttachTo(MyChar->Mesh, SocketName);
+			Weapon->WeaponMesh->SetHiddenInGame(false);
+		}
+		Weapon->WeaponOwner = MyChar;
+		Weapon->OnWeaponActive();
+	}
+}
+
+void UAREquipmentComponent::SetSeathedWeapon(class AARWeapon* WeaponIn, FName SocketNameIn)
+{
+	if (WeaponIn)
+	{
+		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+		if (MyChar)
+		{
+			WeaponIn->WeaponMesh->AttachTo(TargetCharacter->Mesh, SocketNameIn);
+			WeaponIn->WeaponMesh->SetHiddenInGame(false);
+			WeaponIn->WeaponMesh->SetSimulatePhysics(true);
+			WeaponIn->WeaponMesh->WakeRigidBody();
+			//WeaponIn->WeaponMesh->WakeAllRigidBodies();
+			//WeaponIn->WeaponMesh->SetWorldRotation(FRotator(0, 0, 180), false);
+		}
+		WeaponIn->WeaponOwner = MyChar;
+	}
+}
+void UAREquipmentComponent::MulticastDetachWeaponSlotSwap_Implementation(FName WeaponID, int32 HandIn)
+{
+	for (AARWeapon* weap : EquipedWeapons)
+	{
+		if (weap->ItemID == WeaponID &&
+			weap->WeaponHand == HandIn)
+		{
+			for (FARAttachmentSocket& socket : WeaponSockets)
+			{
+				if (socket.SocketName == weap->LastAttachmentSocket)
+				{
+					socket.IsSlotAvailable = true;
+				}
+			}
+			EquipedWeapons.Remove(weap);
+			weap->Destroy();
+		}
+	}
+}
+
+bool UAREquipmentComponent::RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		ServerRemoveLeftHandWeapon(ItemID, SlotID);
+		ServerRemoveWeapon(Weapon, SlotID, Hand);
 	}
 	else
 	{
-		for (FInventorySlot& item : LeftHandWeapons)
+		if (Hand == 0)
 		{
-			if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			for (FInventorySlot& item : LeftHandWeapons)
 			{
-				//we don't remove actually anything from array.
-				//just change ID and slot types, to match an "empty" slot 
-				// in inventory.
-				item.ItemID = NAME_None;
-				item.ItemSlot = EItemSlot::Item_Inventory;
-				item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
-				LeftHandWeaponsUpdated = true;
-				return true;
+				if (item.SlotID == SlotID && item.ItemID != NAME_None)
+				{
+					//we don't remove actually anything from array.
+					//just change ID and slot types, to match an "empty" slot 
+					// in inventory.
+					item.ItemID = NAME_None;
+					item.ItemSlot = EItemSlot::Item_Inventory;
+					item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+					LeftHandWeaponsUpdated = true;
+					MulticastDetachWeaponSlotSwap(Weapon, Hand);
+					return true;
+				}
+			}
+		}
+		else if (Hand == 1)
+		{
+			for (FInventorySlot& item : RightHandWeapons)
+			{
+				if (item.SlotID == SlotID && item.ItemID != NAME_None)
+				{
+					//we don't remove actually anything from array.
+					//just change ID and slot types, to match an "empty" slot 
+					// in inventory.
+					item.ItemID = NAME_None;
+					item.ItemSlot = EItemSlot::Item_Inventory;
+					item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+					RightHandWeaponsUpdated = true;
+					MulticastDetachWeaponSlotSwap(Weapon, Hand);
+					return true;
+				}
 			}
 		}
 	}
 	return false;
 }
-void UAREquipmentComponent::ServerRemoveLeftHandWeapon_Implementation(FName ItemID, int32 SlotID)
+void UAREquipmentComponent::ServerRemoveWeapon_Implementation(FName Weapon, int32 SlotID, int32 Hand)
 {
-	RemoveLeftHandWeapon(ItemID, SlotID);
+	RemoveWeapon(Weapon, SlotID, Hand);
 }
-bool UAREquipmentComponent::ServerRemoveLeftHandWeapon_Validate(FName ItemID, int32 SlotID)
-{
-	return true;
-}
-
-void UAREquipmentComponent::AddRightHandWeapon(FInventorySlot Weapon, int32 SlotID)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerAddRightHandWeapon(Weapon, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& weapon : RightHandWeapons)
-		{
-			if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
-			{
-				FInventorySlot oldItemTemp = weapon;
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-				for (FInventorySlot& oldItem : Inventory->Inventory)
-				{
-					if (weapon.SlotID == oldItem.SlotID)
-					{
-						oldItem.ItemID = oldItemTemp.ItemID;
-						oldItem.ItemSlot = oldItemTemp.ItemSlot;
-						oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-						return;
-					}
-				}
-				RightHandWeaponsUpdated = true;
-				//OnRep_InventoryChanged();
-				return;
-			}
-			if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
-			{
-				weapon.ItemID = Weapon.ItemID;
-				weapon.ItemSlot = Weapon.ItemSlot;
-				weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-
-				RightHandWeaponsUpdated = true;
-				return;
-			}
-		}
-	}
-}
-void UAREquipmentComponent::ServerAddRightHandWeapon_Implementation(FInventorySlot Weapon, int32 SlotID)
-{
-	AddRightHandWeapon(Weapon, SlotID);
-}
-bool UAREquipmentComponent::ServerAddRightHandWeapon_Validate(FInventorySlot Weapon, int32 SlotID)
+bool UAREquipmentComponent::ServerRemoveWeapon_Validate(FName Weapon, int32 SlotID, int32 Hand)
 {
 	return true;
 }
-
-bool UAREquipmentComponent::RemoveRightHandWeapon(FName ItemID, int32 SlotID)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerRemoveRightHandWeapon(ItemID, SlotID);
-	}
-	else
-	{
-		for (FInventorySlot& item : RightHandWeapons)
-		{
-			if (item.SlotID == SlotID && item.ItemID != NAME_None)
-			{
-				//we don't remove actually anything from array.
-				//just change ID and slot types, to match an "empty" slot 
-				// in inventory.
-				item.ItemID = NAME_None;
-				item.ItemSlot = EItemSlot::Item_Inventory;
-				item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
-				RightHandWeaponsUpdated = true;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-void UAREquipmentComponent::ServerRemoveRightHandWeapon_Implementation(FName ItemID, int32 SlotID)
-{
-	RemoveRightHandWeapon(ItemID, SlotID);
-}
-bool UAREquipmentComponent::ServerRemoveRightHandWeapon_Validate(FName ItemID, int32 SlotID)
-{
-	return true;
-}
-
 
 void UAREquipmentComponent::OnRep_AtiveLeftHandWeapon()
 {
+	//DetachSheathedWeapon(ActiveLeftHandWeapon);
 	SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 }
 void UAREquipmentComponent::OnRep_ActiveRightHandWeapon()
 {
+	//DetachSheathedWeapon(ActiveRightHandWeapon);
 	SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
 }
 void UAREquipmentComponent::OnRep_ChestItem()
@@ -320,10 +563,6 @@ void UAREquipmentComponent::SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet)
 	//}
 }
 
-void UAREquipmentComponent::OnRep_Inventory()
-{
-	//IsInventoryChanged = true;
-}
 
 //terrible sorting but:
 // 1. It should work for now
@@ -352,23 +591,6 @@ void UAREquipmentComponent::SortEquipedItemsByAttribute(FName AttributeName)
 	//}
 }
 /* Inventory Handling **/
-
-
-void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName SocketName)
-{
-	if (Weapon)
-	{
-		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-		if (MyChar)
-		{
-			Weapon->WeaponMesh->AttachTo(MyChar->Mesh, SocketName);
-			Weapon->WeaponMesh->SetHiddenInGame(false);
-		}
-		Weapon->WeaponOwner = MyChar;
-		Weapon->OnWeaponActive();
-	}
-}
-
 void UAREquipmentComponent::ServerChangeItem_Implementation(FInventorySlot ItemIn, int32 OldItemSlotID)
 {
 	ChangeItem(ItemIn, OldItemSlotID);
@@ -416,11 +638,11 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 		}
 		case EEquipmentSlot::Item_LeftHandOne:
 		{
-			AddLeftHandWeapon(ItemIn, OldItemSlotID);
+			AddWeapon(ItemIn, OldItemSlotID, 0);
 		}
 		case EEquipmentSlot::Item_RightHandOne:
 		{
-			AddRightHandWeapon(ItemIn, OldItemSlotID);
+			AddWeapon(ItemIn, OldItemSlotID, 1);
 		}
 		default:
 			break;
@@ -591,199 +813,172 @@ void UAREquipmentComponent::DoAsyncLegChange()
 }
 
 /* Weapon Handling **/
-
-void UAREquipmentComponent::SwapLeftWeapon()
+void UAREquipmentComponent::SwapWeapon(int32 Hand)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		ServerSwapLeftWeapon();
+		ServerSwapWeapon(Hand);
 	}
 	else
 	{
-		for (FInventorySlot& weapon : LeftHandWeapons)
+		if (Hand == 0)
 		{
-			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveLeftHandWeaponStruct.ItemID)
+			for (FInventorySlot& weapon : LeftHandWeapons)
 			{
-				ActiveLeftHandWeaponStruct = weapon;
-				SetLeftWeapon(ActiveLeftHandWeaponStruct, ActiveLeftHandWeapon);
-				return;
+				if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveLeftHandWeaponStruct.ItemID)
+				{
+					weapon.IsAttached = false;
+
+					ActiveLeftHandWeaponStruct = weapon;
+
+					SetWeapon(ActiveLeftHandWeaponStruct, ActiveLeftHandWeapon, Hand);
+					return;
+				}
+			}
+		}
+		else if (Hand == 1)
+		{
+			for (FInventorySlot& weapon : RightHandWeapons)
+			{
+				if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveRightHandWeaponStruct.ItemID)
+				{
+					ActiveRightHandWeaponStruct = weapon;
+					SetWeapon(ActiveRightHandWeaponStruct, ActiveRightHandWeapon, Hand);
+					return;
+				}
 			}
 		}
 	}
 }
-void UAREquipmentComponent::ServerSwapLeftWeapon_Implementation()
+void UAREquipmentComponent::ServerSwapWeapon_Implementation(int32 Hand)
 {
-	SwapLeftWeapon();
+	SwapWeapon(Hand);
 }
-bool UAREquipmentComponent::ServerSwapLeftWeapon_Validate()
+bool UAREquipmentComponent::ServerSwapWeapon_Validate(int32 Hand)
 {
 	return true;
 }
-
-void UAREquipmentComponent::SetLeftWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon)
+void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon, int32 Hand)
 {
-	if (PrevWeapon)
+	if (Hand == 0)
 	{
-		PrevWeapon->Destroy();
+		if (PrevWeapon)
+		{
+			AttachSheathhWeaponOnSwap(PrevWeapon, WeaponSockets, Hand);
+			PrevWeapon->Destroy();
+		}
+
+		FString usless;
+		FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
+
+		if (data)
+		{
+			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+			if (!gen)
+				return;
+
+			AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+			//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
+			FActorSpawnParameters SpawnInfo;
+			SpawnInfo.bNoCollisionFail = true;
+			SpawnInfo.Owner = MyChar;
+			AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+			weaponBase->ItemName = Weapon.ItemID;
+			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->SetOwner(MyChar);
+			weaponBase->Instigator = MyChar;
+			weaponBase->WeaponOwner = MyChar;
+			weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
+			ActiveLeftHandWeapon = weaponBase;
+			//ActiveLeftHandWeapon->OnWeaponActive();
+			//OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
+			ActiveLeftHandWeapon->Initialize();
+			MulticastDetachWeaponSlotSwap(Weapon.ItemID, Hand);
+			SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
+		}
+	}
+	else if (Hand == 1)
+	{
+		if (PrevWeapon)
+		{
+			PrevWeapon->Destroy();
+		}
+
+		FString usless;
+		FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
+
+		if (data)
+		{
+			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+			if (!gen)
+				return;
+
+			AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
+			//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
+			FActorSpawnParameters SpawnInfo;
+			SpawnInfo.bNoCollisionFail = true;
+			SpawnInfo.Owner = MyChar;
+			AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+
+			weaponBase->ItemName = Weapon.ItemID;
+			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->SetOwner(MyChar);
+			weaponBase->Instigator = MyChar;
+			weaponBase->WeaponOwner = MyChar;
+			//weaponBase->OwningController = TargetController;
+			weaponBase->WeaponHand = EWeaponHand::WeaponRight;
+			ActiveRightHandWeapon = weaponBase;
+			ActiveRightHandWeapon->Initialize();
+			//ActiveLeftHandWeapon->OnWeaponActive();
+			//OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
+			MulticastDetachWeaponSlotSwap(Weapon.ItemID, Hand);
+			SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
+		}
 	}
 
-	FString usless;
-	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
-
-	if (data)
-	{
-		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-		if (!gen)
-			return;
-
-		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-		//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.bNoCollisionFail = true;
-		SpawnInfo.Owner = MyChar;
-		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
-		weaponBase->ItemName = Weapon.ItemID;
-		weaponBase->SetOwner(MyChar);
-		weaponBase->Instigator = MyChar;
-		weaponBase->WeaponOwner = MyChar;
-		ActiveLeftHandWeapon = weaponBase;
-		//ActiveLeftHandWeapon->OnWeaponActive();
-		OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
-		SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
-	}
 }
-
-void UAREquipmentComponent::UnEquipLeftHandWeapon(FName ItemID)
+void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		ServerUnEquipLeftHandWeapon(ItemID);
+		ServerUnEquipWeapon(ItemID, Hand);
 	}
 	else
 	{
-		/*
+		if (Hand == 0)
+		{
+			/*
 			In reality it should attach weapon do different socket.
 			Each socket coresponds to single slot in PlayerController->LeftHandWeapons
 			Bur for now it will suffice.
-		*/
-		if (ActiveLeftHandWeapon && ActiveLeftHandWeapon->ItemName == ItemID)
-		{
-			//we don't want to move item back to inventory.
-			//we just need to reset pointer to weapon, and un attach mesh.
-			ActiveLeftHandWeaponStruct.ItemID = NAME_None;
-			ActiveLeftHandWeapon->SetActorHiddenInGame(true);
-			ActiveLeftHandWeapon = nullptr;
-		}
-	}
-}
-
-void UAREquipmentComponent::ServerUnEquipLeftHandWeapon_Implementation(FName ItemID)
-{
-	UnEquipLeftHandWeapon(ItemID);
-}
-bool UAREquipmentComponent::ServerUnEquipLeftHandWeapon_Validate(FName ItemID)
-{
-	return true;
-}
-
-void UAREquipmentComponent::ServerSwapRightWeapon_Implementation()
-{
-	SwapRightWeapon();
-}
-bool UAREquipmentComponent::ServerSwapRightWeapon_Validate()
-{
-	return true;
-}
-void UAREquipmentComponent::SwapRightWeapon()
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerSwapRightWeapon();
-	}
-	else
-	{
-		for (FInventorySlot& weapon : RightHandWeapons)
-		{
-			if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveRightHandWeaponStruct.ItemID)
+			*/
+			if (ActiveLeftHandWeapon && ActiveLeftHandWeapon->ItemName == ItemID)
 			{
-				ActiveRightHandWeaponStruct = weapon;
-				SetRightWeapon(ActiveRightHandWeaponStruct, ActiveRightHandWeapon);
-				return;
+				//we don't want to move item back to inventory.
+				//we just need to reset pointer to weapon, and un attach mesh.
+				ActiveLeftHandWeaponStruct.ItemID = NAME_None;
+				ActiveLeftHandWeapon->SetActorHiddenInGame(true);
+				ActiveLeftHandWeapon = nullptr;
+			}
+		}
+		else if (Hand == 1)
+		{
+			if (ActiveRightHandWeapon && ActiveRightHandWeapon->ItemName == ItemID)
+			{
+				//we don't want to move item back to inventory.
+				//we just need to reset pointer to weapon, and un attach mesh.
+				ActiveRightHandWeaponStruct.ItemID = NAME_None;
+				ActiveRightHandWeapon->SetActorHiddenInGame(true);
+				ActiveRightHandWeapon = nullptr;
 			}
 		}
 	}
 }
-/*
-	Spawn Weapon actor to Right hand and assign it to ActiveRightHandWeapon,
-	Then attach weapon to socket of current character.
-
-	When ActiveRightHandWeapon is set, it is replicated back to all clients,
-	and SetAttachWeapon is called again to attach weapon mesh.
-*/
-void UAREquipmentComponent::SetRightWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon)
+void UAREquipmentComponent::ServerUnEquipWeapon_Implementation(FName ItemID, int32 Hand)
 {
-	if (PrevWeapon)
-	{
-		PrevWeapon->Destroy();
-	}
-
-	FString usless;
-	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
-
-	if (data)
-	{
-		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-		if (!gen)
-			return;
-
-		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-		//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.bNoCollisionFail = true;
-		SpawnInfo.Owner = MyChar;
-		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
-		
-		weaponBase->ItemName = Weapon.ItemID;
-		weaponBase->SetOwner(MyChar);
-		weaponBase->Instigator = MyChar;
-		weaponBase->WeaponOwner = MyChar;
-		weaponBase->OwningController = TargetController;
-		ActiveRightHandWeapon = weaponBase;
-		//ActiveLeftHandWeapon->OnWeaponActive();
-		OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
-		SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
-	}
+	UnEquipWeapon(ItemID, Hand);
 }
-
-
-void UAREquipmentComponent::UnEquipRightHandWeapon(FName ItemID)
-{
-	if (GetOwnerRole() < ROLE_Authority)
-	{
-		ServerUnEquipRightHandWeapon(ItemID);
-	}
-	else
-	{
-		/*
-		In reality it should attach weapon do different socket.
-		Each socket coresponds to single slot in PlayerController->LeftHandWeapons
-		Bur for now it will suffice.
-		*/
-		if (ActiveRightHandWeapon && ActiveRightHandWeapon->ItemName == ItemID)
-		{
-			//we don't want to move item back to inventory.
-			//we just need to reset pointer to weapon, and un attach mesh.
-			ActiveRightHandWeaponStruct.ItemID = NAME_None;
-			ActiveRightHandWeapon->SetActorHiddenInGame(true);
-			ActiveRightHandWeapon = nullptr;
-		}
-	}
-}
-void UAREquipmentComponent::ServerUnEquipRightHandWeapon_Implementation(FName ItemID)
-{
-	UnEquipRightHandWeapon(ItemID);
-}
-bool UAREquipmentComponent::ServerUnEquipRightHandWeapon_Validate(FName ItemID)
+bool UAREquipmentComponent::ServerUnEquipWeapon_Validate(FName ItemID, int32 Hand)
 {
 	return true;
 }

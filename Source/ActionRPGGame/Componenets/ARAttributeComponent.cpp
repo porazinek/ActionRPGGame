@@ -6,6 +6,9 @@
 
 #include "Net/UnrealNetwork.h"
 
+#include "../Effects/AREffectType.h"
+#include "../Effects/DefaultEffects/ARAbilityCostEffect.h"
+
 #include "ARAttributeComponent.h"
 
 UARAttributeComponent::UARAttributeComponent(const class FPostConstructInitializeProperties& PCIP)
@@ -14,6 +17,7 @@ UARAttributeComponent::UARAttributeComponent(const class FPostConstructInitializ
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 	PrimaryComponentTick.bAllowTickOnDedicatedServer = true;
+	bAutoRegister = true;
 
 	bWantsInitializeComponent = true;
 }
@@ -26,14 +30,35 @@ void UARAttributeComponent::TickComponent(float DeltaTime, enum ELevelTick TickT
 void UARAttributeComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+
+	if (GetOwnerRole() < ROLE_Authority)
+		return;
 	MaxHealth = Health;
 	MaxEnergy = Energy;
 	MaxStamina = Stamina;
+
+	DefaultEffects.Add(ConstructObject<UARAbilityCostEffect>(UARAbilityCostEffect::StaticClass()));
+}
+
+void UARAttributeComponent::Initialize()
+{
+	Super::Initialize();
+	if (GetOwnerRole() < ROLE_Authority)
+		return;
+	for (UAREffectType* effect : DefaultEffects)
+	{
+		effect->EffectTarget = PlayerController;
+		effect->EffectInstigator = PlayerCharacter;
+		effect->EffectCausedBy = PlayerCharacter;
+		effect->Initialize();
+	}
 }
 
 void UARAttributeComponent::OnRegister()
 {
 	Super::OnRegister();
+	if (GetOwnerRole() < ROLE_Authority)
+		return;
 }
 
 void UARAttributeComponent::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const

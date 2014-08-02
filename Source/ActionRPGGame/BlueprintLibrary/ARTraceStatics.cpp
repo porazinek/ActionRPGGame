@@ -8,6 +8,8 @@
 #include "../Items/ARWeapon.h"
 #include "../Items/ARItem.h"
 
+#include "../ARCharacter.h"
+
 #include "ARTraceStatics.h"
 
 UARTraceStatics::UARTraceStatics(const class FPostConstructInitializeProperties& PCIP)
@@ -63,27 +65,66 @@ USkeletalMeshComponent* UARTraceStatics::GetWeaponMesh(APawn* InitiatedBy)
 	return NULL;
 }
 
-FVector UARTraceStatics::GetStartLocation(FName SocketName, APawn* InitiatedBy)
+FVector UARTraceStatics::GetStartLocation(FName SocketName, APawn* InitiatedBy, TEnumAsByte<EWeaponHand> Hand)
 {
 	FVector Origin = FVector::ZeroVector;
 	TWeakObjectPtr<USkeletalMeshComponent> OriginMesh;
-
+	/*
+		If there are no weapons, we should fallback to the sockets on hands (LeftHandSocket, RightHandSocket)
+		or, Empty weapon should be considered weapons, by Equipment component.
+		Either way we can't just return 0,0,0 vector.
+		*/
 	if (InitiatedBy)
 	{
 		TWeakObjectPtr<UAREquipmentComponent> eqComp = InitiatedBy->FindComponentByClass<UAREquipmentComponent>();
 		if (eqComp.Get())
 		{
-			if (eqComp->ActiveLeftHandWeapon)
+			switch (Hand)
 			{
-				OriginMesh = eqComp->ActiveLeftHandWeapon->WeaponMesh.Get();
-				return OriginMesh->GetSocketLocation(SocketName);
+			case EWeaponHand::WeaponLeft:
+				if (eqComp->ActiveLeftHandWeapon)
+				{
+					OriginMesh = eqComp->ActiveLeftHandWeapon->WeaponMesh.Get();
+					return OriginMesh->GetSocketLocation(SocketName);
+				}
+			case EWeaponHand::WeaponRight:
+				if (eqComp->ActiveRightHandWeapon)
+				{
+					OriginMesh = eqComp->ActiveRightHandWeapon->WeaponMesh.Get();
+					return OriginMesh->GetSocketLocation(SocketName);
+				}
+			default:
+				return Origin;
 			}
+		}
+	}
+	return Origin;
+}
 
-			if (eqComp->ActiveRightHandWeapon)
+FVector UARTraceStatics::GetStartLocationFromCharacter(FName SocketName, class AARCharacter* InitiatedBy, TEnumAsByte<EWeaponHand> Hand)
+{
+	FVector Origin = FVector::ZeroVector;
+	/*
+	If there are no weapons, we should fallback to the sockets on hands (LeftHandSocket, RightHandSocket)
+	or, Empty weapon should be considered weapons, by Equipment component.
+	Either way we can't just return 0,0,0 vector.
+	*/
+	if (InitiatedBy)
+	{
+		switch (Hand)
+		{
+		case EWeaponHand::WeaponLeft:
+			if (InitiatedBy->Equipment->ActiveLeftHandWeapon)
 			{
-				OriginMesh = eqComp->ActiveRightHandWeapon->WeaponMesh.Get();
-				return OriginMesh->GetSocketLocation(SocketName);
+				return InitiatedBy->Equipment->ActiveLeftHandWeapon->WeaponMesh->GetSocketLocation(SocketName);
 			}
+		case EWeaponHand::WeaponRight:
+			if (InitiatedBy->Equipment->ActiveRightHandWeapon)
+			{
+				return InitiatedBy->Equipment->ActiveRightHandWeapon->WeaponMesh->GetSocketLocation(SocketName);
+			}
+		default:
+			return InitiatedBy->Mesh->GetSocketLocation(SocketName);
 		}
 	}
 	return Origin;
@@ -94,7 +135,7 @@ FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector
 	FHitResult Hit(ForceInit);
 	if (!InitiatedBy)
 		return Hit;
-	
+
 
 	static FName PowerTag = FName(TEXT("RangedTrace"));
 	FCollisionQueryParams TraceParams(PowerTag, false, InitiatedBy);
@@ -121,7 +162,10 @@ FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector
 	return Hit;
 }
 
-FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType)
+/*
+	Add some small hit location randomization (for replication), or
+	*/
+FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand)
 {
 	const FVector ShootDir = GetCameraAim(InitiatedBy);
 
@@ -136,7 +180,7 @@ FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* 
 	{
 		if (UseStartSocket)
 		{
-			FVector Origin = GetStartLocation(StartSocket, InitiatedBy);
+			FVector Origin = GetStartLocation(StartSocket, InitiatedBy, Hand);
 			FHitResult hitResult = RangedTrace(Origin, Impact.ImpactPoint, InitiatedBy, TraceType); //Origin + impactDir*range);
 			if (DrawDebug)
 			{

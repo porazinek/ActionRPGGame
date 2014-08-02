@@ -6,6 +6,8 @@
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
 #include "../ARCharacter.h"
+#include "../Items/ARWeapon.h"
+
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -18,8 +20,16 @@ UARTrailCue::UARTrailCue(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 	SetIsReplicated(true);
-}
 
+	bWantsInitializeComponent = true;
+	bAutoRegister = true;
+}
+void UARTrailCue::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	OriginWeapon = Cast<AARWeapon>(GetOwner());
+}
 void UARTrailCue::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -35,13 +45,17 @@ void UARTrailCue::SimulateHitOnClients(FVector Origin, FVector Location, FName S
 {
 	if (TrailFX)
 	{
-		TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, Origin);
-		if (TrailPSC)
+		//AARWeapon* weap = Cast<AARWeapon>(GetOwner());
+		if (OriginWeapon)
 		{
-			const FVector AdjustedDir = (Location - Origin).SafeNormal();
-			FVector ParticleSpeed = AdjustedDir * TrailSpeed2;
-			TrailPSC->SetVectorParameter(TrailSpeedParam2, ParticleSpeed);
-
+			FVector locOrigin = UARTraceStatics::GetStartLocation(StartSocket, OriginWeapon->WeaponOwner, OriginWeapon->WeaponHand);
+			TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, locOrigin);
+			if (TrailPSC)
+			{
+				const FVector AdjustedDir = (Location - locOrigin).SafeNormal();
+				FVector ParticleSpeed = AdjustedDir * TrailSpeed2;
+				TrailPSC->SetVectorParameter(TrailSpeedParam2, ParticleSpeed);
+			}
 		}
 	}
 }

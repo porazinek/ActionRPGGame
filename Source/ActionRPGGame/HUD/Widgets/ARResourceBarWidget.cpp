@@ -37,7 +37,7 @@ void SARResourceBarWidget::Construct(const FArguments& InArgs)
 	//	];
 }
 
-int32 SARResourceBarWidget::OnPaint(const FGeometry& AllottedGeometry, const FSlateRect& MyClippingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+int32 SARResourceBarWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyClippingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
 	const FSlateBrush* BrushResource = new FSlateBrush();
 	
@@ -67,5 +67,5 @@ int32 SARResourceBarWidget::OnPaint(const FGeometry& AllottedGeometry, const FSl
 			);
 	}
 
-	return SCompoundWidget::OnPaint(AllottedGeometry, MyClippingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
+	return SCompoundWidget::OnPaint(Args, AllottedGeometry, MyClippingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 }

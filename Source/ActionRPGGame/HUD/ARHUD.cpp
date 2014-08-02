@@ -233,11 +233,17 @@ void AARHUD::DrawResourceBar(float CurrentValue, float MaxValue, FVector2D Size,
 	TileItem.SetColor(Foreground);
 
 	Canvas->DrawItem(TileItem);
+	
+	FCanvasTextItem TextItem = FCanvasTextItem(FVector2D((Canvas->ClipX*PosX) + Offset.X, (Canvas->ClipY*PosY) + Offset.Y), FText::AsNumber(CurrentValue), FCTSettings.FontType, FCTSettings.FontColor);
+
+	TextItem.SetColor(FLinearColor::Black);
+
+	Canvas->DrawItem(TextItem);
 }
 
 void AARHUD::DrawTargetHealth()
 {
-	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
+	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
 	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
 
 	if (TargetChar)
@@ -283,7 +289,7 @@ void AARHUD::DrawCastingBar()
 
 TWeakObjectPtr<class UARAttributeComponent> AARHUD::GetTargetAttributes() const
 {
-	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon);
+	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
 	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
 
 	if (TargetChar)

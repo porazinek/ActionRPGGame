@@ -91,6 +91,11 @@ void UARAttributeBaseComponent::TickComponent(float DeltaTime, enum ELevelTick T
 		}
 	}
 }
+
+void UARAttributeBaseComponent::Initialize()
+{
+
+}
 void UARAttributeBaseComponent::ApplyPeriodicEffect(FEffectSpec& EffectIn)
 {
 	ActiveEffects.Effects.Add(EffectIn);
@@ -134,7 +139,7 @@ void UARAttributeBaseComponent::AddPeriodicEffect(FEffectSpec& PeriodicEffect)
 		PeriodicEffect.IsActive = true;
 		AttachEffectCue(PeriodicEffect);
 
-		if (PeriodicEffect.ActorEffect)
+		if (PeriodicEffect.ActorEffect.IsValid())
 		{
 			UARAttributeBaseComponent* causerCauserAttr = PeriodicEffect.ActorEffect->EffectCauser->FindComponentByClass<UARAttributeBaseComponent>();
 
@@ -157,21 +162,24 @@ void UARAttributeBaseComponent::AttachEffectCue_Implementation(FEffectSpec Effec
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.bNoCollisionFail = true;
 	SpawnInfo.Owner = MyChar;
-	AARActorCue* cue = GetWorld()->SpawnActor<AARActorCue>(AARActorCue::StaticClass(), SpawnInfo);
-	if (!cue)
-		return;
-	cue->ParticleSystem = EffectIn.EffectCue.ParticleSystem;
-	cue->InitializeAttachment(MyChar, "LeftHandSocket");
-	cue->AttachRootComponentToActor(MyChar, "LeftHandSocket", EAttachLocation::SnapToTarget);
 
-	//MyChar->PresistentParticle = UGameplayStatics::SpawnEmitterAttached(EffectIn.EffectCue.ParticleSystem.Get(), MyChar->Mesh, "LeftHandSocket", FVector(0, 0, 0), FRotator(0, 0, 0), EAttachLocation::Type::SnapToTarget);
+	for (TSubclassOf<class AARActorCue> cue : EffectIn.ActorCues)
+	{
+		AARActorCue* cueObj = GetWorld()->SpawnActor<AARActorCue>(cue, SpawnInfo);
+		if (!cueObj)
+			return;
+		cueObj->ParticleSystem = EffectIn.EffectCue.ParticleSystem;
+		cueObj->InitializeAttachment(MyChar, EffectIn.EffectCue.AttachLocation);
+		cueObj->AttachRootComponentTo(MyChar->Mesh, EffectIn.EffectCue.AttachLocation, EAttachLocation::SnapToTarget);
+	}
 }
 void UARAttributeBaseComponent::DetachEffectCue_Implementation(FEffectSpec EffectIn)
 {
 	AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
-	if (!MyChar && EffectIn.EffectCue.ParticleSystem.IsValid())
+	//if (!MyChar && EffectIn.EffectCue.ParticleSystem.IsValid())
+	//	return;
+	if (!MyChar)
 		return;
-
 	TArray<AActor*> AttachedActors;
 	MyChar->GetAttachedActors(AttachedActors);
 	if (AttachedActors.Num() > 0)
@@ -196,7 +204,7 @@ void UARAttributeBaseComponent::RemovePeriodicEffect(class AAREffectPeriodic* Pe
 	{
 		for (auto It = ActiveEffects.Effects.CreateIterator(); It; It++)
 		{
-			if (ActiveEffects.Effects[It.GetIndex()].ActorEffect == PeriodicEffect)
+			if (ActiveEffects.Effects[It.GetIndex()].ActorEffect.Get() == PeriodicEffect)
 			{
 				ActiveEffects.Effects[It.GetIndex()].IsActive = false;
 				ActiveEffects.Effects[It.GetIndex()].ActorEffect->Destroy();
@@ -480,10 +488,12 @@ void UARAttributeBaseComponent::SetDamageReplication(UARAttributeBaseComponent* 
 	//Set for display on Instigator UI.
 	Comp->UIDamage.Value = CachedAttribute.ModValue;
 	Comp->UIDamage.Location = GetOwner()->GetActorLocation();
+	Comp->UIDamage.Location += FVector(FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2));
 	Comp->UIDamage.DamageInstigator = Comp->GetOwner();
 
 	Comp->PlayerController->UIDamage.Value = CachedAttribute.ModValue;
 	Comp->PlayerController->UIDamage.Location = GetOwner()->GetActorLocation();
+	Comp->PlayerController->UIDamage.Location += FVector(FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2));
 	Comp->PlayerController->UIDamage.DamageInstigator = Comp->GetOwner();
 
 	//Comp->PlayerController->UIDamage
@@ -491,6 +501,8 @@ void UARAttributeBaseComponent::SetDamageReplication(UARAttributeBaseComponent* 
 	//we also might want to display on target UI.
 	UIDamage.Value = CachedAttribute.ModValue;
 	UIDamage.Location = GetOwner()->GetActorLocation();
+
+	UIDamage.Location += FVector(FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2));
 	UIDamage.DamageInstigator = Comp->GetOwner();
 
 	Comp->OnInstigatorDamage.Broadcast(Comp->UIDamage);

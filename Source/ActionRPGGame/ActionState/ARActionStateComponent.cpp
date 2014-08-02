@@ -177,7 +177,7 @@ void UARActionStateComponent::CooldownEnded()
 
 void UARActionStateComponent::CastBegin()
 {
-	IsCasting = true;
+	//IsCasting = true;
 	//MulticastPlayAnimation();
 
 	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
@@ -185,64 +185,106 @@ void UARActionStateComponent::CastBegin()
 	{
 		interval->Execute_OnCastStart(GetOwner());
 	}
+	MulticastPlayAnimation2();
+	//if (GetNetMode() == ENetMode::NM_Standalone)
+	//	PlayCastingAnimation();
+
 	OnActionCastBegin.Broadcast(OwnedTags);
 }
 void UARActionStateComponent::CastEnd()
 {
-	IsCasting = false;
+	//IsCasting = false;
 	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnCastEnd(GetOwner());
 	}
+	MulticastStopAnimation();
+	//if (GetNetMode() == ENetMode::NM_Standalone)
+	//	StopCastingAnimation();
+
 	OnActionCastEnd.Broadcast();
 }
 
 void UARActionStateComponent::ActionInterval()
 {
 	OnActionInterval.Broadcast();
-	IsCasting = true;
+	//IsCasting = true;
 
 	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnActionInterval(GetOwner());
 	}
+
+	//if (GetNetMode() == ENetMode::NM_Standalone)
+	//	PlayLoop();
+	//OnRep_Casting();
 	//ServerSetCastingState(true);
-	
-	//MulticastPlayAnimation();
+
+	MulticastPlayAnimation();
 }
 
 void UARActionStateComponent::MulticastPlayAnimation_Implementation()
 {
 	if (Owner)
 	{
+		Owner->Mesh->GetAnimInstance()->Montage_JumpToSection("CastLoop");
+	}
+}
+void UARActionStateComponent::MulticastPlayAnimation2_Implementation()
+{
+	if (Owner)
+	{
 		Owner->PlayAnimMontage(CastingMontage);
 	}
 }
+
+void UARActionStateComponent::MulticastStopAnimation_Implementation()
+{
+	if (Owner)
+	{
+		Owner->StopAnimMontage(CastingMontage);
+	}
+}
+
 void UARActionStateComponent::OnRep_Casting()
 {
 	if (IsCasting)
 	{
-		if (Owner)
-		{
-			Owner->PlayAnimMontage(CastingMontage);
-		}
+		PlayCastingAnimation();
 		//ServerSetCastingState(false);
 		//IsCasting = false;
 	}
 	else
 	{
-		if (Owner)
-		{
-			Owner->StopAnimMontage(CastingMontage);
-		}
+		StopCastingAnimation();
 		//IsCasting = false;
 	}
 }
-void UARActionStateComponent::OnRep_Recharing()
-{
 
+void UARActionStateComponent::PlayCastingAnimation()
+{
+	if (Owner)
+	{
+		Owner->PlayAnimMontage(CastingMontage);
+	}
+}
+
+void UARActionStateComponent::PlayLoop()
+{
+	if (Owner)
+	{
+		Owner->Mesh->GetAnimInstance()->Montage_JumpToSection("CastLoop");
+	}
+}
+
+void UARActionStateComponent::StopCastingAnimation()
+{
+	if (Owner)
+	{
+		Owner->StopAnimMontage(CastingMontage);
+	}
 }
 void UARActionStateComponent::ServerSetCastingState_Implementation(bool State)
 {

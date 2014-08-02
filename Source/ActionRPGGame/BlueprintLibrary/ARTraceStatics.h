@@ -20,13 +20,19 @@ class UARTraceStatics : public UBlueprintFunctionLibrary
 		static USkeletalMeshComponent* GetWeaponMesh(APawn* InitiatedBy);
 
 	UFUNCTION(BlueprintPure, Category = "AR|Trace")
-		static FVector GetStartLocation(FName SocketName, APawn* InitiatedBy);
+		static FVector GetStartLocation(FName SocketName, APawn* InitiatedBy, TEnumAsByte<EWeaponHand> Hand);
+
+	/*
+		Version which takes AARCharacter as argument.
+	*/
+	UFUNCTION(BlueprintPure, Category = "AR|Trace")
+		static FVector GetStartLocationFromCharacter(FName SocketName, class AARCharacter* InitiatedBy, TEnumAsByte<EWeaponHand> Hand);
 
 	UFUNCTION(BlueprintPure, Category = "AR|Trace")
 		static FHitResult RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy, TEnumAsByte<EARTraceType> TraceType);
 
 	UFUNCTION(BlueprintCallable, Category = "AR|Trace")
-		static FHitResult GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType);
+		static FHitResult GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand);
 };
 
 

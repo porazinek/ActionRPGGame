@@ -7,7 +7,7 @@
 #include "ActionState/ARActionStateComponent.h"
 #include "Componenets/ARAttributeComponent.h"
 #include "Componenets/AREquipmentComponent.h"
-#include "Componenets/ARAbilityComponent.h"
+#include "Abilities/ARAbilityComponent.h"
 
 #include "Types/ARAttributeTypes.h"
 #include "Effects/AREffectType.h"
@@ -87,7 +87,7 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	LegsMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("LegsMesh"));
 	LegsMesh->AttachParent = Mesh;
 	LegsMesh->SetMasterPoseComponent(Mesh);
-
+	
 	HandsMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HandsMesh"));
 	HandsMesh->AttachParent = Mesh;
 	HandsMesh->SetMasterPoseComponent(Mesh);
@@ -165,6 +165,9 @@ void AARCharacter::OnRep_Controller()
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
 
 	Attributes->PlayerController = Cast<AARPlayerController>(GetController());
+	Attributes->PlayerCharacter = this;
+
+	Attributes->Initialize();
 }
 void AARCharacter::PossessedBy(class AController* NewController)
 {
@@ -179,6 +182,9 @@ void AARCharacter::PossessedBy(class AController* NewController)
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
 
 	Attributes->PlayerController = Cast<AARPlayerController>(GetController());
+	Attributes->PlayerCharacter = this;
+
+	Attributes->Initialize();
 }
 
 
@@ -331,11 +337,11 @@ void AARCharacter::InputActionButtonOne()
 
 void AARCharacter::InputSwapLeftWeapon()
 {
-	Equipment->SwapLeftWeapon();
+	Equipment->SwapWeapon(0);
 }
 void AARCharacter::InputSwapRightWeapon()
 {
-	Equipment->SwapRightWeapon();
+	Equipment->SwapWeapon(1);
 }
 
 

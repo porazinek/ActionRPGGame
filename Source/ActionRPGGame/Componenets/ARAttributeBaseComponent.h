@@ -52,6 +52,12 @@ class UARAttributeBaseComponent : public UActorComponent
 	GENERATED_UCLASS_BODY()
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+	
+	/*
+		Called after properties are set and replicated. From actor which owns component.
+	*/
+	virtual void Initialize();
+	
 	/**
 		Common Properties
 	**/
@@ -61,7 +67,8 @@ public:
 	UPROPERTY()
 	class AARPlayerController* PlayerController;
 
-
+	UPROPERTY()
+	class AARCharacter* PlayerCharacter;
 	/**
 		Effects
 	**/

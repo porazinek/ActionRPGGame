@@ -2,7 +2,6 @@
 #pragma once
 
 #include "AREnumTypes.h"
-#include "ARStructTypes.h"
 
 #include "ARInvItem.generated.h"
 
@@ -23,9 +22,6 @@ class UARInvItem : public UDataAsset
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 		TEnumAsByte<EItemSlot> ItemSlot;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TArray<FItemAttribute> Attributes;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
 		TAssetPtr<USkeletalMesh> ItemMesh;

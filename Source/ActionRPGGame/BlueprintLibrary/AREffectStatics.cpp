@@ -12,6 +12,7 @@
 
 #include "../ARProjectile.h"
 #include "../Effects/ARFieldBase.h"
+#include "../Effects/ARProjectileSpawner.h"
 
 #include "AREffectStatics.h"
 
@@ -73,7 +74,7 @@ FEffectSpec UAREffectStatics::CreatePeriodicEffect(AActor* EffectTarget, AActor*
 	//SpawnInfo.Instigator = EffectCauser;
 
 	TWeakObjectPtr<AAREffectPeriodic> effecTemp = EffectTarget->GetWorld()->SpawnActor<AAREffectPeriodic>(EffectType, SpawnInfo);
-	
+
 	FString GUId = FGuid::NewGuid().ToString();
 	effecTemp->EffectCauser = EffectCauser;
 	effecTemp->EffectTarget = EffectTarget;
@@ -283,11 +284,11 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 	APawn* pawn = Cast<APawn>(Causer);
 	if (!pawn)
 		return;
-	
+
 	if (HitResult.bBlockingHit)
 	{
 		const FVector dir = (HitResult.ImpactPoint - Origin).SafeNormal();
-		FTransform SpawnTM(FRotator(0, 0, 0), Origin + pawn->GetActorForwardVector() * 15.0f);
+		FTransform SpawnTM(FRotator(0, 0, 0), Origin + pawn->GetActorForwardVector() * 40.0f);
 
 		AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
 
@@ -298,11 +299,7 @@ void UAREffectStatics::ShootProjectile(TSubclassOf<class AARProjectile> Projecti
 			proj->SetOwner(Causer);
 			proj->Collision->IgnoreActorWhenMoving(Causer, true);
 
-			for (AActor* ignore : ActorToIgnore)
-			{
-				proj->Collision->IgnoreActorWhenMoving(ignore, true);
-			}
-
+			proj->ActorToIgnore = ActorToIgnore;
 			proj->Movement->Velocity = dir * Data.InitialVelocity;
 			proj->Movement->MaxSpeed = Data.MaxVelocity;
 			proj->Movement->ProjectileGravityScale = Data.GravityScale;
@@ -316,27 +313,52 @@ void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Pr
 {
 	if (HitResult.bBlockingHit)
 	{
-		for (int32 CurAmount = 0; CurAmount < Amount; CurAmount++)
+		FVector Location = HitResult.ImpactPoint;
+		FTransform SpawnTM(FRotator(0, 0, 0), Location);
+		//AARProjectileSpawner* spawner = Cast<AARProjectileSpawner>(UGameplayStatics::BeginSpawningActorFromClass(Causer, AARProjectileSpawner::StaticClass(), SpawnTM));
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.bNoCollisionFail = true;
+		//SpawnParams.bNoFail = true;
+
+		AARProjectileSpawner* spawner = Causer->GetWorld()->SpawnActor<AARProjectileSpawner>(AARProjectileSpawner::StaticClass(),
+			HitResult.Location, FRotator(0, 0, 0), SpawnParams);
+
+		//FVector FallDirection = FVector(FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), -1);
+
+		if (spawner)
 		{
-			FVector Location = HitResult.ImpactPoint;
-			Location.Z += ProjectileInfo.MaxHeight;
-			Location.Y += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
-			Location.X += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
-			FTransform SpawnTM(FRotator(0, 0, 0), Location);
-
-			AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
-
-			FVector FallDirection = FVector(FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), -1);
-
-			if (proj)
-			{
-				//proj->Instigator = Causer;
-				proj->SetOwner(Causer);
-				proj->Instigator = Instigator;
-				proj->Movement->Velocity = FallDirection * ProjectileInfo.InitialVelocity; // proj->Movement->InitialSpeed;
-				UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
-			}
+			//proj->Instigator = Causer;
+			spawner->SetOwner(Causer);
+			spawner->Instigator = Instigator;
+			
+			spawner->ProjectileClass = Projectile;
+			spawner->ProjectileInfo = ProjectileInfo;
+			spawner->AmountOfBursts = Amount;
+			//UGameplayStatics::FinishSpawningActor(spawner, SpawnTM);
+			spawner->SpawnProjectiles();
 		}
+		//for (int32 CurAmount = 0; CurAmount < Amount; CurAmount++)
+		//{
+		//	FVector Location = HitResult.ImpactPoint;
+		//	Location.Z += ProjectileInfo.MaxHeight;
+		//	Location.Y += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+		//	Location.X += FMath::RandRange(-ProjectileInfo.MaxRadius, ProjectileInfo.MaxRadius);
+		//	FTransform SpawnTM(FRotator(0, 0, 0), Location);
+
+		//	AARProjectile* proj = Cast<AARProjectile>(UGameplayStatics::BeginSpawningActorFromClass(Causer, Projectile, SpawnTM));
+
+		//	FVector FallDirection = FVector(FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), FMath::FRandRange(-ProjectileInfo.ImpactDirection, ProjectileInfo.ImpactDirection), -1);
+
+		//	if (proj)
+		//	{
+		//		//proj->Instigator = Causer;
+		//		proj->SetOwner(Causer);
+		//		proj->Instigator = Instigator;
+		//		proj->Movement->Velocity = FallDirection * ProjectileInfo.InitialVelocity; // proj->Movement->InitialSpeed;
+		//		UGameplayStatics::FinishSpawningActor(proj, SpawnTM);
+		//	}
+		//}
 	}
 }
 

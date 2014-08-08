@@ -30,7 +30,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute")
 		TEnumAsByte<EAttrOp> OperationType;
-	FAttribute() {};
+	FAttribute() 
+		: AttributeName(NAME_None)
+		, ModValue(0)
+		, OperationType(EAttrOp::Attr_Add)
+	{};
 };
 
 USTRUCT(BlueprintType)

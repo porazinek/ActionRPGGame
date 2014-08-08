@@ -21,5 +21,6 @@ public class ActionRPGGameEditorTarget : TargetRules
 		)
 	{
 		OutExtraModuleNames.Add("ActionRPGGame");
+        OutExtraModuleNames.Add("ActionRPGGameEditor");
 	}
 }

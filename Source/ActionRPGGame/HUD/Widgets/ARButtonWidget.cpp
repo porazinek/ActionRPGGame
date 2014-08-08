@@ -8,7 +8,6 @@
 #include "../../Componenets/AREquipmentComponent.h"
 #include "../../Types/AREnumTypes.h"
 
-#include "ARInventoryItem.h"
 #include "ARInventoryWidget.h"
 #include "ARInventoryItemWidget.h"
 

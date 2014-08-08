@@ -7,7 +7,8 @@ UCLASS(minimalapi)
 class AARPGameMode : public AGameMode
 {
 	GENERATED_UCLASS_BODY()
-
+public:
+	//virtual void BeginPlay() override;
 };
 
 

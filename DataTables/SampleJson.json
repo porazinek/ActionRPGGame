@@ -1,0 +1,8 @@
+{
+	"MyData": {
+		"MyString": "Some string"
+	},
+	"OtherData": {
+		"MyString": "Other string"
+	}
+}

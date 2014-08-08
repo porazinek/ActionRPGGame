@@ -16,6 +16,7 @@
 
 #include "Net/UnrealNetwork.h"
 
+#include "JsonDataAsset/JsonDataAsset.h"
 #include "ARPlayerController.h"
 
 AARPlayerController::AARPlayerController(const class FPostConstructInitializeProperties& PCIP)
@@ -134,6 +135,13 @@ void AARPlayerController::InputTempAddWeapons()
 	wep2.ItemID = "TestWeapon";
 	wep2.ItemSlot = EItemSlot::Item_Weapon;
 	Inventory->AddItemToInventory(wep2);
+
+	FString asset = "JsonDataAsset'/Game/Blueprints/Data/SampleJson.SampleJson'";
+	UJsonDataAsset* tempData = LoadObject<UJsonDataAsset>(NULL, *asset, NULL, LOAD_None, NULL);
+
+	FMyJsonContainer* con = tempData->FindStruct("OtherData");
+
+	//FMyJsonContainer* con = tempData->FindStructDiff<FMyJsonContainer>("OtherData");
 }
 
 void AARPlayerController::InputActivateAbility()

@@ -1,22 +1,21 @@
 {
 	"FileVersion": 3,
-	"Version": 0,
-	"VersionName": "0.0",
-	"EngineVersion": "4.2.0-0+UE4",
-	"PackageFileUE4Version": 363,
-	"PackageFileLicenseeUE4Version": 0,
 	"EngineAssociation": "{26393EC8-4134-55BE-8BC7-0B8F36B40E3D}",
-	"FriendlyName": "",
-	"Description": "",
 	"Category": "",
-	"CreatedBy": "",
-	"CreatedByURL": "",
+	"Description": "",
 	"Modules": [
 		{
 			"Name": "ActionRPGGame",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "ActionRPGGameEditor",
+			"Type": "Developer",
+			"LoadingPhase": "Default"
 		}
 	],
-	"EpicSampleNameHash": "0"
+	"TargetPlatforms": [
+		"WindowsNoEditor"
+	]
 }

@@ -28,10 +28,22 @@ AARProjectile::AARProjectile(const class FPostConstructInitializeProperties& PCI
 	bReplicateMovement = true;
 }
 
+void AARProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	for (AActor* actor : ActorToIgnore)
+	{
+		Collision->IgnoreActorWhenMoving(actor, true);
+	}
+	ActorToIgnore.Empty();
+}
+
 void AARProjectile::OnStop(const FHitResult& Hit)
 {
 	OnProjectileHit(Hit.Actor.Get());
 }
+
 void AARProjectile::OnProjectileHit_Implementation(AActor* OtherActor)
 {
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OnHitEffect, GetActorLocation(), FRotator(0, 0, 0), true);

@@ -27,7 +27,6 @@ public:
 	class AARCharacter* TargetCharacter;
 	UPROPERTY(Replicated)
 	class AARPlayerController* TargetController;
-
 	UPROPERTY(Replicated)
 	class UARInventoryComponent* Inventory;
 

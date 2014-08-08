@@ -108,6 +108,9 @@ public:
 
 	FSlateColor TextColor;
 
+private:
+	void SpawnItem();
+
 };
 
 class FInventoryDragDrop : public FDragDropOperation

@@ -24,6 +24,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 		int32 InitialInventorySize;
 
+	/*
+		Array which contains list of all currently possesd items.
+		It is not accessible on clients.
+		Clients can never make any operations on it.
+		It can be only used by two functions:
+		AddItemToInventory
+		RemoveItemFromInventory.
+	*/
+	UPROPERTY()
+		TArray<FInventorySlot> PossesedItems;
+
 	UPROPERTY(ReplicatedUsing=OnRep_InventoryChanged, BlueprintReadWrite, Category="Inventory")
 		TArray<FInventorySlot> Inventory;
 
@@ -31,6 +42,9 @@ public:
 		bool IsInventoryChanged;
 	UFUNCTION()
 		void OnRep_InventoryChanged();
+
+	UFUNCTION(Client, Reliable)
+		void ClientSetInventoryChanged();
 
 	void AddItemToInventory(FInventorySlot Item);
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -43,6 +57,13 @@ public:
 	bool RemoveItemFromInventory(FName ItemID, int32 SlotID);
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerRemoveItemFromInventory(FName ItemID, int32 SlotID);
+
+	/*
+		This function will completly remove item, from player possession.
+		Unlike RemoveItemFromInventory which is used to manage items between inventory
+		and character sheet.
+	*/
+	void RemoveItem(FName ItemID);
 };
 
 

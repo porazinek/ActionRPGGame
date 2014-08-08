@@ -2,6 +2,8 @@
 #pragma once
 #include "AREnumTypes.h"
 #include "Slate.h"
+#include "Slate/SlateBrushAsset.h"
+
 #include "ARAttributeTypes.h"
 #include "ARStructTypes.generated.h"
 
@@ -26,37 +28,6 @@ const FString WeaponItemDataAssetPath = "/Game/Blueprints/Data/WeaponData.Weapon
 static UDataTable* ChestItemDataTable;
 static UDataTable* WeaponItemDataTable;
 
-
-
-USTRUCT(BlueprintType)
-struct FItemAttribute : public FAttribute
-{
-	GENERATED_USTRUCT_BODY()
-
-	//special indicator that tells if multiple attributes of the same
-	//name/type should stack
-	//if false only the highest attribute from all equiped items will be used.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute")
-		bool IsStackable;
-
-	inline bool operator!= (const FItemAttribute& Other) const
-	{
-		return AttributeName != Other.AttributeName
-			&& ModValue != Other.ModValue
-			&& IsStackable != Other.IsStackable;
-	};
-
-	FItemAttribute& operator=(const FItemAttribute& Other)
-	{
-		if (*this != Other)
-		{
-			AttributeName = Other.AttributeName;
-			ModValue = Other.ModValue;
-			IsStackable = Other.IsStackable;
-		}
-		return *this;
-	};
-};
 
 USTRUCT(BlueprintType)
 struct FAttributeDamage
@@ -88,92 +59,6 @@ public:
 	FAttributeDamage() {};
 };
 
-/*
-	It's struct containing info about item.
-	It have advantage of being simple to store in single DataAsset, but Items can't
-	be directly placed on level.
-
-	On other hand managing all the possible actors is not better..
-*/
-USTRUCT(BlueprintType)
-struct FARItemInfo
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		int32 ItemID;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		FName ItemName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		FName AttachSocket;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		UTexture2D* ItemIcon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		TEnumAsByte<EItemSlot> ItemSlot;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TArray<FItemAttribute> Attributes;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TAssetPtr<USkeletalMesh> ItemMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TSubclassOf<class AARItem> ItemType;
-
-	UPROPERTY()
-		TWeakObjectPtr<class AARItem> Item;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TAssetSubclassOf<class AARItem> ItemClass;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-	struct FSlateBrush SlateIcon;
-
-	inline bool operator!= (const FARItemInfo& Other) const
-	{
-		return ItemName != Other.ItemName;
-	};
-
-	FARItemInfo& operator=(const FARItemInfo& Other)
-	{
-		if (*this != Other)
-		{
-			ItemID = Other.ItemID;
-			ItemName = Other.ItemName;
-			ItemIcon = Other.ItemIcon;
-			ItemSlot = Other.ItemSlot;
-			Attributes = Other.Attributes;
-			ItemMesh = Other.ItemMesh;
-			ItemType = Other.ItemType;
-			Item = Other.Item;
-		}
-		return *this;
-	};
-
-	bool operator==(const FARItemInfo& Other) const
-	{
-		//return ItemID == Other.ItemID;
-		return ItemName == Other.ItemName;
-	}
-
-	//bool operator==(const FName& Other) const
-	//{
-	//	//return ItemID == Other.ItemID;
-	//	return ItemName == Other;
-	//}
-
-	FARItemInfo()
-		: ItemID(0),
-		ItemIcon(NULL),
-		ItemName("Default")
-	{}
-};
-
-DECLARE_DELEGATE_RetVal(TArray<FARItemInfo>, FGetItemInfo)
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
@@ -323,6 +208,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Item")
 		TAssetSubclassOf<class AARItem> ItemBlueprint;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Item")
+		TAssetPtr<USlateBrushAsset> ItemIcon;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Item")
+		TArray<FAttribute> Attribute;
 };
 /*
 	Keep in mind that those properties, do not really have any real world physical
@@ -365,6 +256,8 @@ struct FARProjectileInfo
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		FVector Location;
 	/*
 		Initial velocity of projectile.
 	*/
@@ -391,6 +284,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float MaxHeight;
 	/*
+		Random offset which is subtracted or added to MaxHeight. Random number is generated
+		from value specified in this property.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float MaxHeightOffset;
+	/*
 		Direction in which projectile will be moved from MaxHeigh. 0 - straight line.
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
@@ -400,6 +299,18 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float BurstSize;
+	/*
+		Maximum Duration over which projectiles will be spawned.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float MaximumDuration;
+	/*
+		Time between projectile spawns.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float Interval;
+	
+	
 };
 
 /*

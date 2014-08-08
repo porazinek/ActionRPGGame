@@ -10,16 +10,6 @@ UCLASS()
 class UARItemDataAsset : public UDataAsset
 {
 	GENERATED_UCLASS_BODY()
-public:
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TArray<FARItemInfo> Items;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-		TArray<UARInvItem*> ItemsData;
-
-public:
-	UARItemDataAsset(UARItemDataAsset&);
-	UARItemDataAsset();
 };
 
 

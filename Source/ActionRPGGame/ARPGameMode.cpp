@@ -3,12 +3,17 @@
 #include "ActionRPGGame.h"
 
 #include "ARPlayerController.h"
-
+#include "Types/ARStructTypes.h"
 #include "ARPGameMode.h"
 
 AARPGameMode::AARPGameMode(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	FString table = "DataTable'/Game/Blueprints/Data/ChestItemData.ChestItemData'";
+	ChestItemDataTable = LoadObject<UDataTable>(NULL, *table, NULL, LOAD_None, NULL);
+
+	FString Weapons = "DataTable'/Game/Blueprints/Data/WeaponItemData.WeaponItemData'";
+	WeaponItemDataTable = LoadObject<UDataTable>(NULL, *Weapons, NULL, LOAD_None, NULL);
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerPawnBPClass(TEXT("Class'/Game/Blueprints/MyCharacter2.MyCharacter2_C'"));
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerControllerBPClass(TEXT("Class'/Game/Blueprints/BP_PlayerController.BP_PlayerController_C'"));

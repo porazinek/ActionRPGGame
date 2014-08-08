@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../Types/ARStructTypes.h"
+#include "../Types/ARItemTypes.h"
 #include "../Types//AREnumTypes.h"
 #include "ARItem.generated.h"
 
@@ -14,10 +15,9 @@ UCLASS()
 class AARItem : public AActor
 {
 	GENERATED_UCLASS_BODY()
-
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-		TArray<FAttribute> ItemAttributes;
-
+public:
+	//UPROPERTY(EditAnywhere, Category = "Item Data")
+	//	FItemData ItemInfo;
 	UPROPERTY(EditAnywhere, Category = "Item")
 		FName ItemName;
 	UPROPERTY(EditAnywhere, Category = "Item")
@@ -25,12 +25,15 @@ class AARItem : public AActor
 	UPROPERTY(EditAnywhere, Category = "Item")
 		FSlateBrush ItemIcon;
 
+	UPROPERTY(EditAnywhere, Category = "Item")
+		USlateBrushAsset* ItemIconAsset;
+
 	UPROPERTY()
 	class AARCharacter* ItemOwner;
 
 	//Set when adding to equipped items.
 	UPROPERTY(Replicated)
-	FName ItemID;
+		FName ItemID;
 
 	TEnumAsByte<EItemSlot> ItemSlotEquipped;
 

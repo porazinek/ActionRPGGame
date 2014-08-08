@@ -1,17 +1,17 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 
-#include "ActionRPGGame.h"
-#include "Types/ARStructTypes.h"
+#include "ActionRPGGameEditor.h"
+#include "../ActionRPGGame/Types/ARStructTypes.h"
 #include "GameplayTagsModule.h"
-#include "AREdEngine.h"
+#include "ARUnrealEdEngine.h"
 
-UAREdEngine::UAREdEngine(const class FPostConstructInitializeProperties& PCIP)
+UARUnrealEdEngine::UARUnrealEdEngine(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 
 }
 
-void UAREdEngine::Init(IEngineLoop* InEngineLoop)
+void UARUnrealEdEngine::Init(IEngineLoop* InEngineLoop)
 {
 	Super::Init(InEngineLoop);
 	FString table = "DataTable'/Game/Blueprints/Data/ChestItemData.ChestItemData'";
@@ -19,7 +19,7 @@ void UAREdEngine::Init(IEngineLoop* InEngineLoop)
 
 	FString Weapons = "DataTable'/Game/Blueprints/Data/WeaponItemData.WeaponItemData'";
 	WeaponItemDataTable = LoadObject<UDataTable>(NULL, *Weapons, NULL, LOAD_None, NULL);
-	//DataTable'/Game/Blueprints/Data/GameTags.GameTags'
+	////DataTable'/Game/Blueprints/Data/GameTags.GameTags'
 	IGameplayTagsModule& GameplayTagsModule = IGameplayTagsModule::Get();
 	FString Tags = "DataTable'/Game/Blueprints/Data/GameTags.GameTags'";
 

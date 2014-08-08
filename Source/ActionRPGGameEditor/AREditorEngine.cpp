@@ -1,7 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 
-#include "ActionRPGGame.h"
-#include "Types/ARStructTypes.h"
+#include "ActionRPGGameEditor.h"
+//#include "../ActionRPGGame/Types/ARStructTypes.h"
 #include "GameplayTagsModule.h"
 #include "AREditorEngine.h"
 
@@ -19,7 +19,7 @@ void UAREditorEngine::Init(IEngineLoop* InEngineLoop)
 	IGameplayTagsModule& GameplayTagsModule = IGameplayTagsModule::Get();
 	FString Tags = "DataTable'/Game/Blueprints/Data/GameTags.GameTags'";
 
-	//UDataTable* justDeleteMe = LoadObject<UDataTable>(NULL, *Tags, NULL, LOAD_None, NULL);
+	////UDataTable* justDeleteMe = LoadObject<UDataTable>(NULL, *Tags, NULL, LOAD_None, NULL);
 
 	TArray<FString> TagsList;
 	TagsList.Add(Tags);

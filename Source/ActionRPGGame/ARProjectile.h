@@ -7,6 +7,10 @@ class AARProjectile : public AActor
 {
 	GENERATED_UCLASS_BODY()
 public:
+	virtual void PostInitializeComponents() override;
+
+	TArray<AActor*> ActorToIgnore;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
 		TSubobjectPtr<class USphereComponent> Collision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")

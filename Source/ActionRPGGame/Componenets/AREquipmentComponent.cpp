@@ -206,7 +206,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 							oldItem.ItemID = oldItemTemp.ItemID;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-							return;
+							//return;
 						}
 					}
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
@@ -243,7 +243,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 							oldItem.ItemID = oldItemTemp.ItemID;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
-							return;
+							//return;
 						}
 					}
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
@@ -767,33 +767,33 @@ void UAREquipmentComponent::ChangeLegItem(FName ItemName)
 	//server need to do it, to propagate mesh change
 	//to other players.
 	//and client
-	UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *LegItemDataAssetPath, NULL, LOAD_None, NULL));
+	//UARItemDataAsset* ItemDataAsset = Cast<UARItemDataAsset>(StaticLoadObject(UARItemDataAsset::StaticClass(), NULL, *LegItemDataAssetPath, NULL, LOAD_None, NULL));
 
-	if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
-	{
-		TArray<FStringAssetReference> ObjToLoad;
-		FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
+	//if (ItemDataAsset && ItemDataAsset->Items.Num() > 0)
+	//{
+	//	TArray<FStringAssetReference> ObjToLoad;
+	//	FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
 
-		//do it this way until I figure out predicate...
-		for (FARItemInfo& item : ItemDataAsset->Items)
-		{
-			if (item.ItemName == ItemName)
-			{
-				LegMeshToLoad = item.ItemMesh.ToStringReference();
-				ObjToLoad.AddUnique(LegMeshToLoad);
-				Loader.RequestAsyncLoad(ObjToLoad, FStreamableDelegate::CreateUObject(this, &UAREquipmentComponent::DoAsyncChestChange));
-				//ChestItem = item.ItemName;
-				return;
-			}
-		}
-	}
+	//	//do it this way until I figure out predicate...
+	//	for (FARItemInfo& item : ItemDataAsset->Items)
+	//	{
+	//		if (item.ItemID == ItemName)
+	//		{
+	//			//LegMeshToLoad = item.ItemMesh.ToStringReference();
+	//			ObjToLoad.AddUnique(LegMeshToLoad);
+	//			Loader.RequestAsyncLoad(ObjToLoad, FStreamableDelegate::CreateUObject(this, &UAREquipmentComponent::DoAsyncChestChange));
+	//			//ChestItem = item.ItemName;
+	//			return;
+	//		}
+	//	}
+	//}
 
-	//this is only for server
-	//because here we will be changing character stats
-	if (GetOwnerRole() == ROLE_Authority)
-	{
+	////this is only for server
+	////because here we will be changing character stats
+	//if (GetOwnerRole() == ROLE_Authority)
+	//{
 
-	}
+	//}
 	//return false;
 }
 void UAREquipmentComponent::DoAsyncLegChange()

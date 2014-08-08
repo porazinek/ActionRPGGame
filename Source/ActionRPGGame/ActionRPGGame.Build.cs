@@ -6,16 +6,26 @@ public class ActionRPGGame : ModuleRules
 {
     public ActionRPGGame(TargetInfo Target)
     {
+        PublicIncludePaths.AddRange(new string[]
+            {
+                "ActionRPGGame/JsonDataAsset",
+                "ActionRPGGame/Public"
+            });
         PublicDependencyModuleNames.AddRange(new string[] 
         { 
-            "Core", "CoreUObject", "Engine", "InputCore", "UnrealEd", "GameplayTags"
+            "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "JsonUtilities"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[]
 		{
             "Slate",
-            "SlateCore"
+            "SlateCore",
+            "EditorStyle"
 					// ... add private dependencies that you statically link with here ...
 		});
+        if (Target.Type == TargetRules.TargetType.Editor)
+        {
+            PublicDependencyModuleNames.AddRange(new string[] { "UnrealEd", "PropertyEditor" });
+        }
     }
 }

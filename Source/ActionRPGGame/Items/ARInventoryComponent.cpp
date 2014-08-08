@@ -72,13 +72,19 @@ void UARInventoryComponent::AddItemToInventory(FInventorySlot Item)
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
-					IsInventoryChanged = true;
+					PossesedItems.Add(item);
+					ClientSetInventoryChanged();
 					//ClientSetInventoryChanged();
 					return;
 				}
 			}
 		}
 	}
+}
+
+void UARInventoryComponent::ClientSetInventoryChanged_Implementation()
+{
+	IsInventoryChanged = true;
 }
 
 void UARInventoryComponent::ServerAddItemToInventory_Implementation(FInventorySlot Item)
@@ -116,12 +122,12 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
 							IsInventoryChanged = true;
-							//OnRep_InventoryChanged();
+							ClientSetInventoryChanged();
 							return;
 						}
 					}
 					IsInventoryChanged = true;
-					//OnRep_InventoryChanged();
+					ClientSetInventoryChanged();
 					return;
 				}
 				if (item.ItemID == NAME_None && item.SlotID == SlotID)
@@ -129,10 +135,12 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
-					RemoveItemFromInventory(Item.ItemID, Item.OldSlotID);
+
+					if (Item.EEquipmentSlot == EEquipmentSlot::Item_Inventory)
+						RemoveItemFromInventory(Item.ItemID, Item.OldSlotID);
+					
 					IsInventoryChanged = true;
-					//RemoveItemFromInventory(Item.ItemID, Item.SlotID);
-					//OnRep_InventoryChanged();
+					ClientSetInventoryChanged();
 					return;
 				}
 			}
@@ -145,9 +153,9 @@ void UARInventoryComponent::ServerAddItemToInventoryOnSlot_Implementation(FInven
 }
 bool UARInventoryComponent::ServerAddItemToInventoryOnSlot_Validate(FInventorySlot Item, int32 SlotID)
 {
-	for (FInventorySlot& item : Inventory)
+	for (FInventorySlot& item : PossesedItems)
 	{
-		if (item.ItemID == item.ItemID)
+		if (Item.ItemID == item.ItemID)
 		{
 			return true;
 		}
@@ -178,6 +186,7 @@ bool UARInventoryComponent::RemoveItemFromInventory(FName ItemID, int32 SlotID)
 				item.ItemSlot = EItemSlot::Item_Inventory;
 				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
 				IsInventoryChanged = true;
+				ClientSetInventoryChanged();
 				return true;
 			}
 		}
@@ -190,7 +199,19 @@ void UARInventoryComponent::ServerRemoveItemFromInventory_Implementation(FName I
 }
 bool UARInventoryComponent::ServerRemoveItemFromInventory_Validate(FName ItemID, int32 SlotID)
 {
-	return true;
+	for (FInventorySlot& item : PossesedItems)
+	{
+		if (ItemID == item.ItemID)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UARInventoryComponent::RemoveItem(FName ItemID)
+{
+
 }
 
 void UARInventoryComponent::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const

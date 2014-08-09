@@ -40,11 +40,6 @@ public:
 		*/
 		SLATE_ARGUMENT(TEnumAsByte<EEquipmentSlot::Type>, EquipmentSlot)
 		/*
-			Actor Object representing current item. Used to show icons,
-			and other informations.
-		*/
-		SLATE_ARGUMENT(TWeakObjectPtr<class AARItem>, ItemInSlot)
-		/*
 			To display something.
 		*/
 		SLATE_ARGUMENT(FText, SlotName) //temp it should really display icon.
@@ -92,14 +87,10 @@ public:
 		Slot to which item will be equiped.
 	*/
 	TEnumAsByte<EEquipmentSlot::Type> EquipmentSlot;
-	/*
-		Actor Object representing current item. Used to show icons,
-		and other informations.
-	*/
-	TWeakObjectPtr<class AARItem> ItemInSlot;
 
-
-
+	FARItemInfo* ItemInThisSlot;
+	//TWeakPtr<FARItemInfo> ItemInThisSlot;
+	
 	FText SlotName;
 
 	const FSlateBrush* GetImage() const;
@@ -123,12 +114,12 @@ public:
 	//FInventoryDragDrop()
 	//{}
 	
-	static TSharedRef<FInventoryDragDrop> New(TSharedPtr<FInventorySlot> PickedItemIn, TWeakObjectPtr<class AARItem> InventoryItemObjIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn);
+	static TSharedRef<FInventoryDragDrop> New(TSharedPtr<FInventorySlot> PickedItemIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn);
 
 	virtual TSharedPtr<SWidget> GetDefaultDecorator() const override;
 
+	FARItemInfo* ItemInThisSlot;
 	TSharedPtr<FInventorySlot> PickedItem;
-	TWeakObjectPtr<class AARItem> InventoryItemObj;
 	TSharedPtr<SARInventoryItemWidget> LastItemSlot;
 
 private:

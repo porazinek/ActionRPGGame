@@ -19,14 +19,31 @@ DECLARE_LOG_CATEGORY_EXTERN(AR, Log, All);
 #define COLLISION_PROJECTILE_CHANNEL ECC_GameTraceChannel2
 #define COLLISION_GUI_CHANNEL ECC_GameTraceChannel3
 
+
+/*
+This will be needed for testing.
+In reality it should be const, but I dunno how to load package into static const item.
+ARItemsData'/Game/Blueprints/Data/NewARItemsData.NewARItemsData'
+
+this really should be const, but I dunno how to load package, to global const variable.
+and if I make it mutable, it won't be const...
+*/
+static UARItemsData* TestItems;
+
+struct GlobalConfig
+{
+	
+};
+
+class FARModule : public FDefaultGameModuleImpl
+{
+	virtual void StartupModule() override;
+	static  UARItemsData* const item;
+};
+
 /*
 	Custom Serialization overrides for FArchive.
 */
-inline FArchive& operator<<(FArchive &Ar, FDataTestStruct& Data)
-{
-	Ar << Data.TestString;
-};
-
 inline FArchive& operator<<(FArchive &Ar, FSlateColor& Data)
 {
 	Ar << Data.SpecifiedColor;

@@ -37,6 +37,7 @@ void UARInventoryComponent::InitializeComponent()
 		FInventorySlot Slot;
 		Slot.SlotID = CurrentSlot;
 		Slot.ItemID = NAME_None;
+		Slot.ItemIndex = INDEX_NONE;
 		Slot.ItemSlot = EItemSlot::Item_Inventory;
 		Slot.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
 		Inventory.Add(Slot);
@@ -53,7 +54,9 @@ void UARInventoryComponent::OnRep_InventoryChanged()
 {
 	IsInventoryChanged = true;
 }
-
+/*
+	this should NEVER be called from client. EVER!.
+*/
 void UARInventoryComponent::AddItemToInventory(FInventorySlot Item)
 {
 	if (GetOwnerRole() < ROLE_Authority)
@@ -71,6 +74,7 @@ void UARInventoryComponent::AddItemToInventory(FInventorySlot Item)
 				{
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
+					item.ItemIndex = Item.ItemIndex;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
 					PossesedItems.Add(item);
 					ClientSetInventoryChanged();
@@ -113,6 +117,7 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 					FInventorySlot oldItemTemp = item;
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
+					item.ItemIndex = Item.ItemIndex;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
 					for (FInventorySlot& oldItem : Inventory)
 					{
@@ -120,6 +125,7 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 						{
 							oldItem.ItemID = oldItemTemp.ItemID;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
+							oldItem.ItemIndex = oldItemTemp.ItemIndex;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
 							IsInventoryChanged = true;
 							ClientSetInventoryChanged();
@@ -134,6 +140,7 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 				{
 					item.ItemID = Item.ItemID;
 					item.ItemSlot = Item.ItemSlot;
+					item.ItemIndex = Item.ItemIndex;
 					item.EEquipmentSlot = Item.EEquipmentSlot;
 
 					if (Item.EEquipmentSlot == EEquipmentSlot::Item_Inventory)
@@ -153,18 +160,28 @@ void UARInventoryComponent::ServerAddItemToInventoryOnSlot_Implementation(FInven
 }
 bool UARInventoryComponent::ServerAddItemToInventoryOnSlot_Validate(FInventorySlot Item, int32 SlotID)
 {
-	for (FInventorySlot& item : PossesedItems)
-	{
-		if (Item.ItemID == item.ItemID)
-		{
-			return true;
-		}
-	}
-	return false;
+	int32 ItemCount = PossesedItems.Num();
+	int32 CurrentIndex = 0;
 	/*
 	Since it is used to swap items, we check it user have particular item in inventory.
 	If he dosn't then he probably is trying to cheat.
 	*/
+	for (FInventorySlot& item : PossesedItems)
+	{
+		//check if incoming item, is indeed in possesion of player.
+		if (Item.ItemIndex == item.ItemIndex)
+		{
+			return true;
+		}
+		//
+		//if (CurrentIndex == ItemCount)
+		//{
+		//	
+		//}
+	}
+
+
+	return false;
 }
 
 bool UARInventoryComponent::RemoveItemFromInventory(FName ItemID, int32 SlotID)
@@ -183,6 +200,7 @@ bool UARInventoryComponent::RemoveItemFromInventory(FName ItemID, int32 SlotID)
 				//just change ID and slot types, to match an "empty" slot 
 				// in inventory.
 				item.ItemID = NAME_None;
+				item.ItemIndex = INDEX_NONE;
 				item.ItemSlot = EItemSlot::Item_Inventory;
 				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
 				IsInventoryChanged = true;

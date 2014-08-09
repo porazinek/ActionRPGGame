@@ -16,8 +16,10 @@ class AARItem : public AActor
 {
 	GENERATED_UCLASS_BODY()
 public:
-	//UPROPERTY(EditAnywhere, Category = "Item Data")
-	//	FItemData ItemInfo;
+	UPROPERTY(EditAnywhere, Category = "Item Data")
+		FItemData ItemInfo;
+
+
 	UPROPERTY(EditAnywhere, Category = "Item")
 		FName ItemName;
 	UPROPERTY(EditAnywhere, Category = "Item")
@@ -34,6 +36,8 @@ public:
 	//Set when adding to equipped items.
 	UPROPERTY(Replicated)
 		FName ItemID;
+	UPROPERTY(Replicated)
+		int32 ItemIndex;
 
 	TEnumAsByte<EItemSlot> ItemSlotEquipped;
 

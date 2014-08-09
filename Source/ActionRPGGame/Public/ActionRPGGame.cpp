@@ -2,5 +2,20 @@
 
 #include "ActionRPGGame.h"
 
+//UARItemsData* const FARModule::item = LoadObject<UARItemsData>(nullptr,
+//	*FString("ARItemsData'/Game/Blueprints/Data/NewARItemsData.NewARItemsData'"),
+//	nullptr, LOAD_None, nullptr);
+void FARModule::StartupModule()
+{
+	FDefaultGameModuleImpl::StartupModule();
+	//FARModule::item = LoadObject<UARItemsData>(nullptr,
+	//	*FString("ARItemsData'/Game/Blueprints/Data/NewARItemsData.NewARItemsData'"),
+	//	nullptr, LOAD_None, nullptr);
+
+}
 DEFINE_LOG_CATEGORY(AR);
-IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, ActionRPGGame, "ActionRPGGame");
+IMPLEMENT_PRIMARY_GAME_MODULE(FARModule, ActionRPGGame, "ActionRPGGame");
+
+
+
+

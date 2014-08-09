@@ -69,6 +69,7 @@ void UAREquipmentComponent::InitializeComponent()
 		{
 			FInventorySlot in;
 			in.ItemID = NAME_None;
+			in.ItemIndex = INDEX_NONE;
 			in.SlotID = i;
 			in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
 			in.ItemSlot = EItemSlot::Item_Weapon;
@@ -80,6 +81,7 @@ void UAREquipmentComponent::InitializeComponent()
 		{
 			FInventorySlot in;
 			in.ItemID = NAME_None;
+			in.ItemIndex = INDEX_NONE;
 			in.SlotID = i;
 			in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
 			in.ItemSlot = EItemSlot::Item_Weapon;
@@ -127,25 +129,31 @@ void UAREquipmentComponent::OnRep_RightHandWeapons()
 
 void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FInventorySlot WeaponIn, int32 HandIn)
 {
-	FString usless = "";
-
-	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(WeaponIn.ItemID, usless);
-
+	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(WeaponIn.ItemID, usless);
+	FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(WeaponIn.ItemIndex);
 	if (data)
 	{
-		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-		if (!gen)
-			return;
+		//UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
+		//if (!gen)
+		//	return;
 
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.Owner = TargetCharacter;
-		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		AARWeapon* weaponBase;
+		if (data->DefaultClass)
+			weaponBase = GetWorld()->SpawnActor<AARWeapon>(data->DefaultClass, SpawnInfo);
+		else
+			weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
+
 		weaponBase->ItemName = WeaponIn.ItemID;
 		weaponBase->ItemID = WeaponIn.ItemID;
+		weaponBase->ItemIndex = WeaponIn.ItemIndex;
 		weaponBase->SetOwner(TargetCharacter);
 		weaponBase->Instigator = TargetCharacter;
 		weaponBase->WeaponOwner = TargetCharacter;
+		weaponBase->ItemInfo = data->ItemInfo;
+
 		if (HandIn == 0)
 			weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
 		else if (HandIn == 1)
@@ -196,6 +204,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 				{
 					FInventorySlot oldItemTemp = weapon;
 					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
 					weapon.IsAttached = true;
@@ -204,6 +213,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 						if (weapon.SlotID == oldItem.SlotID)
 						{
 							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemIndex = oldItemTemp.ItemIndex;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
 							//return;
@@ -217,6 +227,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 				if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
 				{
 					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
 					weapon.IsAttached = true;
@@ -234,6 +245,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 				{
 					FInventorySlot oldItemTemp = weapon;
 					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
 					for (FInventorySlot& oldItem : Inventory->Inventory)
@@ -241,6 +253,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 						if (weapon.SlotID == oldItem.SlotID)
 						{
 							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemIndex = oldItemTemp.ItemIndex;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
 							//return;
@@ -254,6 +267,7 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 				if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
 				{
 					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
@@ -297,20 +311,25 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> Weapons
 	{
 		//if (Weapon.IsAttached)
 		//{
-		FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
+		FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(Weapon.ItemIndex);
 
 		if (data)
 		{
-			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-			if (!gen)
-				return;
-
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.bNoCollisionFail = true;
 			SpawnInfo.Owner = TargetCharacter;
-			AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+			
+			AARWeapon* weaponBase;
+			if (data->DefaultClass)
+				weaponBase = GetWorld()->SpawnActor<AARWeapon>(data->DefaultClass, SpawnInfo);
+			else
+				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
+			
 			weaponBase->ItemName = Weapon.ItemID;
 			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->ItemIndex = Weapon.ItemIndex;
+			weaponBase->ItemInfo = data->ItemInfo;
+
 			weaponBase->SetOwner(TargetCharacter);
 			weaponBase->Instigator = TargetCharacter;
 			weaponBase->WeaponOwner = TargetCharacter;
@@ -350,28 +369,33 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> Weapons
 }
 void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWeapon* LastWeapon, const TArray<FARAttachmentSocket>& WeaponSocketsIn, int32 HandIn)
 {
-	FString usless = "";
+	//FString usless = "";
 
 	//if (!WeaponIn.IsAttached)
 	//{
-	FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(LastWeapon->ItemID, usless);
-
+	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(LastWeapon->ItemID, usless);
+	FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(LastWeapon->ItemIndex);
 	if (data)
 	{
-		UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-		if (!gen)
-			return;
-
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.Owner = TargetCharacter;
-		AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+		
+		AARWeapon* weaponBase;
+		if (data->DefaultClass)
+			weaponBase = GetWorld()->SpawnActor<AARWeapon>(data->DefaultClass, SpawnInfo);
+		else
+			weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
+		
 		weaponBase->ItemName = LastWeapon->ItemID;
 		weaponBase->ItemID = LastWeapon->ItemID;
+		weaponBase->ItemIndex = LastWeapon->ItemIndex;
 		weaponBase->SetOwner(TargetCharacter);
 		weaponBase->Instigator = TargetCharacter;
 		weaponBase->WeaponOwner = TargetCharacter;
 		weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
+		weaponBase->ItemInfo = data->ItemInfo;
+
 
 		for (FARAttachmentSocket& socket : WeaponSockets)
 		{
@@ -490,6 +514,7 @@ bool UAREquipmentComponent::RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand)
 					//just change ID and slot types, to match an "empty" slot 
 					// in inventory.
 					item.ItemID = NAME_None;
+					item.ItemIndex = INDEX_NONE;
 					item.ItemSlot = EItemSlot::Item_Inventory;
 					item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
 					LeftHandWeaponsUpdated = true;
@@ -508,6 +533,7 @@ bool UAREquipmentComponent::RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand)
 					//just change ID and slot types, to match an "empty" slot 
 					// in inventory.
 					item.ItemID = NAME_None;
+					item.ItemIndex = INDEX_NONE;
 					item.ItemSlot = EItemSlot::Item_Inventory;
 					item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
 					RightHandWeaponsUpdated = true;
@@ -868,27 +894,30 @@ void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* Pr
 			PrevWeapon->Destroy();
 		}
 
-		FString usless;
-		FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
-
+		FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(Weapon.ItemIndex);
 		if (data)
 		{
-			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-			if (!gen)
-				return;
-
 			AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
 			//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.bNoCollisionFail = true;
 			SpawnInfo.Owner = MyChar;
-			AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+			AARWeapon* weaponBase;
+			if (data->DefaultClass)
+				weaponBase = GetWorld()->SpawnActor<AARWeapon>(data->DefaultClass, SpawnInfo);
+			else
+				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
+			
 			weaponBase->ItemName = Weapon.ItemID;
 			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
 			weaponBase->WeaponOwner = MyChar;
 			weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
+
+			weaponBase->ItemInfo = data->ItemInfo;
+
 			ActiveLeftHandWeapon = weaponBase;
 			//ActiveLeftHandWeapon->OnWeaponActive();
 			//OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
@@ -904,29 +933,32 @@ void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* Pr
 			PrevWeapon->Destroy();
 		}
 
-		FString usless;
-		FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(Weapon.ItemID, usless);
-
+		FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(Weapon.ItemIndex);
 		if (data)
 		{
-			UBlueprint* gen = LoadObject<UBlueprint>(NULL, *data->ItemBlueprint.ToStringReference().ToString(), NULL, LOAD_None, NULL);
-			if (!gen)
-				return;
-
 			AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
 			//AARCharacter* MyChar = Cast<AARCharacter>(GetOuterAARPlayerController()->GetPawn());
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.bNoCollisionFail = true;
 			SpawnInfo.Owner = MyChar;
-			AARWeapon* weaponBase = GetWorld()->SpawnActor<AARWeapon>(gen->GeneratedClass, SpawnInfo);
+
+			AARWeapon* weaponBase;
+			if (data->DefaultClass)
+				weaponBase = GetWorld()->SpawnActor<AARWeapon>(data->DefaultClass, SpawnInfo);
+			else
+				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 
 			weaponBase->ItemName = Weapon.ItemID;
 			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
 			weaponBase->WeaponOwner = MyChar;
 			//weaponBase->OwningController = TargetController;
 			weaponBase->WeaponHand = EWeaponHand::WeaponRight;
+
+			weaponBase->ItemInfo = data->ItemInfo;
+
 			ActiveRightHandWeapon = weaponBase;
 			ActiveRightHandWeapon->Initialize();
 			//ActiveLeftHandWeapon->OnWeaponActive();
@@ -957,6 +989,7 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 				//we don't want to move item back to inventory.
 				//we just need to reset pointer to weapon, and un attach mesh.
 				ActiveLeftHandWeaponStruct.ItemID = NAME_None;
+				ActiveLeftHandWeaponStruct.ItemIndex = INDEX_NONE;
 				ActiveLeftHandWeapon->SetActorHiddenInGame(true);
 				ActiveLeftHandWeapon = nullptr;
 			}
@@ -968,6 +1001,7 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 				//we don't want to move item back to inventory.
 				//we just need to reset pointer to weapon, and un attach mesh.
 				ActiveRightHandWeaponStruct.ItemID = NAME_None;
+				ActiveRightHandWeaponStruct.ItemIndex = INDEX_NONE;
 				ActiveRightHandWeapon->SetActorHiddenInGame(true);
 				ActiveRightHandWeapon = nullptr;
 			}

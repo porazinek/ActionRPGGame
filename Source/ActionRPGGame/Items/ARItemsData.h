@@ -1,6 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "../Types/ARAttributeTypes.h"
+#include "../Types/ARItemTypes.h"
 #include "Serialization/Json/Json.h"
 #include "Runtime/JsonUtilities/Public/JsonUtilities.h"
 #include "ARItemsData.generated.h"
@@ -22,134 +23,6 @@
 */
 
 
-
-USTRUCT(BlueprintType)
-struct FItemAttribute : public FAttribute
-{
-	GENERATED_USTRUCT_BODY()
-public:
-		//special indicator that tells if multiple attributes of the same
-		//name/type should stack
-		//if false only the highest attribute from all equiped items will be used.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute")
-		bool IsStackable;
-
-	inline bool operator!= (const FItemAttribute& Other) const
-	{
-		return AttributeName != Other.AttributeName
-			&& ModValue != Other.ModValue
-			&& IsStackable != Other.IsStackable;
-	};
-
-	FItemAttribute& operator=(const FItemAttribute& Other)
-	{
-		if (*this != Other)
-		{
-			AttributeName = Other.AttributeName;
-			ModValue = Other.ModValue;
-			IsStackable = Other.IsStackable;
-		}
-		return *this;
-	};
-
-	FItemAttribute()
-		//: AttributeName(NAME_None)
-		//, ModValue(0)
-		: IsStackable(false)
-	{};
-};
-
-USTRUCT(BlueprintType)
-struct FItemData
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-		int32 Durability;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-		int32 Weight;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-		int32 Value;
-	/*
-	Item attributes. Like Magic, Strenght, Agility etc.
-	Can be additive or aubtractive.
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ItemAttributes)
-		TArray<FItemAttribute> Attributes;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ItemEffects)
-		TArray<TSubclassOf<class UAREffectType>> ItemEffects;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-		USkeletalMesh* Mesh;
-
-	FItemData()
-		: Durability(0)
-		, Weight(0)
-		, Value(0)
-		, Attributes()
-		, ItemEffects()
-		, Mesh(nullptr)
-	{
-	//	FItemAttribute ia;
-	//	Attributes.Add(ia);
-	//	ItemEffects.AddZeroed(1);
-	};
-
-};
-
-USTRUCT(BlueprintType)
-struct FARItemInfo
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		FString ItemName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		FText ItemDescription;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		TAssetPtr<class USlateBrushAsset> ItemIcon;
-		//FSlateBrush ItemIcon;
-
-	UPROPERTY(EditAnywhere, Category = "Item Data")
-		FItemData ItemInfo;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-		TEnumAsByte<EItemSlot> ItemSlot;
-
-	//FARItemInfo& operator=(const FARItemInfo& Other)
-	//{
-	//	if (*this != Other)
-	//	{
-	//		ItemName = Other.ItemName;
-	//		ItemIcon = Other.ItemIcon;
-	//		ItemSlot = Other.ItemSlot;
-	//	}
-	//	return *this;
-	//};
-
-	FARItemInfo()
-		: ItemName("Default")
-		, ItemDescription(FText::FromString("No Description"))
-		, ItemSlot(EItemSlot::Item_Blank)
-		, ItemInfo()
-	{};
-};
-
-USTRUCT(meta = (DisplayName = "Items Data"))
-struct FDataTestStruct
-{
-	GENERATED_USTRUCT_BODY()
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Test Struct")
-		FString TestString;
-};
-
 /*
 	For editing.
 	Add int32 Index, for direct access for items in array, while editing.
@@ -167,7 +40,7 @@ public:
 		FARItemInfo ItemDataInfo;
 };
 
-UCLASS()
+UCLASS(meta = (DisplayName = "Items Data"))
 class ACTIONRPGGAME_API UARItemsData : public UObject
 {
 	GENERATED_UCLASS_BODY()
@@ -176,7 +49,20 @@ public:
 
 	TMap<FName, FARItemInfo> ItemMap;
 
-	FARItemInfo* GetItemData(const FName& Key);
+	UPROPERTY()
+		TArray<FItemEntry> TestArray;
+
+	FItemEntry GetItemFromArray(int32 Index);
+
+	FItemEntry* GetItemFromArrayPtr(int32 Index);
+
+	FItemEntry& GetItemFromArrayRef(int32 Index);
+
+	FARItemInfo GetItemDataFromArray(int32 Index);
+
+	FARItemInfo* GetItemDataFromArrayPtr(int32 Index);
+
+	FARItemInfo* GetItemPtr(const FName& Key);
 
 	FARItemInfo& GetItemRef(const FName& Key);
 
@@ -191,7 +77,7 @@ public:
 
 		If you read this and have better idea, than this, please tell!
 	*/
-	UPROPERTY(EditAnywhere, Transient, Category = ItemData)
+	UPROPERTY(EditAnywhere, Category = ItemData)
 		TArray<FItemEntry> EditEntries;
 
 	/*

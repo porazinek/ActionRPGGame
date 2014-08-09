@@ -128,20 +128,22 @@ void AARPlayerController::PostInitializeComponents()
 void AARPlayerController::InputTempAddWeapons()
 {
 	FInventorySlot wep1;
-	wep1.ItemID = "RedWeapon";
+	FItemEntry item1 = TestItems->GetItemFromArray(0);
+	wep1.ItemID = item1.Key;
 	wep1.ItemSlot = EItemSlot::Item_Weapon;
+	wep1.ItemIndex = 0;
 	Inventory->AddItemToInventory(wep1);
+
+	FItemEntry item2 = TestItems->GetItemFromArray(1);
 	FInventorySlot wep2;
-	wep2.ItemID = "TestWeapon";
+	wep2.ItemIndex = 1;
+	wep2.ItemID = item2.Key;
 	wep2.ItemSlot = EItemSlot::Item_Weapon;
 	Inventory->AddItemToInventory(wep2);
 
-	FString asset = "JsonDataAsset'/Game/Blueprints/Data/SampleJson.SampleJson'";
-	UJsonDataAsset* tempData = LoadObject<UJsonDataAsset>(NULL, *asset, NULL, LOAD_None, NULL);
+	//FItemEntry item1 = TestItems->GetItemFromArray(0);
 
-	FMyJsonContainer* con = tempData->FindStruct("OtherData");
-
-	//FMyJsonContainer* con = tempData->FindStructDiff<FMyJsonContainer>("OtherData");
+	//FARItemInfo* itemptr = GlobalConfig::item->GetItemPtr("key");
 }
 
 void AARPlayerController::InputActivateAbility()

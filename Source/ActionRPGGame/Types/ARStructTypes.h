@@ -74,6 +74,9 @@ public:
 		FName ItemID;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
+		int32 ItemIndex;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
 		bool IsAttached;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
@@ -93,6 +96,7 @@ public:
 		{
 			SlotID = Other.SlotID;
 			OldSlotID = Other.OldSlotID;
+			ItemIndex = Other.ItemIndex;
 			ItemID = Other.ItemID;
 			ItemSlot = Other.ItemSlot;
 			EEquipmentSlot = Other.EEquipmentSlot;

@@ -6,9 +6,6 @@
 
 #include "ARStructTypes.h"
 
-
-
-
 void FPeriodicEffect::Tick(float DeltaTime)
 {
 	//this is for server;

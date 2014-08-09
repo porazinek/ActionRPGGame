@@ -5,12 +5,166 @@
 #include "Slate.h"
 #include "ARItemTypes.generated.h"
 
-
-
-USTRUCT()
-struct FEmptyStruct
+USTRUCT(BlueprintType)
+struct FItemAttribute : public FAttribute
 {
 	GENERATED_USTRUCT_BODY()
+public:
+	//special indicator that tells if multiple attributes of the same
+	//name/type should stack
+	//if false only the highest attribute from all equiped items will be used.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute")
+		bool IsStackable;
+
+	inline bool operator!= (const FItemAttribute& Other) const
+	{
+		return AttributeName != Other.AttributeName
+			&& ModValue != Other.ModValue
+			&& IsStackable != Other.IsStackable;
+	};
+
+	FItemAttribute& operator=(const FItemAttribute& Other)
+	{
+		if (*this != Other)
+		{
+			AttributeName = Other.AttributeName;
+			ModValue = Other.ModValue;
+			IsStackable = Other.IsStackable;
+		}
+		return *this;
+	};
+
+	FItemAttribute()
+		//: AttributeName(NAME_None)
+		//, ModValue(0)
+		: IsStackable(false)
+	{};
+};
+
+USTRUCT(BlueprintType)
+struct FItemData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+		int32 Durability;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+		int32 Weight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+		int32 Value;
+	/*
+	Item attributes. Like Magic, Strenght, Agility etc.
+	Can be additive or aubtractive.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ItemAttributes)
+		TArray<FItemAttribute> Attributes;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ItemEffects)
+		TArray<TSubclassOf<class UAREffectType>> ItemEffects;
+
+	/*
+		Default class to spawn this item. Usefull for weapons, or special active items
+		which have logic different from standard AARItem.
+	*/
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+		USkeletalMesh* Mesh;
+
+	FItemData()
+		: Durability(0)
+		, Weight(0)
+		, Value(0)
+		, Attributes()
+		, ItemEffects()
+		, Mesh(nullptr)
+	{
+		//	FItemAttribute ia;
+		//	Attributes.Add(ia);
+		//	ItemEffects.AddZeroed(1);
+	};
+
+};
+
+USTRUCT(BlueprintType)
+struct FARItemInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		FText ItemDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		FSlateBrush ItemIcon;
+		//TAssetPtr<class USlateBrushAsset> ItemIcon;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = ItemEffects)
+		TSubclassOf<class AARItem> DefaultClass;
+
+	UPROPERTY(EditAnywhere, Category = "Item Data")
+		FItemData ItemInfo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		TEnumAsByte<EItemSlot> ItemSlot;
+
+	//inline bool operator== (const FARItemInfo& Other) const
+	//{
+	//	return ItemName != Other.ItemName;
+	//};
+
+	//FARItemInfo& operator=(const FARItemInfo& Other)
+	//{
+	//	if (*this != Other)
+	//	{
+	//		ItemName = Other.ItemName;
+	//		ItemIcon = Other.ItemIcon;
+	//		ItemSlot = Other.ItemSlot;
+	//	}
+	//	return *this;
+	//};
+
+	FARItemInfo()
+		: ItemName("Default")
+		, ItemDescription(FText::FromString("No Description"))
+		, ItemSlot(EItemSlot::Item_Blank)
+		, ItemIcon()
+		, DefaultClass()
+		, ItemInfo()
+	{};
+
+	FARItemInfo(const FARItemInfo& Other)
+	{
+		ItemName = Other.ItemName;
+		ItemDescription = Other.ItemDescription;
+		ItemSlot = Other.ItemSlot;
+		ItemIcon = Other.ItemIcon;
+		ItemInfo = Other.ItemInfo;
+		DefaultClass = Other.DefaultClass;
+	};
+};
+
+
+USTRUCT(BlueprintType)
+struct FARItemsToPick
+{
+	GENERATED_USTRUCT_BODY()
+public:
+
+	/*
+		Asset used to search items for pick.
+	*/
+	UPROPERTY(EditAnywhere, Category="Data Asset")
+		TArray<TAssetPtr<class UARItemsData>> ItemData;
+
+	/*
+		List of keys, to item, which can be picked from this object.
+	*/
+	UPROPERTY(EditAnywhere, Category="Items To Pick")
+		TArray<FName> ItemsList;
 };
 
 /*

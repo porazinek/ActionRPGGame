@@ -32,5 +32,8 @@
 
 #include "../ItemEditor/ARItemAssetTypeActions.h"
 #include "../ItemEditor/ARItemAssetDetails.h"
+
+#include "../ItemEditor/ItemPicker/ARItemPickerContainerCustomization.h"
+
 #endif
 

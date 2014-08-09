@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../Types/ARStructTypes.h"
-
+#include "../Types/ARItemTypes.h"
 #include "ARItemPickup.generated.h"
 
 /*
@@ -66,8 +66,19 @@ class AARItemPickup : public AActor
 {
 	GENERATED_UCLASS_BODY()
 public:
+	UPROPERTY(EditAnywhere, Category = "Pickup Item")
+		FARItemPickerContainer ItemContainer;
+	
+	UPROPERTY(EditAnywhere, Category = "Pickup Item")
+		TArray<class UARItemsData*> ItemsData;
+
 	UPROPERTY(EditAnywhere, Replicated, Category="Pickup Items")
 		TArray<FInventorySlot> ItemPickups;
+
+	virtual void BeginPlay() override;
+
+
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	//It will attemp to add ALL items from pick to player inventory.
 	//For testing now, might use it later.

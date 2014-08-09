@@ -149,7 +149,7 @@ public:
 
 
 USTRUCT(BlueprintType)
-struct FARItemsToPick
+struct FARItemPickerContainer
 {
 	GENERATED_USTRUCT_BODY()
 public:
@@ -158,7 +158,7 @@ public:
 		Asset used to search items for pick.
 	*/
 	UPROPERTY(EditAnywhere, Category="Data Asset")
-		TArray<TAssetPtr<class UARItemsData>> ItemData;
+		TArray<class UARItemsData*> ItemData;
 
 	/*
 		List of keys, to item, which can be picked from this object.

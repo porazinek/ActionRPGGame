@@ -248,3 +248,4 @@ Content/*
 DerivedDataCache/
 Intermediate/
 Saved/
+*.sln

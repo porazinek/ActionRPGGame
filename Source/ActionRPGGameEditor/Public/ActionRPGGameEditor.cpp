@@ -18,7 +18,7 @@ class FActionRPGGameEditor : public IModuleInterface
 		FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
 		//PropertyModule.RegisterCustomClassLayout("ItemDataAsset", FOnGetDetailCustomizationInstance::CreateStatic(&FARItemAssetDetails::MakeInstance));
-
+		PropertyModule.RegisterCustomPropertyTypeLayout("ARItemPickerContainer", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FARItemPickerContainerCustomization::MakeInstance));
 		//PropertyModule.RegisterCustomPropertyTypeLayout("ItemDataAssetKeySelector", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FBlackboardSelectorDetails::MakeInstance));
 		//PropertyModule.RegisterCustomClassLayout("ItemDataAsset", FOnGetDetailCustomizationInstance::CreateStatic(&FBlackboardDecoratorDetails::MakeInstance));
 	}

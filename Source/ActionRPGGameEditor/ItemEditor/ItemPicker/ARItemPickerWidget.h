@@ -6,6 +6,7 @@
 
 DECLARE_DELEGATE_OneParam(FOnItemDataSelected, FARItemPickupCont*)
 DECLARE_DELEGATE(FOnContainerSelected)
+DECLARE_DELEGATE(FOnItemAdded)
 
 class SItemPickerPallete : public SGraphPaletteItem
 {
@@ -24,6 +25,7 @@ class SARItemPickerWidget : public SCompoundWidget
 	{}
 		SLATE_ATTRIBUTE(FARItemPickupCont*, ItemPickupCont)
 		SLATE_ARGUMENT(TWeakObjectPtr<UObject>, EditedObject)
+		SLATE_EVENT(FOnItemAdded, OnItemAdded)
 		SLATE_EVENT(FOnItemDataSelected, OnItemSelected)
 		SLATE_EVENT(FOnContainerSelected, OnContainerSelected)
 	SLATE_END_ARGS()
@@ -44,6 +46,7 @@ public:
 
 	TWeakObjectPtr<UObject> EditedObject;
 	TAttribute<FARItemPickupCont*> ItemPickupCont;
+	FOnItemAdded OnItemAdded;
 	FOnItemDataSelected OnItemSelected;
 	FOnContainerSelected OnContainerSelected;
 };

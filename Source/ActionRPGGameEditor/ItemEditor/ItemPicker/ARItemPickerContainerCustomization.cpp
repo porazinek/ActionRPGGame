@@ -92,7 +92,7 @@ TSharedRef<SWidget> SARItemContainerList::HandleCreateWidgetForAction(FCreateWid
 }
 void SARItemContainerList::HandleCollectAllActions(FGraphActionListBuilderBase& GraphActionListBuilder)
 {
-	if (ItemPickupCont.Get())
+	if (ItemPickupCont.Get() && ItemPickupCont.Get()->ListOfItems.Num() > 0)
 	{
 		for (FARItemPickupCont& entry : ItemPickupCont.Get()->ListOfItems)
 		{
@@ -113,6 +113,112 @@ void SARItemContainerList::HandleActionSelected(const TArray< TSharedPtr<FEdGrap
 	}
 }
 
+
+
+
+class FEdGraphSchemaAction_SelectedItemContainerEntry : public FEdGraphSchemaAction_Dummy
+{
+public: //this will need chagne to FName
+	static FString StaticGetTypeId() { static FString Type = TEXT("FEdGraphSchemaAction_SelectedItemContainerEntry"); return Type; }
+	virtual FString GetTypeId() const override { return StaticGetTypeId(); }
+
+	FEdGraphSchemaAction_SelectedItemContainerEntry(FString ItemNameIn, FARItemPickupCont* ItemContIn, int32 ItemIDIn)
+		: ItemName(ItemNameIn)
+		, ItemCont(ItemContIn)
+		, ItemID(ItemIDIn)
+	{
+		MenuDescription = FText::FromString(ItemName);
+		TooltipDescription = FString(ItemName);
+	}
+	int32 ItemID;
+	FString ItemName;
+	FARItemPickupCont* ItemCont;
+};
+
+void SSelectedItemContainerPalleteItem::Construct(const FArguments& InArgs, FCreateWidgetForActionData* const InCreateData)
+{
+	check(InCreateData);
+	check(InCreateData->Action.IsValid());
+
+	TSharedPtr<FEdGraphSchemaAction> GraphAction = InCreateData->Action;
+	check(GraphAction->GetTypeId() == FEdGraphSchemaAction_SelectedItemContainerEntry::StaticGetTypeId());
+
+	TSharedPtr<FEdGraphSchemaAction_SelectedItemContainerEntry> ItemPickerEntryAction = StaticCastSharedPtr<FEdGraphSchemaAction_SelectedItemContainerEntry>(GraphAction);
+
+	ActionPtr = InCreateData->Action;
+
+	this->ChildSlot
+		[
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot()
+			[
+				SNew(STextBlock)
+				.Text(this, &SSelectedItemContainerPalleteItem::GetDisplayText)
+			]
+		];
+}
+void SARSelectedItemContainerList::Construct(const FArguments& InArgs)
+{
+	ItemPickupCont = InArgs._ItemPickupCont;
+	OnGetContainer = InArgs._OnGetContainer;
+	ItemContainer = InArgs._ItemContainer;
+
+	ChildSlot
+		[
+			SNew(SOverlay)
+			+ SOverlay::Slot()
+			[
+				SAssignNew(GraphActionMenu, SGraphActionMenu, false)
+				.OnCreateWidgetForAction(this, &SARSelectedItemContainerList::HandleCreateWidgetForAction)
+				.OnCollectAllActions(this, &SARSelectedItemContainerList::HandleCollectAllActions)
+				.OnActionSelected(this, &SARSelectedItemContainerList::HandleActionSelected)
+			]
+		];
+}
+
+void SARSelectedItemContainerList::GetContainer(const FARItemPickerContainer* ContainerIn)
+{
+	if (GraphActionMenu.IsValid())
+	{
+		GraphActionMenu->RefreshAllActions(false, true);
+	}
+}
+SARSelectedItemContainerList::~SARSelectedItemContainerList()
+{
+}
+TSharedRef<SWidget> SARSelectedItemContainerList::HandleCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)
+{
+	return SNew(SSelectedItemContainerPalleteItem, InCreateData);
+}
+void SARSelectedItemContainerList::HandleCollectAllActions(FGraphActionListBuilderBase& GraphActionListBuilder)
+{
+	if (ItemContainer.Get() && ItemContainer.Get()->ItemsList.Num() > 0)
+	{
+		for (int32 itemIndex : ItemContainer.Get()->ItemsList)
+		{
+			FARItemInfo* tempItem = ItemContainer.Get()->ItemData->GetItemDataFromArrayPtr(itemIndex);
+			if (tempItem)
+				GraphActionListBuilder.AddAction(MakeShareable(new FEdGraphSchemaAction_SelectedItemContainerEntry(tempItem->ItemName, ItemContainer.Get(), itemIndex)));
+		}
+	}
+}
+void SARSelectedItemContainerList::HandleActionSelected(const TArray< TSharedPtr<FEdGraphSchemaAction> >& SelectedActions) const
+{
+	if (SelectedActions.Num() > 0)
+	{
+		check(SelectedActions[0]->GetTypeId() == FEdGraphSchemaAction_SelectedItemContainerEntry::StaticGetTypeId());
+		TSharedPtr<FEdGraphSchemaAction_SelectedItemContainerEntry> ItemEntry = StaticCastSharedPtr<FEdGraphSchemaAction_SelectedItemContainerEntry>(SelectedActions[0]);
+		//if (ItemEntry->ItemCont)
+		//{
+		//	OnGetContainer.ExecuteIfBound(ItemEntry->ItemCont);
+		//}
+	}
+}
+
+
+
+
+
 void FARItemPickerContainerCustomization::CustomizeHeader(TSharedRef<class IPropertyHandle> StructPropertyHandle,
 class FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
@@ -126,14 +232,6 @@ class FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustom
 
 	TArray<UObject*> OuterObjects;
 	StructPropHandle->GetOuterObjects(OuterObjects);
-
-
-	//TArray<FARItemPickupCont>* lololo = nullptr;
-	//for (UObject* obj : OuterObjects)
-	//{
-	//	lololo = tempAr->ContainerPtrToValuePtr<TArray<FARItemPickupCont>>(StructPropHandle->GetProperty()->GetOuter());
-	//}
-
 
 	FARItemPickerContainer* itemCont = nullptr;
 	UStructProperty* structProp = CastChecked<UStructProperty>(StructPropHandle->GetProperty());
@@ -161,6 +259,7 @@ class FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustom
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
+				.MaxWidth(100)
 				[
 					SNew(SButton)
 					.Text(FText::FromString("Add Item"))
@@ -198,22 +297,29 @@ void FARItemPickerContainerCustomization::RefreshItemList()
 	if (!CurrentlyEditedStruct)
 		return;
 
-	for (FARItemPickupCont& cont : CurrentlyEditedStruct->ListOfItems)
+	if (ItemList.Num() > 0)
 	{
-		if (cont.ItemsList.Num() > 0)
-		{
-			for (int32 index : cont.ItemsList)
-			{
-				if (index != INDEX_NONE && cont.ItemData)
-				{
-					FItemEntry* tempItem = cont.ItemData->GetItemFromArrayPtr(index);
+		ItemList.Empty(ItemList.Num());
+	}
 
-					ItemList.Add(MakeShareable(new FString(tempItem->ItemDataInfo.ItemName)));
+	if (CurrentlyEditedStruct->ListOfItems.Num() > 0)
+	{
+		for (FARItemPickupCont& cont : CurrentlyEditedStruct->ListOfItems)
+		{
+			if (cont.ItemsList.Num() > 0)
+			{
+				for (int32 index : cont.ItemsList)
+				{
+					if (index != INDEX_NONE && cont.ItemData)
+					{
+						FItemEntry* tempItem = cont.ItemData->GetItemFromArrayPtr(index);
+
+						ItemList.Add(MakeShareable(new FString(tempItem->ItemDataInfo.ItemName)));
+					}
 				}
 			}
 		}
 	}
-
 	if (ItemListWidget.IsValid())
 		ItemListWidget->RequestListRefresh();
 }
@@ -280,7 +386,7 @@ FReply FARItemPickerContainerCustomization::OnAddItemClicked()
 						]
 						.MenuContent()
 						[
-							SNew(SARItemContainerList)
+							SAssignNew(ItemContainerList, SARItemContainerList)
 							.ItemPickupCont(OnCurrentlyEditedStruct)
 							.OnGetContainer(this, &FARItemPickerContainerCustomization::SetCurrentItemCont)
 						]
@@ -311,6 +417,7 @@ FReply FARItemPickerContainerCustomization::OnAddItemClicked()
 							SAssignNew(ItemPickerWidget, SARItemPickerWidget)
 							.ItemPickupCont(OnItemContSelected)
 							.EditedObject(EditedObject)
+							.OnItemAdded(this, &FARItemPickerContainerCustomization::OnItemAdded)
 						]
 					]
 				]
@@ -328,24 +435,27 @@ FReply FARItemPickerContainerCustomization::OnAddItemClicked()
 						]
 					]
 					+ SVerticalBox::Slot()
-					[
-						SNew(SHorizontalBox)
-						+ SHorizontalBox::Slot()
+						.MaxHeight(24)
 						[
-							SNew(STextBlock)
-							.Text(FText::FromString("Remove items content"))
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot()
+							[
+								SNew(SButton)
+								.OnClicked(this, &FARItemPickerContainerCustomization::RemoveItemsAssetOnClicked)
+								.Text(FText::FromString("Remove Items Asset"))
+							]
 						]
-					]
 					+ SVerticalBox::Slot()
-					.MaxHeight(24)
+					.AutoHeight()
 					[
 						SNew(SHorizontalBox)
 						+ SHorizontalBox::Slot()
 						[
-							SNew(SButton)
-							.Text(FText::FromString("Remove Items Asset"))
+							SAssignNew(SelectedItemsContainer, SARSelectedItemContainerList)
+							.ItemContainer(OnItemContSelected)
 						]
 					]
+	
 				]
 			]
 
@@ -368,7 +478,10 @@ FReply FARItemPickerContainerCustomization::OnAddItemClicked()
 
 	return FReply::Unhandled();
 }
-
+void FARItemPickerContainerCustomization::OnItemAdded()
+{
+	SelectedItemsContainer->GraphActionMenu->RefreshAllActions(false, true);
+}
 FARItemPickerContainer* FARItemPickerContainerCustomization::GetCurrentlyEditedStruct() const
 {
 	return CurrentlyEditedStruct;
@@ -377,6 +490,9 @@ void FARItemPickerContainerCustomization::SetCurrentItemCont(FARItemPickupCont* 
 {
 	CurrentItemCont = ContIn;
 	ItemPickerWidget->GraphActionMenu->RefreshAllActions(false, true);
+//	ItemContainerList->GraphActionMenu->RefreshAllActions(false, true);
+	if (CurrentItemCont)
+		SelectedItemsContainer->GraphActionMenu->RefreshAllActions(false, true);
 }
 FARItemPickupCont* FARItemPickerContainerCustomization::GetCurrentItemCont() const
 {
@@ -386,6 +502,21 @@ FARItemPickupCont* FARItemPickerContainerCustomization::GetCurrentItemCont() con
 	return CurrentItemCont;
 }
 
+FReply FARItemPickerContainerCustomization::RemoveItemsAssetOnClicked()
+{
+	if (!CurrentItemCont || !CurrentlyEditedStruct)
+		return FReply::Unhandled();
+
+	CurrentlyEditedStruct->RemoveItemContainer(CurrentItemCont);
+	CurrentItemCont = nullptr;
+	ItemPickerWidget->GraphActionMenu->RefreshAllActions(false, true);
+	ItemContainerList->GraphActionMenu->RefreshAllActions(false, true);
+	SelectedItemsContainer->GraphActionMenu->RefreshAllActions(false, true);
+
+	EditedObject->MarkPackageDirty();
+
+	return FReply::Handled();
+}
 
 void FARItemPickerContainerCustomization::OnAssetSelected(const class FAssetData& PickedAsset)
 {
@@ -422,9 +553,10 @@ void FARItemPickerContainerCustomization::OnAssetSelected(const class FAssetData
 			//	itemCont->ListOfItems[itemIdx-1].ItemData = tempItem;
 			//	itemCont->ListOfItems[itemIdx-1].ItemDataName = tempItem->GetName();
 			//}
-			itemCont->ListOfItems.Add(newItemCont);
+			itemCont->ListOfItems.AddUnique(newItemCont);
 		}
 	}
+	ItemContainerList->GraphActionMenu->RefreshAllActions(false, true);
 }
 
 void FARItemPickerContainerCustomization::OnGetAllowedClasses(TArray<const UClass*>& AllowedClasses)

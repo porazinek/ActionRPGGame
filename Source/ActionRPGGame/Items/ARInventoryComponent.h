@@ -46,6 +46,8 @@ public:
 	UFUNCTION(Client, Reliable)
 		void ClientSetInventoryChanged();
 
+	void AddPickItemToInventory(FInventorySlot Item);
+
 	void AddItemToInventory(FInventorySlot Item);
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerAddItemToInventory(FInventorySlot Item);

@@ -8,6 +8,7 @@
 #include "Abilities/ARAbility.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
 
+
 #include "Items/ARInventoryComponent.h"
 
 #include "HUD/ARHUD.h"
@@ -16,7 +17,9 @@
 
 #include "Net/UnrealNetwork.h"
 
-#include "JsonDataAsset/JsonDataAsset.h"
+#include "BlueprintLibrary/ARTraceStatics.h"
+#include "Items/ARItemPickup.h"
+
 #include "ARPlayerController.h"
 
 AARPlayerController::AARPlayerController(const class FPostConstructInitializeProperties& PCIP)
@@ -117,6 +120,9 @@ void AARPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARPlayerController::InputSwapLeftWeapon);
 	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARPlayerController::InputSwapRightWeapon);
+
+	InputComponent->BindAction("PickupItem", IE_Pressed, this, &AARPlayerController::InputPickupItem);
+
 	InputComponent->BindAction("AddWeapons", IE_Pressed, this, &AARPlayerController::InputTempAddWeapons);
 }
 
@@ -233,8 +239,10 @@ void AARPlayerController::InputSwapLeftWeapon()
 
 void AARPlayerController::InputPickupItem()
 {
-
+	PickUpItem();
 }
+
+
 void AARPlayerController::SetInventoryVisibility()
 {
 	if (InventoryVisibility == EVisibility::Collapsed)
@@ -271,6 +279,32 @@ void AARPlayerController::SetAbilityInventoryVisibility()
 	}
 }
 
+
+void AARPlayerController::PickUpItem()
+{
+	if (Role < ROLE_Authority)
+	{
+		ServerPickUpItem();
+	}
+	else
+	{
+		FHitResult hit = UARTraceStatics::GetHitResult(1000, NAME_None, GetPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
+
+		AARItemPickup* pickup = Cast<AARItemPickup>(hit.GetActor());
+		if (pickup)
+		{
+			pickup->GiveAllItemsTo(this);
+		}
+	}
+}
+void AARPlayerController::ServerPickUpItem_Implementation()
+{
+	PickUpItem();
+}
+bool AARPlayerController::ServerPickUpItem_Validate()
+{
+	return true;
+}
 void AARPlayerController::ServerSetActiveAbility_Implementation(class AARAbility* AbilityIn)
 {
 	SetActiveAbility(AbilityIn);

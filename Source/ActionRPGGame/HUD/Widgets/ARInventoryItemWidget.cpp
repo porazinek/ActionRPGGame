@@ -299,6 +299,11 @@ void SARInventoryItemWidget::SpawnItem()
 	if (PlayerController != NULL && InventoryItem.IsValid() && TestItems && TestItems->EditEntries.Num() > 0
 		&& InventoryItem->ItemIndex >= 0)
 	{
+		if (InventoryItem->ItemSlot == EItemSlot::Item_Chest)
+		{
+			ItemInThisSlot = ChestItems->GetItemDataFromArrayPtr(InventoryItem->ItemIndex);
+			return;
+		}
 		ItemInThisSlot = TestItems->GetItemDataFromArrayPtr(InventoryItem->ItemIndex);
 	}
 }
@@ -311,7 +316,15 @@ TSharedRef<FInventoryDragDrop> FInventoryDragDrop::New(TSharedPtr<FInventorySlot
 	Operation->PickedItem = PickedItemIn;
 	Operation->LastItemSlot = LastItemSlotIn;
 	if (TestItems && TestItems->EditEntries.Num() > 0 && PickedItemIn->ItemIndex >= 0)
+	{
+		if (PickedItemIn->ItemSlot == EItemSlot::Item_Chest)
+		{
+			Operation->ItemInThisSlot = ChestItems->GetItemDataFromArrayPtr(PickedItemIn->ItemIndex);
+			return;
+		}
 		Operation->ItemInThisSlot = TestItems->GetItemDataFromArrayPtr(PickedItemIn->ItemIndex);
+	}
+		
 	Operation->Construct();
 	return Operation;
 }

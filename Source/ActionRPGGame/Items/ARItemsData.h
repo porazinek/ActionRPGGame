@@ -6,27 +6,6 @@
 #include "Runtime/JsonUtilities/Public/JsonUtilities.h"
 #include "ARItemsData.generated.h"
 
-/*
-	Custom asset, which contain information about ARItem. It exist only because there no
-	direct access to TMap in editor, and this entire thing is wrapper around it.
-
-	There are also will be simple editor which will allow editing information
-	about item. Things like:
-	1. Icon.
-	2. Attributes.
-	3. Stats.
-	4. Description.
-	
-
-	Information is stored in TMap, because of fast lookups. This asset is going to be very intensly used
-	for displaying information in UI, creating loot tables for pickup items/NPC/monsters/etc.
-*/
-
-
-/*
-	For editing.
-	Add int32 Index, for direct access for items in array, while editing.
-*/
 USTRUCT()
 struct FItemEntry
 {

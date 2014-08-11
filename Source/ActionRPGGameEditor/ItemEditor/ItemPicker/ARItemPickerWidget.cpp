@@ -50,6 +50,7 @@ void SARItemPickerWidget::Construct(const FArguments& InArgs)
 {
 	ItemPickupCont = InArgs._ItemPickupCont;
 	EditedObject = InArgs._EditedObject;
+	OnItemAdded = InArgs._OnItemAdded;
 	ChildSlot
 	[
 		SNew(SOverlay)
@@ -75,9 +76,12 @@ void SARItemPickerWidget::HandleCollectAllActions(FGraphActionListBuilderBase& G
 {
 	if (ItemPickupCont.Get())
 	{
-		for (FItemEntry& entry : ItemPickupCont.Get()->ItemData->EditEntries)
+		if (ItemPickupCont.Get()->ItemData && ItemPickupCont.Get()->ItemData->EditEntries.Num() > 0)
 		{
-			GraphActionListBuilder.AddAction(MakeShareable(new FEdGraphSchemaAction_ItemPickerEntry(entry.ItemDataInfo.ItemName, entry.Index)));
+			for (FItemEntry& entry : ItemPickupCont.Get()->ItemData->EditEntries)
+			{
+				GraphActionListBuilder.AddAction(MakeShareable(new FEdGraphSchemaAction_ItemPickerEntry(entry.ItemDataInfo.ItemName, entry.Index)));
+			}
 		}
 	}
 }
@@ -90,6 +94,7 @@ void SARItemPickerWidget::HandleActionSelected(const TArray< TSharedPtr<FEdGraph
 		if (ItemPickupCont.Get())
 		{
 			ItemPickupCont.Get()->ItemsList.Add(ItemEntry->ItemIndex);
+			OnItemAdded.ExecuteIfBound();
 			EditedObject->MarkPackageDirty();
 		}
 	}

@@ -54,6 +54,27 @@ void UARInventoryComponent::OnRep_InventoryChanged()
 {
 	IsInventoryChanged = true;
 }
+
+
+void UARInventoryComponent::AddPickItemToInventory(FInventorySlot Item)
+{
+	if (Inventory.Num() <= MaxInventorySize)
+	{
+		for (FInventorySlot& item : Inventory)
+		{
+			if (item.ItemID.IsNone())
+			{
+				item.ItemID = Item.ItemID;
+				item.ItemSlot = Item.ItemSlot;
+				item.ItemIndex = Item.ItemIndex;
+				item.EEquipmentSlot = Item.EEquipmentSlot;
+				PossesedItems.Add(item);
+				ClientSetInventoryChanged();
+				return;
+			}
+		}
+	}
+}
 /*
 	this should NEVER be called from client. EVER!.
 */

@@ -174,13 +174,15 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FARItemPickerContainer
+struct ACTIONRPGGAME_API FARItemPickerContainer
 {
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere, Category = "Items To Pick")
 		TArray<FARItemPickupCont> ListOfItems;
 
+public:
+	void RemoveItemContainer(FARItemPickupCont* ToRemove);
 
 	FARItemPickerContainer()
 		: ListOfItems()

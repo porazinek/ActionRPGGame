@@ -45,6 +45,42 @@ public:
 };
 
 
+class SSelectedItemContainerPalleteItem : public SGraphPaletteItem
+{
+	SLATE_BEGIN_ARGS(SItemContainerPalleteItem) {}
+
+
+	SLATE_END_ARGS()
+public:
+	void Construct(const FArguments& InArgs, FCreateWidgetForActionData* const InCreateData);
+
+};
+class SARSelectedItemContainerList : public SCompoundWidget
+{
+	SLATE_BEGIN_ARGS(SARSelectedItemContainerList)
+	{}
+		SLATE_ATTRIBUTE(FARItemPickerContainer*, ItemPickupCont)
+		SLATE_ATTRIBUTE(FARItemPickupCont*, ItemContainer)
+		SLATE_EVENT(FOnItemDataSelected, OnGetContainer)
+	SLATE_END_ARGS()
+
+public:
+	~SARSelectedItemContainerList();
+	void Construct(const FArguments& InArgs);
+
+	TSharedRef<SWidget> HandleCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData);
+	void HandleCollectAllActions(FGraphActionListBuilderBase& GraphActionListBuilder);
+	void HandleActionSelected(const TArray< TSharedPtr<FEdGraphSchemaAction> >& SelectedActions) const;
+
+	TSharedPtr<SGraphActionMenu> GraphActionMenu;
+
+	FOnItemDataSelected OnGetContainer;
+	void GetContainer(const FARItemPickerContainer* ContainerIn);
+
+	TAttribute<FARItemPickupCont*> ItemContainer;
+	TAttribute<FARItemPickerContainer*> ItemPickupCont;
+
+};
 
 class FARItemPickerContainerCustomization : public IPropertyTypeCustomization
 {
@@ -81,8 +117,8 @@ private:
 
 	//ItemPicker;
 	TSharedPtr<SARItemPickerWidget> ItemPickerWidget;
-
-
+	TSharedPtr<SARItemContainerList> ItemContainerList;
+	TSharedPtr<SARSelectedItemContainerList> SelectedItemsContainer;
 	//Container Selector
 	FOnItemDataSelected OnGetContainer;
 	TAttribute<FARItemPickupCont*> OnItemContSelected;
@@ -91,6 +127,9 @@ private:
 	FARItemPickupCont* GetCurrentItemCont() const;
 	FARItemPickupCont* CurrentItemCont;
 	void SetCurrentItemCont(FARItemPickupCont* ContIn);
+
+	void OnItemAdded();
+	FReply RemoveItemsAssetOnClicked();
 
 	TWeakObjectPtr<UObject> EditedObject;
 

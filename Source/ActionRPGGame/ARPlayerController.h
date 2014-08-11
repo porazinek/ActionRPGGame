@@ -78,11 +78,12 @@ public:
 	void InputSwapLeftWeapon();
 	void InputSwapRightWeapon();
 
-	/*
-		Route item picup trough controller.
-		We might pick up directly in controller, or route to other object.
-	*/
 	void InputPickupItem();
+
+	void PickUpItem();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPickUpItem();
+
 
 	/* GUI Input **/
 	void SetInventoryVisibility();

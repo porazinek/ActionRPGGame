@@ -17,6 +17,10 @@ AARPGameMode::AARPGameMode(const class FPostConstructInitializeProperties& PCIP)
 
 	FString items = "ARItemsData'/Game/Blueprints/Data/NewARItemsData.NewARItemsData'";
 	TestItems = LoadObject<UARItemsData>(nullptr, *items, nullptr, LOAD_None, nullptr);
+
+	FString chestItems = "ARItemsData'/Game/Blueprints/Data/ChestArmors.ChestArmors'";
+	ChestItems = LoadObject<UARItemsData>(nullptr, *chestItems, nullptr, LOAD_None, nullptr);
+
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerPawnBPClass(TEXT("Class'/Game/Blueprints/MyCharacter2.MyCharacter2_C'"));
 	static ConstructorHelpers::FObjectFinder<UClass> PlayerControllerBPClass(TEXT("Class'/Game/Blueprints/BP_PlayerController.BP_PlayerController_C'"));

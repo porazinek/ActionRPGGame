@@ -30,6 +30,8 @@ and if I make it mutable, it won't be const...
 */
 static UARItemsData* TestItems;
 
+static UARItemsData* ChestItems;
+
 struct GlobalConfig
 {
 	

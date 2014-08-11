@@ -33,7 +33,10 @@ public class ActionRPGGameEditor : ModuleRules
 			"ContentBrowser",
 			"WorkspaceMenuStructure",
 			"EditorStyle", 
-            "JsonUtilities"
+            "JsonUtilities",
+            "ClassViewer",
+            "AssetRegistry",
+            "ActorPickerMode"
 		});
 
         PrivateIncludePathModuleNames.AddRange(

@@ -44,34 +44,34 @@ class FARModule : public FDefaultGameModuleImpl
 /*
 	Custom Serialization overrides for FArchive.
 */
-inline FArchive& operator<<(FArchive &Ar, FSlateColor& Data)
-{
-	Ar << Data.SpecifiedColor;
-	Ar << Data.ColorUseRule;
-	return Ar;
-};
+//inline FArchive& operator<<(FArchive &Ar, FSlateColor& Data)
+//{
+//	Ar << Data.SpecifiedColor;
+//	Ar << Data.ColorUseRule;
+//	return Ar;
+//};
 
-inline FArchive& operator<<(FArchive &Ar, FMargin& Data)
-{
-	Ar << Data.Left;
-	Ar << Data.Top;
-	Ar << Data.Right;
-	Ar << Data.Bottom;
-	return Ar;
-};
-
-inline FArchive& operator<<(FArchive &Ar, FSlateBrush& Data)
-{
-	Ar << Data.ImageSize;
-	Ar << Data.DrawAs;
-	Ar << Data.Margin;
-	Ar << Data.TintColor;
-	Ar << Data.Tiling;
-	Ar << Data.Mirroring;
-	Ar << Data.ImageType;
-	return Ar;
-};
-
+//inline FArchive& operator<<(FArchive &Ar, FMargin& Data)
+//{
+//	Ar << Data.Left;
+//	Ar << Data.Top;
+//	Ar << Data.Right;
+//	Ar << Data.Bottom;
+//	return Ar;
+//};
+//
+//inline FArchive& operator<<(FArchive &Ar, FSlateBrush& Data)
+//{
+//	Ar << Data.ImageSize;
+//	Ar << Data.DrawAs;
+//	Ar << Data.Margin;
+//	Ar << Data.TintColor;
+//	Ar << Data.Tiling;
+//	Ar << Data.Mirroring;
+//	Ar << Data.ImageType;
+//	return Ar;
+//};
+//
 inline FArchive& operator<<(FArchive &Ar, FAttribute& Data)
 {
 	Ar << Data.AttributeName;

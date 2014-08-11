@@ -5,6 +5,12 @@
 
 #pragma once
 #include "../../ActionRPGGame/Public/ActionRPGGame.h"
+#include "Runtime/AssetRegistry/Public/IAssetRegistry.h"
+#include "Runtime/AssetRegistry/Public/AssetRegistryModule.h"
+#include "Runtime/AssetRegistry/Public/AssetData.h"
+
+
+
 #include "EditorStyle.h"
 #include "Editor/UnrealEd/Public/UnrealEd.h"
 

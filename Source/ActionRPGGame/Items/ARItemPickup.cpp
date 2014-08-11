@@ -18,26 +18,11 @@ AARItemPickup::AARItemPickup(const class FPostConstructInitializeProperties& PCI
 	bNetUseOwnerRelevancy = true;
 	
 }
-void AARItemPickup::BeginPlay()
-{
-	Super::BeginPlay();
-}
 
-void AARItemPickup::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	ItemContainer.ItemData = ItemsData;
-
-	MarkPackageDirty();
-}
-
-void AARItemPickup::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AARItemPickup, ItemPickups);
-}
+//void AARItemPickup::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
+//{
+//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+//}
 
 void AARItemPickup::GiveAllItemsTo(class AARPlayerController* PickupInstigator)
 {

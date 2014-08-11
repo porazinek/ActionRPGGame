@@ -116,14 +116,14 @@ public:
 	static FString StaticGetTypeId() { static FString Type = TEXT("FEdGraphSchemaAction_RPGItemEntry "); return Type; }
 	virtual FString GetTypeId() const override { return StaticGetTypeId(); }
 
-	FEdGraphSchemaAction_RPGItemEntry(UARItemsData* InBlackboardData, FName InKey, FString ItemNameIn, int32 ItemIndexIn)
+	FEdGraphSchemaAction_RPGItemEntry(UARItemsData* ItemsDataIn, FName InKey, FString ItemNameIn, int32 ItemIndexIn)
 		: FEdGraphSchemaAction_Dummy()
-		, BlackboardData(InBlackboardData)
+		, ItemsData(ItemsDataIn)
 		, ItemName(ItemNameIn)
 		, Key(InKey)
 		, ItemIndex(ItemIndexIn)
 	{
-		check(BlackboardData);
+		check(ItemsData);
 		Update();
 	}
 
@@ -133,7 +133,7 @@ public:
 		TooltipDescription = FText::FromName(Key).ToString(); // LOCTEXT("BlackboardEntryFormat", "{0}"), FText::FromName(Key).ToString());
 	}
 
-	UARItemsData* BlackboardData;
+	UARItemsData* ItemsData;
 	FString ItemName;
 	FName Key;
 	int32 ItemIndex;
@@ -163,7 +163,7 @@ class SRPGItem : public SGraphPaletteItem
 		FSlateBrush const* IconBrush = FEditorStyle::GetBrush(TEXT("NoBrush"));
 
 		TSharedRef<SWidget> IconWidget = CreateIconWidget(GraphAction->TooltipDescription, IconBrush, IconBrush->TintColor);
-		TSharedRef<SWidget> NameSlotWidget = CreateTextSlotWidget(NameFont, InCreateData, false);
+		//TSharedRef<SWidget> NameSlotWidget = CreateTextSlotWidget(NameFont, InCreateData, false);
 
 		// Create the actual widget
 		this->ChildSlot
@@ -175,71 +175,11 @@ class SRPGItem : public SGraphPaletteItem
 				.VAlign(VAlign_Center)
 				.Padding(3, 0)
 				[
-					NameSlotWidget
+					SNew(STextBlock)
+					.Text(this, &SRPGItem::GetDisplayText)
 				]
 			];
 	}
-
-private:
-
-	virtual TSharedRef<SWidget> CreateTextSlotWidget(const FSlateFontInfo& NameFont, FCreateWidgetForActionData* const InCreateData, bool bInIsReadOnly) override
-	{
-		check(InCreateData);
-
-		TSharedPtr< SWidget > DisplayWidget;
-
-		// Copy the mouse delegate binding if we want it
-		if (InCreateData->bHandleMouseButtonDown)
-		{
-			MouseButtonDownDelegate = InCreateData->MouseButtonDownDelegate;
-		}
-
-
-		InlineRenameWidget =
-			SAssignNew(DisplayWidget, SInlineEditableTextBlock)
-			.Text(this, &SRPGItem::GetDisplayText)
-			.Font(NameFont)
-			.HighlightText(InCreateData->HighlightText)
-			.OnTextCommitted(this, &SRPGItem::OnNameTextCommitted)
-			.IsSelected(InCreateData->IsRowSelectedDelegate)
-			.IsReadOnly(this, &SRPGItem::IsReadOnly);
-
-		return DisplayWidget.ToSharedRef();
-	}
-
-	virtual FString GetItemTooltip() const override
-	{
-		return ActionPtr.Pin()->TooltipDescription;
-	}
-
-	virtual void OnNameTextCommitted(const FText& NewText, ETextCommit::Type InTextCommit) override
-	{
-		//check(ActionPtr.Pin()->GetTypeId() == FEdGraphSchemaAction_BlackboardEntry::StaticGetTypeId());
-		//TSharedPtr<FEdGraphSchemaAction_BlackboardEntry> BlackboardEntryAction = StaticCastSharedPtr<FEdGraphSchemaAction_BlackboardEntry>(ActionPtr.Pin());
-
-		//FName NewName = FName(*NewText.ToString());
-		//if (NewName != BlackboardEntryAction->Key.EntryName)
-		//{
-		//	const FScopedTransaction Transaction(LOCTEXT("BlackboardEntryRenameTransaction", "Rename Blackboard Entry"));
-		//	BlackboardEntryAction->BlackboardData->Modify();
-		//	BlackboardEntryAction->Key.EntryName = FName(*NewText.ToString());
-
-		//	BlackboardEntryAction->Update();
-		//}
-	}
-
-	/** Create widget for displaying debug information about this blackboard entry */
-
-	bool IsReadOnly() const
-	{
-		//if (OnIsDebuggerReady.IsBound())
-		//{
-		//	return bIsReadOnly || OnIsDebuggerReady.Execute();
-		//}
-
-		return false;
-	}
-
 };
 
 
@@ -254,17 +194,11 @@ void SItemListWidget::Construct(const FArguments& InArgs)
 			SNew(SOverlay)
 			+ SOverlay::Slot()
 			[
-				//SNew(SListView<TSharedPtr<FName> >)
-				//.ListItemsSource(&ItemList)
-				//.OnGenerateRow(this, &SItemListWidget::MakeTileViewWidget)
 				SAssignNew(GraphActionMenu, SGraphActionMenu, false)
 				.OnCreateWidgetForAction(this, &SItemListWidget::HandleCreateWidgetForAction)
 				.OnCollectAllActions(this, &SItemListWidget::HandleCollectAllActions)
 				.OnActionSelected(this, &SItemListWidget::HandleActionSelected)
-				//.OnGetSectionTitle(this, &SBehaviorTreeBlackboardView::HandleGetSectionTitle)
-				//.OnContextMenuOpening(this, &SBehaviorTreeBlackboardView::HandleContextMenuOpening, InCommandList)
-				//.OnActionMatchesName(this, &SBehaviorTreeBlackboardView::HandleActionMatchesName)
-				//.AlphaSortItems(false)
+
 			]
 		];
 }

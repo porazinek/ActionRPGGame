@@ -147,26 +147,45 @@ public:
 	};
 };
 
+USTRUCT(BlueprintType)
+struct FARItemPickupCont
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Data Asset")
+		class UARItemsData* ItemData;
+
+	UPROPERTY(VisibleAnywhere, Category = "Asset Name")
+		FString ItemDataName;
+
+	UPROPERTY(EditAnywhere, Category = "Items To Pick")
+		TArray<int32> ItemsList;
+
+	inline bool operator==(const FARItemPickupCont& Other) const
+	{
+		return ItemData == Other.ItemData;
+	}
+	FARItemPickupCont()
+		: ItemsList()
+	{
+		ItemData = nullptr;
+		ItemDataName = FString("NoName");
+	};
+};
 
 USTRUCT(BlueprintType)
 struct FARItemPickerContainer
 {
 	GENERATED_USTRUCT_BODY()
 public:
+	UPROPERTY(EditAnywhere, Category = "Items To Pick")
+		TArray<FARItemPickupCont> ListOfItems;
 
-	/*
-		Asset used to search items for pick.
-	*/
-	UPROPERTY(EditAnywhere, Category="Data Asset")
-		TArray<class UARItemsData*> ItemData;
 
-	/*
-		List of keys, to item, which can be picked from this object.
-	*/
-	UPROPERTY(EditAnywhere, Category="Items To Pick")
-		TArray<FName> ItemsList;
+	FARItemPickerContainer()
+		: ListOfItems()
+	{};
 };
-
 /*
 It's struct containing info about item.
 It have advantage of being simple to store in single DataAsset, but Items can't

@@ -33,10 +33,10 @@ public:
 		RemoveItemFromInventory.
 	*/
 	UPROPERTY()
-		TArray<FInventorySlot> PossesedItems;
+		TArray<FARDragDropInfo> PossesedItems;
 
 	UPROPERTY(ReplicatedUsing=OnRep_InventoryChanged, BlueprintReadWrite, Category="Inventory")
-		TArray<FInventorySlot> Inventory;
+		TArray<FARDragDropInfo> Inventory;
 
 	UPROPERTY(Replicated)
 		bool IsInventoryChanged;
@@ -46,15 +46,15 @@ public:
 	UFUNCTION(Client, Reliable)
 		void ClientSetInventoryChanged();
 
-	void AddPickItemToInventory(FInventorySlot Item);
+	void AddPickItemToInventory(FARDragDropInfo Item);
 
-	void AddItemToInventory(FInventorySlot Item);
+	void AddItemToInventory(FARDragDropInfo Item);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddItemToInventory(FInventorySlot Item);
+		void ServerAddItemToInventory(FARDragDropInfo Item);
 
-	void AddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID);
+	void AddItemToInventoryOnSlot(FARDragDropInfo Item, int32 SlotID);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID);
+		void ServerAddItemToInventoryOnSlot(FARDragDropInfo Item, int32 SlotID);
 
 	bool RemoveItemFromInventory(FName ItemID, int32 SlotID);
 	UFUNCTION(Server, Reliable, WithValidation)

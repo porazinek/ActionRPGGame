@@ -67,11 +67,11 @@ void UAREquipmentComponent::InitializeComponent()
 		}
 		for (int32 i = 0; i < 4; i++)
 		{
-			FInventorySlot in;
-			in.ItemID = NAME_None;
+			FARDragDropInfo in;
+			in.ItemKey = NAME_None;
 			in.ItemIndex = INDEX_NONE;
-			in.SlotID = i;
-			in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+			in.SlotIndex = i;
+			in.DragDropSlot = EDragDropSlot::LeftHand;
 			in.ItemSlot = EItemSlot::Item_Weapon;
 			in.IsAttached = false;
 			LeftHandWeapons.Add(in);
@@ -79,11 +79,11 @@ void UAREquipmentComponent::InitializeComponent()
 
 		for (int32 i = 0; i < 4; i++)
 		{
-			FInventorySlot in;
-			in.ItemID = NAME_None;
+			FARDragDropInfo in;
+			in.ItemKey = NAME_None;
 			in.ItemIndex = INDEX_NONE;
-			in.SlotID = i;
-			in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+			in.SlotIndex = i;
+			in.DragDropSlot = EDragDropSlot::RightHand;
 			in.ItemSlot = EItemSlot::Item_Weapon;
 			in.IsAttached = false;
 			RightHandWeapons.Add(in);
@@ -127,7 +127,7 @@ void UAREquipmentComponent::OnRep_RightHandWeapons()
 	//AttacheSheathedWeapon(RightHandWeapons, WeaponSockets, 1);
 }
 
-void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FInventorySlot WeaponIn, int32 HandIn)
+void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FARDragDropInfo WeaponIn, int32 HandIn)
 {
 	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(WeaponIn.ItemID, usless);
 	FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(WeaponIn.ItemIndex);
@@ -146,8 +146,8 @@ void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FInven
 		else
 			weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 
-		weaponBase->ItemName = WeaponIn.ItemID;
-		weaponBase->ItemID = WeaponIn.ItemID;
+		weaponBase->ItemName = WeaponIn.ItemKey;
+		weaponBase->ItemID = WeaponIn.ItemKey;
 		weaponBase->ItemIndex = WeaponIn.ItemIndex;
 		weaponBase->SetOwner(TargetCharacter);
 		weaponBase->Instigator = TargetCharacter;
@@ -170,7 +170,7 @@ void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FInven
 					if (socket.SocketSide != HandIn)
 					{
 						socket.IsSlotAvailable = false;
-						socket.LastItemID = WeaponIn.ItemID;
+						socket.LastItemID = WeaponIn.ItemKey;
 						EquipedWeapons.Add(weaponBase);
 						//WeaponIn.IsAttached = true;
 						SetSeathedWeapon(weaponBase, socket.SocketName);
@@ -188,7 +188,7 @@ void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FInven
 /*
 	Need to implement weapon attaching to character when adding to equipment list.
 	*/
-void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32 Hand)
+void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int32 Hand)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -198,24 +198,24 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 	{
 		if (Hand == 0)
 		{
-			for (FInventorySlot& weapon : LeftHandWeapons)
+			for (FARDragDropInfo& weapon : LeftHandWeapons)
 			{
-				if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+				if (weapon.SlotIndex == SlotID && weapon.ItemKey != NAME_None)
 				{
-					FInventorySlot oldItemTemp = weapon;
-					weapon.ItemID = Weapon.ItemID;
+					FARDragDropInfo oldItemTemp = weapon;
+					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.IsAttached = true;
-					for (FInventorySlot& oldItem : Inventory->Inventory)
+					for (FARDragDropInfo& oldItem : Inventory->Inventory)
 					{
-						if (weapon.SlotID == oldItem.SlotID)
+						if (weapon.SlotIndex == oldItem.SlotIndex)
 						{
-							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemKey = oldItemTemp.ItemKey;
 							oldItem.ItemIndex = oldItemTemp.ItemIndex;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
-							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							//return;
 						}
 					}
@@ -224,12 +224,12 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 					//OnRep_InventoryChanged();
 					return;
 				}
-				if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+				if (weapon.ItemKey.IsNone() && weapon.SlotIndex == SlotID)
 				{
-					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.IsAttached = true;
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
 					LeftHandWeaponsUpdated = true;
@@ -239,23 +239,23 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 		}
 		else if (Hand == 1)
 		{
-			for (FInventorySlot& weapon : RightHandWeapons)
+			for (FARDragDropInfo& weapon : RightHandWeapons)
 			{
-				if (weapon.SlotID == SlotID && weapon.ItemID != NAME_None)
+				if (weapon.SlotIndex == SlotID && weapon.ItemKey != NAME_None)
 				{
-					FInventorySlot oldItemTemp = weapon;
-					weapon.ItemID = Weapon.ItemID;
+					FARDragDropInfo oldItemTemp = weapon;
+					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
-					for (FInventorySlot& oldItem : Inventory->Inventory)
+					weapon.DragDropSlot = Weapon.DragDropSlot;
+					for (FARDragDropInfo& oldItem : Inventory->Inventory)
 					{
-						if (weapon.SlotID == oldItem.SlotID)
+						if (weapon.SlotIndex == oldItem.SlotIndex)
 						{
-							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemKey = oldItemTemp.ItemKey;
 							oldItem.ItemIndex = oldItemTemp.ItemIndex;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
-							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
+							oldItem.DragDropSlot = oldItemTemp.DragDropSlot;
 							//return;
 						}
 					}
@@ -264,12 +264,12 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 					//OnRep_InventoryChanged();
 					return;
 				}
-				if (weapon.ItemID.IsNone() && weapon.SlotID == SlotID)
+				if (weapon.ItemKey.IsNone() && weapon.SlotIndex == SlotID)
 				{
-					weapon.ItemID = Weapon.ItemID;
+					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.EEquipmentSlot = Weapon.EEquipmentSlot;
+					weapon.DragDropSlot = Weapon.DragDropSlot;
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
 					RightHandWeaponsUpdated = true;
 					return;
@@ -278,11 +278,11 @@ void UAREquipmentComponent::AddWeapon(FInventorySlot Weapon, int32 SlotID, int32
 		}
 	}
 }
-void UAREquipmentComponent::ServerAddWeapon_Implementation(FInventorySlot Weapon, int32 SlotID, int32 Hand)
+void UAREquipmentComponent::ServerAddWeapon_Implementation(FARDragDropInfo Weapon, int32 SlotID, int32 Hand)
 {
 	AddWeapon(Weapon, SlotID, Hand);
 }
-bool UAREquipmentComponent::ServerAddWeapon_Validate(FInventorySlot Weapon, int32 SlotID, int32 Hand)
+bool UAREquipmentComponent::ServerAddWeapon_Validate(FARDragDropInfo Weapon, int32 SlotID, int32 Hand)
 {
 	return true;
 }
@@ -303,11 +303,11 @@ bool UAREquipmentComponent::ServerAddWeapon_Validate(FInventorySlot Weapon, int3
 	Left hand weapons - right attachment slots.
 	Right Hand weapons - left attachment slots.
 	*/
-void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> WeaponsIn, TArray<FARAttachmentSocket> WeaponSocketsIn, int32 HandIn)
+void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FARDragDropInfo> WeaponsIn, TArray<FARAttachmentSocket> WeaponSocketsIn, int32 HandIn)
 {
 	FString usless = "";
 
-	for (FInventorySlot& Weapon : WeaponsIn)
+	for (FARDragDropInfo& Weapon : WeaponsIn)
 	{
 		//if (Weapon.IsAttached)
 		//{
@@ -325,8 +325,8 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> Weapons
 			else
 				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 			
-			weaponBase->ItemName = Weapon.ItemID;
-			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->ItemName = Weapon.ItemKey;
+			weaponBase->ItemID = Weapon.ItemKey;
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->ItemInfo = data->ItemInfo;
 
@@ -349,7 +349,7 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> Weapons
 						if (socket.SocketSide != HandIn)
 						{
 							socket.IsSlotAvailable = false;
-							socket.LastItemID = Weapon.ItemID;
+							socket.LastItemID = Weapon.ItemKey;
 							EquipedWeapons.Add(weaponBase);
 							Weapon.IsAttached = true;
 							SetSeathedWeapon(weaponBase, socket.SocketName);
@@ -358,13 +358,7 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FInventorySlot> Weapons
 					}
 				}
 			}
-
-
-
 		}
-
-
-		//}
 	}
 }
 void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWeapon* LastWeapon, const TArray<FARAttachmentSocket>& WeaponSocketsIn, int32 HandIn)
@@ -506,17 +500,17 @@ bool UAREquipmentComponent::RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand)
 	{
 		if (Hand == 0)
 		{
-			for (FInventorySlot& item : LeftHandWeapons)
+			for (FARDragDropInfo& item : LeftHandWeapons)
 			{
-				if (item.SlotID == SlotID && item.ItemID != NAME_None)
+				if (item.SlotIndex == SlotID && item.ItemKey != NAME_None)
 				{
 					//we don't remove actually anything from array.
 					//just change ID and slot types, to match an "empty" slot 
 					// in inventory.
-					item.ItemID = NAME_None;
+					item.ItemKey = NAME_None;
 					item.ItemIndex = INDEX_NONE;
 					item.ItemSlot = EItemSlot::Item_Inventory;
-					item.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
+					item.DragDropSlot = EDragDropSlot::LeftHand;
 					LeftHandWeaponsUpdated = true;
 					MulticastDetachWeaponSlotSwap(Weapon, Hand);
 					return true;
@@ -525,17 +519,17 @@ bool UAREquipmentComponent::RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand)
 		}
 		else if (Hand == 1)
 		{
-			for (FInventorySlot& item : RightHandWeapons)
+			for (FARDragDropInfo& item : RightHandWeapons)
 			{
-				if (item.SlotID == SlotID && item.ItemID != NAME_None)
+				if (item.SlotIndex == SlotID && item.ItemKey != NAME_None)
 				{
 					//we don't remove actually anything from array.
 					//just change ID and slot types, to match an "empty" slot 
 					// in inventory.
-					item.ItemID = NAME_None;
+					item.ItemKey = NAME_None;
 					item.ItemIndex = INDEX_NONE;
 					item.ItemSlot = EItemSlot::Item_Inventory;
-					item.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
+					item.DragDropSlot = EDragDropSlot::RightHand;
 					RightHandWeaponsUpdated = true;
 					MulticastDetachWeaponSlotSwap(Weapon, Hand);
 					return true;
@@ -617,15 +611,15 @@ void UAREquipmentComponent::SortEquipedItemsByAttribute(FName AttributeName)
 	//}
 }
 /* Inventory Handling **/
-void UAREquipmentComponent::ServerChangeItem_Implementation(FInventorySlot ItemIn, int32 OldItemSlotID)
+void UAREquipmentComponent::ServerChangeItem_Implementation(FARDragDropInfo ItemIn, int32 OldItemSlotID)
 {
 	ChangeItem(ItemIn, OldItemSlotID);
 }
-bool UAREquipmentComponent::ServerChangeItem_Validate(FInventorySlot ItemIn, int32 OldItemSlotID)
+bool UAREquipmentComponent::ServerChangeItem_Validate(FARDragDropInfo ItemIn, int32 OldItemSlotID)
 {
 	return true;
 }
-void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotID)
+void UAREquipmentComponent::ChangeItem(FARDragDropInfo ItemIn, int32 OldItemSlotID)
 {
 	bool itemRemoved = false;
 	if (GetOwnerRole() < ROLE_Authority)
@@ -639,34 +633,34 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 		{
 			if (eqItem->ItemSlotEquipped == ItemIn.ItemSlot)
 			{
-				FInventorySlot tempItem;
-				tempItem.ItemID = eqItem->ItemID;
+				FARDragDropInfo tempItem;
+				tempItem.ItemKey = eqItem->ItemID;
 				tempItem.ItemSlot = eqItem->ItemSlotEquipped;
 				//if there is, Unequip it. Before we proceed.
 				UnEquipItem(ItemIn);
-				itemRemoved = Inventory->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+				itemRemoved = Inventory->RemoveItemFromInventory(ItemIn.ItemKey, ItemIn.SlotIndex);
 				Inventory->AddItemToInventoryOnSlot(tempItem, OldItemSlotID);
 			}
 		}
-		switch (ItemIn.EEquipmentSlot)
+		switch (ItemIn.DragDropSlot)
 		{
-		case EEquipmentSlot::Item_Chest:
+		case EDragDropSlot::Chest:
 		{
 			if (ChangeChestItem(ItemIn))
 			{
 				if (!itemRemoved)
 				{
-					Inventory->RemoveItemFromInventory(ItemIn.ItemID, ItemIn.SlotID);
+					Inventory->RemoveItemFromInventory(ItemIn.ItemKey, ItemIn.SlotIndex);
 					break;
 				}
 			}
 			break;
 		}
-		case EEquipmentSlot::Item_LeftHandOne:
+		case EDragDropSlot::LeftHand:
 		{
 			AddWeapon(ItemIn, OldItemSlotID, 0);
 		}
-		case EEquipmentSlot::Item_RightHandOne:
+		case EDragDropSlot::RightHand:
 		{
 			AddWeapon(ItemIn, OldItemSlotID, 1);
 		}
@@ -676,7 +670,7 @@ void UAREquipmentComponent::ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotI
 	}
 }
 
-void UAREquipmentComponent::UnEquipItem(FInventorySlot ItemIn)
+void UAREquipmentComponent::UnEquipItem(FARDragDropInfo ItemIn)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -694,24 +688,24 @@ void UAREquipmentComponent::UnEquipItem(FInventorySlot ItemIn)
 		}
 	}
 }
-void UAREquipmentComponent::ServerUnEquipItem_Implementation(FInventorySlot ItemIn)
+void UAREquipmentComponent::ServerUnEquipItem_Implementation(FARDragDropInfo ItemIn)
 {
 	UnEquipItem(ItemIn);
 }
-bool UAREquipmentComponent::ServerUnEquipItem_Validate(FInventorySlot ItemIn)
+bool UAREquipmentComponent::ServerUnEquipItem_Validate(FARDragDropInfo ItemIn)
 {
 	return true;
 }
 
-void UAREquipmentComponent::ServerChangeChestItem_Implementation(FInventorySlot ItemIn)
+void UAREquipmentComponent::ServerChangeChestItem_Implementation(FARDragDropInfo ItemIn)
 {
 	ChangeChestItem(ItemIn);
 }
-bool UAREquipmentComponent::ServerChangeChestItem_Validate(FInventorySlot ItemIn)
+bool UAREquipmentComponent::ServerChangeChestItem_Validate(FARDragDropInfo ItemIn)
 {
 	return true;
 }
-bool UAREquipmentComponent::ChangeChestItem(FInventorySlot ItemIn)
+bool UAREquipmentComponent::ChangeChestItem(FARDragDropInfo ItemIn)
 {
 	FStreamableManager& Loader = UARSingleton::Get().AssetLoader;
 	TArray<FStringAssetReference> ObjToLoad;
@@ -722,7 +716,7 @@ bool UAREquipmentComponent::ChangeChestItem(FInventorySlot ItemIn)
 	//to other players.
 	//and client
 	FString usless;
-	FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(ItemIn.ItemID, usless);
+	FARItemData* data = ChestItemDataTable->FindRow<FARItemData>(ItemIn.ItemKey, usless);
 
 	if (data)
 	{
@@ -741,7 +735,7 @@ bool UAREquipmentComponent::ChangeChestItem(FInventorySlot ItemIn)
 		AARArmor* itemBase = GetWorld()->SpawnActor<AARArmor>(gen->GeneratedClass, SpawnInfo);
 		itemBase->SetOwner(MyChar);
 		itemBase->Instigator = MyChar;
-		itemBase->ItemID = ItemIn.ItemID;
+		itemBase->ItemID = ItemIn.ItemKey;
 		itemBase->ItemSlotEquipped = ItemIn.ItemSlot;
 		if (itemBase)
 		{
@@ -849,9 +843,9 @@ void UAREquipmentComponent::SwapWeapon(int32 Hand)
 	{
 		if (Hand == 0)
 		{
-			for (FInventorySlot& weapon : LeftHandWeapons)
+			for (FARDragDropInfo& weapon : LeftHandWeapons)
 			{
-				if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveLeftHandWeaponStruct.ItemID)
+				if (!weapon.ItemKey.IsNone() && weapon.ItemKey != ActiveLeftHandWeaponStruct.ItemKey)
 				{
 					weapon.IsAttached = false;
 
@@ -864,9 +858,9 @@ void UAREquipmentComponent::SwapWeapon(int32 Hand)
 		}
 		else if (Hand == 1)
 		{
-			for (FInventorySlot& weapon : RightHandWeapons)
+			for (FARDragDropInfo& weapon : RightHandWeapons)
 			{
-				if (!weapon.ItemID.IsNone() && weapon.ItemID != ActiveRightHandWeaponStruct.ItemID)
+				if (!weapon.ItemKey.IsNone() && weapon.ItemKey != ActiveRightHandWeaponStruct.ItemKey)
 				{
 					ActiveRightHandWeaponStruct = weapon;
 					SetWeapon(ActiveRightHandWeaponStruct, ActiveRightHandWeapon, Hand);
@@ -884,7 +878,7 @@ bool UAREquipmentComponent::ServerSwapWeapon_Validate(int32 Hand)
 {
 	return true;
 }
-void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon, int32 Hand)
+void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* PrevWeapon, int32 Hand)
 {
 	if (Hand == 0)
 	{
@@ -908,8 +902,8 @@ void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* Pr
 			else
 				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 			
-			weaponBase->ItemName = Weapon.ItemID;
-			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->ItemName = Weapon.ItemKey;
+			weaponBase->ItemID = Weapon.ItemKey;
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
@@ -922,7 +916,7 @@ void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* Pr
 			//ActiveLeftHandWeapon->OnWeaponActive();
 			//OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
 			ActiveLeftHandWeapon->Initialize();
-			MulticastDetachWeaponSlotSwap(Weapon.ItemID, Hand);
+			MulticastDetachWeaponSlotSwap(Weapon.ItemKey, Hand);
 			SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 		}
 	}
@@ -948,8 +942,8 @@ void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* Pr
 			else
 				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 
-			weaponBase->ItemName = Weapon.ItemID;
-			weaponBase->ItemID = Weapon.ItemID;
+			weaponBase->ItemName = Weapon.ItemKey;
+			weaponBase->ItemID = Weapon.ItemKey;
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
@@ -963,7 +957,7 @@ void UAREquipmentComponent::SetWeapon(FInventorySlot Weapon, class AARWeapon* Pr
 			ActiveRightHandWeapon->Initialize();
 			//ActiveLeftHandWeapon->OnWeaponActive();
 			//OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
-			MulticastDetachWeaponSlotSwap(Weapon.ItemID, Hand);
+			MulticastDetachWeaponSlotSwap(Weapon.ItemKey, Hand);
 			SetAttachWeapon(ActiveRightHandWeapon, RightWeaponSocket);
 		}
 	}
@@ -988,7 +982,7 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 			{
 				//we don't want to move item back to inventory.
 				//we just need to reset pointer to weapon, and un attach mesh.
-				ActiveLeftHandWeaponStruct.ItemID = NAME_None;
+				ActiveLeftHandWeaponStruct.ItemKey = NAME_None;
 				ActiveLeftHandWeaponStruct.ItemIndex = INDEX_NONE;
 				ActiveLeftHandWeapon->SetActorHiddenInGame(true);
 				ActiveLeftHandWeapon = nullptr;
@@ -1000,7 +994,7 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 			{
 				//we don't want to move item back to inventory.
 				//we just need to reset pointer to weapon, and un attach mesh.
-				ActiveRightHandWeaponStruct.ItemID = NAME_None;
+				ActiveRightHandWeaponStruct.ItemKey = NAME_None;
 				ActiveRightHandWeaponStruct.ItemIndex = INDEX_NONE;
 				ActiveRightHandWeapon->SetActorHiddenInGame(true);
 				ActiveRightHandWeapon = nullptr;

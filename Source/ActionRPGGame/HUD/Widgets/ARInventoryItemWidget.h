@@ -25,10 +25,12 @@ public:
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARCharacter>, Character)
 
+		SLATE_ARGUMENT(TWeakObjectPtr<class AARItemPickup>, LootedObject)
+
 		/*
 			Information about current item slot in inventory.
 		*/
-		SLATE_ARGUMENT(TSharedPtr<FInventorySlot>, InventoryItem)
+		SLATE_ARGUMENT(TSharedPtr<FARDragDropInfo>, InventoryItem)
 
 		/*
 			Type of slot used by item in this inventory slot.
@@ -38,7 +40,7 @@ public:
 		/*
 			Slot to which item will be equiped. 
 		*/
-		SLATE_ARGUMENT(TEnumAsByte<EEquipmentSlot::Type>, EquipmentSlot)
+		//SLATE_ARGUMENT(TEnumAsByte<EEquipmentSlot::Type>, EquipmentSlot)
 		/*
 			To display something.
 		*/
@@ -73,10 +75,12 @@ public:
 	TWeakObjectPtr<class UAREquipmentComponent> Equipment;
 
 	TWeakObjectPtr<class AARCharacter> Character;
+
+	TWeakObjectPtr<class AARItemPickup> LootedObject;
 	/*
 		Information about current item slot in inventory.
 	*/
-	TSharedPtr<FInventorySlot> InventoryItem;
+	TSharedPtr<FARDragDropInfo> InventoryItem;
 
 	/*
 		Type of slot used by item in this inventory slot.
@@ -86,10 +90,9 @@ public:
 	/*
 		Slot to which item will be equiped.
 	*/
-	TEnumAsByte<EEquipmentSlot::Type> EquipmentSlot;
+	//TEnumAsByte<EEquipmentSlot::Type> EquipmentSlot;
 
 	FARItemInfo* ItemInThisSlot;
-	//TWeakPtr<FARItemInfo> ItemInThisSlot;
 	
 	FText SlotName;
 
@@ -114,12 +117,12 @@ public:
 	//FInventoryDragDrop()
 	//{}
 	
-	static TSharedRef<FInventoryDragDrop> New(TSharedPtr<FInventorySlot> PickedItemIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn);
+	static TSharedRef<FInventoryDragDrop> New(TSharedPtr<FARDragDropInfo> PickedItemIn, TSharedPtr<SARInventoryItemWidget> LastItemSlotIn);
 
 	virtual TSharedPtr<SWidget> GetDefaultDecorator() const override;
 
 	FARItemInfo* ItemInThisSlot;
-	TSharedPtr<FInventorySlot> PickedItem;
+	TSharedPtr<FARDragDropInfo> PickedItem;
 	TSharedPtr<SARInventoryItemWidget> LastItemSlot;
 
 private:

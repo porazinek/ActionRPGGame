@@ -28,7 +28,7 @@ void SARInventoryWidget::Construct(const FArguments& InArgs)
 		[
 			SNew(SBox)
 			[
-				SAssignNew(TileView, STileView<TSharedPtr<FInventorySlot>>)
+				SAssignNew(TileView, STileView<TSharedPtr<FARDragDropInfo>>)
 				.ListItemsSource(&ClonedInventory)
 				.OnGenerateTile(this, &SARInventoryWidget::MakeTileViewWidget)
 				.ItemHeight(64)
@@ -38,7 +38,7 @@ void SARInventoryWidget::Construct(const FArguments& InArgs)
 }
 
 
-TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 
 	if (AssetItem.IsValid())
@@ -51,14 +51,14 @@ TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FInvento
 				.PlayerController(PlayerController)
 				.Character(Character)
 				.SlotType(EItemSlot::Item_Inventory)//set inventory slot type to well inventory.
-				.EquipmentSlot(EEquipmentSlot::Item_Inventory)
+				//.EquipmentSlot(EEquipmentSlot::Item_Inventory)
 				.SlotName(FText::FromName("Inv"))
 				.Inventory(Inventory)
 				.Equipment(Character->Equipment.Get())
 			];
 		return ReturnRow;
 	}
-	TSharedPtr< STableRow<TSharedPtr<FARItemInfo>> > TableRowWidget;
+	TSharedPtr< STableRow<TSharedPtr<FARDragDropInfo>> > TableRowWidget;
 	return TableRowWidget.ToSharedRef();
 }
 
@@ -76,18 +76,6 @@ void SARInventoryWidget::Tick(const FGeometry& AllottedGeometry, const double In
 			Inventory->IsInventoryChanged = false;
 		}
 	}
-	//AARPlayerController* const pPlayerController = PlayerController.Get();
-	//if (pPlayerController)
-	//{
-	//	const AARCharacter* const pChar = Cast<AARCharacter>(pPlayerController->GetPawn());
-	//	//there is issue with replication and inventory updates!
-	//	if (pPlayerController->IsInventoryChanged)
-	//	{
-	//		SyncInventory();
-	//		TileView->RequestListRefresh();
-	//		pPlayerController->IsInventoryChanged = false;
-	//	}
-	//}
 }
 
 void SARInventoryWidget::SyncInventory()
@@ -96,9 +84,9 @@ void SARInventoryWidget::SyncInventory()
 	{
 		//ClonedInventory.Empty(pPlayerController->Inventory.Num());
 		ClonedInventory.Empty(Inventory->Inventory.Num());
-		for (const FInventorySlot& InventoryItem : Inventory->Inventory)
+		for (const FARDragDropInfo& InventoryItem : Inventory->Inventory)
 		{
-			ClonedInventory.Add(MakeShareable(new FInventorySlot(InventoryItem)));
+			ClonedInventory.Add(MakeShareable(new FARDragDropInfo(InventoryItem)));
 		}
 	}
 }

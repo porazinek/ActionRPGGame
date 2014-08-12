@@ -12,6 +12,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnAbilityEquiped, class AARAbility*, Ability);
 
+DECLARE_DELEGATE_OneParam(FOnItemPicked, class AARItemPickup*)
+
 UCLASS()
 class AARPlayerController : public APlayerController
 {
@@ -83,6 +85,9 @@ public:
 	void PickUpItem();
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPickUpItem();
+	UFUNCTION(Client, Reliable)
+		void ClientPickUpItem(class AARItemPickup* PickupItem);
+	FOnItemPicked OnItemPicked;
 
 
 	/* GUI Input **/

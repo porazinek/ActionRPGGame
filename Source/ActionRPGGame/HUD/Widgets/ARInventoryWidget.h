@@ -39,12 +39,10 @@ private:
 
 	TArray < TWeakObjectPtr<class UObject>> ItemsTest;
 
-	//TSharedPtr<STileView<TSharedPtr<FARItemInfo>>> TileView;
-	TSharedPtr<STileView<TSharedPtr<FInventorySlot>>> TileView;
-	//TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FARItemInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
-	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TSharedPtr<STileView<TSharedPtr<FARDragDropInfo>>> TileView;
+	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
 
-	TArray<TSharedPtr<FInventorySlot>> ClonedInventory;
+	TArray<TSharedPtr<FARDragDropInfo>> ClonedInventory;
 	//FString ItemDataAssetPath;
 
 	int32 InventoryColumns;

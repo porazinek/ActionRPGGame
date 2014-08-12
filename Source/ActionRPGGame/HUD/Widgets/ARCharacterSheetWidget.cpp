@@ -37,7 +37,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							.HeightOverride(52)
 							.WidthOverride(210)
 							[
-								SAssignNew(LeftWeapon, STileView<TSharedPtr<FInventorySlot>>)
+								SAssignNew(LeftWeapon, STileView<TSharedPtr<FARDragDropInfo>>)
 								.ListItemsSource(&LeftHandWeapons)
 								.OnGenerateTile(this, &SARCharacterSheetWidget::MakeLeftHandWeaponWidget)
 								.ItemHeight(50)
@@ -59,7 +59,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 							.HeightOverride(52)
 							.WidthOverride(210)
 							[
-								SAssignNew(RightWeapon, STileView<TSharedPtr<FInventorySlot>>)
+								SAssignNew(RightWeapon, STileView<TSharedPtr<FARDragDropInfo>>)
 								.ListItemsSource(&RightHandWeapons)
 								.OnGenerateTile(this, &SARCharacterSheetWidget::MakeRightHandWeaponWidget)
 								.ItemHeight(50)
@@ -88,7 +88,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 								[
 									SNew(SARInventoryItemWidget)
 									.SlotType(EItemSlot::Item_Head)
-									.EquipmentSlot(EEquipmentSlot::Item_Head)
+								//	.EquipmentSlot(EEquipmentSlot::Item_Head)
 									.PlayerController(MyPC)
 									.SlotName(FText::FromName("Head"))
 									.Equipment(Equipment)
@@ -117,7 +117,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 								[
 									SNew(SARInventoryItemWidget)
 									.SlotType(EItemSlot::Item_Shoulders)
-									.EquipmentSlot(EEquipmentSlot::Item_Shoulders)
+								//	.EquipmentSlot(EEquipmentSlot::Item_Shoulders)
 									.PlayerController(MyPC)
 									.SlotName(FText::FromName("Shoulders"))
 									.Equipment(Equipment)
@@ -146,7 +146,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 								[
 									SNew(SARInventoryItemWidget)
 									.SlotType(EItemSlot::Item_Hands)
-									.EquipmentSlot(EEquipmentSlot::Item_Hands)
+							//		.EquipmentSlot(EEquipmentSlot::Item_Hands)
 									.PlayerController(MyPC)
 									.SlotName(FText::FromName("Hands"))
 									.Equipment(Equipment)
@@ -175,7 +175,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 								[
 									SNew(SARInventoryItemWidget)
 									.SlotType(EItemSlot::Item_Chest)
-									.EquipmentSlot(EEquipmentSlot::Item_Chest)
+								//	.EquipmentSlot(EEquipmentSlot::Item_Chest)
 									.PlayerController(MyPC)
 									.SlotName(FText::FromName("Chest"))
 									.Equipment(Equipment)
@@ -204,7 +204,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 								[
 									SNew(SARInventoryItemWidget)
 									.SlotType(EItemSlot::Item_Legs)
-									.EquipmentSlot(EEquipmentSlot::Item_Legs)
+								//	.EquipmentSlot(EEquipmentSlot::Item_Legs)
 									.PlayerController(MyPC)
 									.SlotName(FText::FromName("Legs"))
 									.Equipment(Equipment)
@@ -233,7 +233,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 								[
 									SNew(SARInventoryItemWidget)
 									.SlotType(EItemSlot::Item_Foot)
-									.EquipmentSlot(EEquipmentSlot::Item_Foot)
+								//	.EquipmentSlot(EEquipmentSlot::Item_Foot)
 									.PlayerController(MyPC)
 									.SlotName(FText::FromName("Foot"))
 									.Equipment(Equipment)
@@ -263,7 +263,7 @@ void SARCharacterSheetWidget::Tick(const FGeometry& AllottedGeometry, const doub
 	}
 }
 
-TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	if (AssetItem.IsValid())
 	{
@@ -274,14 +274,14 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedP
 				.InventoryItem(AssetItem)
 				.PlayerController(MyPC)
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
-				.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
+		//		.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 				.SlotName(FText::FromName("LHand"))
 				.Inventory(MyPC->Inventory.Get())
 				.Equipment(Equipment)
 			];
 		return ReturnRow;
 	}
-	TSharedPtr< STableRow<TSharedPtr<FARItemInfo>> > TableRowWidget;
+	TSharedPtr< STableRow<TSharedPtr<FARDragDropInfo>> > TableRowWidget;
 	return TableRowWidget.ToSharedRef();
 }
 void SARCharacterSheetWidget::SyncLeftHandWeapons()
@@ -289,15 +289,15 @@ void SARCharacterSheetWidget::SyncLeftHandWeapons()
 	if (Equipment.IsValid())
 	{
 		LeftHandWeapons.Empty(Equipment->LeftHandWeapons.Num());
-		for (const FInventorySlot& InventoryItem : Equipment->LeftHandWeapons)
+		for (const FARDragDropInfo& InventoryItem : Equipment->LeftHandWeapons)
 		{
-			LeftHandWeapons.Add(MakeShareable(new FInventorySlot(InventoryItem)));
+			LeftHandWeapons.Add(MakeShareable(new FARDragDropInfo(InventoryItem)));
 		}
 	}
 }
 
 
-TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TSharedPtr<FInventorySlot> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 	if (AssetItem.IsValid())
 	{
@@ -308,14 +308,14 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TShared
 				.InventoryItem(AssetItem)
 				.PlayerController(MyPC)
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
-				.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
+			//	.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
 				.SlotName(FText::FromName("RHand"))
 				.Inventory(MyPC->Inventory.Get())
 				.Equipment(Equipment)
 			];
 		return ReturnRow;
 	}
-	TSharedPtr< STableRow<TSharedPtr<FARItemInfo>> > TableRowWidget;
+	TSharedPtr< STableRow<TSharedPtr<FARDragDropInfo>> > TableRowWidget;
 	return TableRowWidget.ToSharedRef();
 }
 void SARCharacterSheetWidget::SyncRightHandWeapons()
@@ -323,9 +323,9 @@ void SARCharacterSheetWidget::SyncRightHandWeapons()
 	if (Equipment.IsValid())
 	{
 		RightHandWeapons.Empty(Equipment->RightHandWeapons.Num());
-		for (const FInventorySlot& InventoryItem : Equipment->RightHandWeapons)
+		for (const FARDragDropInfo& InventoryItem : Equipment->RightHandWeapons)
 		{
-			RightHandWeapons.Add(MakeShareable(new FInventorySlot(InventoryItem)));
+			RightHandWeapons.Add(MakeShareable(new FARDragDropInfo(InventoryItem)));
 		}
 	}
 }

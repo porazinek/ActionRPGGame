@@ -34,12 +34,12 @@ void UARInventoryComponent::InitializeComponent()
 	Inventory.Reserve(MaxInventorySize);
 	for (int32 CurrentSlot = 0; CurrentSlot < InitialInventorySize; CurrentSlot++)
 	{
-		FInventorySlot Slot;
-		Slot.SlotID = CurrentSlot;
-		Slot.ItemID = NAME_None;
+		FARDragDropInfo Slot;
+		Slot.SlotIndex = CurrentSlot;
+		Slot.ItemKey = NAME_None;
 		Slot.ItemIndex = INDEX_NONE;
 		Slot.ItemSlot = EItemSlot::Item_Inventory;
-		Slot.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
+		Slot.DragDropSlot = EDragDropSlot::Inventory;
 		Inventory.Add(Slot);
 	}
 	IsInventoryChanged = true;
@@ -56,18 +56,18 @@ void UARInventoryComponent::OnRep_InventoryChanged()
 }
 
 
-void UARInventoryComponent::AddPickItemToInventory(FInventorySlot Item)
+void UARInventoryComponent::AddPickItemToInventory(FARDragDropInfo Item)
 {
 	if (Inventory.Num() <= MaxInventorySize)
 	{
-		for (FInventorySlot& item : Inventory)
+		for (FARDragDropInfo& item : Inventory)
 		{
-			if (item.ItemID.IsNone())
+			if (item.ItemKey.IsNone())
 			{
-				item.ItemID = Item.ItemID;
+				item.ItemKey = Item.ItemKey;
 				item.ItemSlot = Item.ItemSlot;
 				item.ItemIndex = Item.ItemIndex;
-				item.EEquipmentSlot = Item.EEquipmentSlot;
+				item.DragDropSlot = Item.DragDropSlot;
 				PossesedItems.Add(item);
 				ClientSetInventoryChanged();
 				return;
@@ -78,7 +78,7 @@ void UARInventoryComponent::AddPickItemToInventory(FInventorySlot Item)
 /*
 	this should NEVER be called from client. EVER!.
 */
-void UARInventoryComponent::AddItemToInventory(FInventorySlot Item)
+void UARInventoryComponent::AddItemToInventory(FARDragDropInfo Item)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -89,14 +89,13 @@ void UARInventoryComponent::AddItemToInventory(FInventorySlot Item)
 	{
 		if (Inventory.Num() <= MaxInventorySize)
 		{
-			for (FInventorySlot& item : Inventory)
+			for (FARDragDropInfo& item : Inventory)
 			{
-				if (item.ItemID.IsNone())
+				if (item.ItemKey.IsNone())
 				{
-					item.ItemID = Item.ItemID;
+					item.ItemKey = Item.ItemKey;
 					item.ItemSlot = Item.ItemSlot;
 					item.ItemIndex = Item.ItemIndex;
-					item.EEquipmentSlot = Item.EEquipmentSlot;
 					PossesedItems.Add(item);
 					ClientSetInventoryChanged();
 					//ClientSetInventoryChanged();
@@ -112,16 +111,16 @@ void UARInventoryComponent::ClientSetInventoryChanged_Implementation()
 	IsInventoryChanged = true;
 }
 
-void UARInventoryComponent::ServerAddItemToInventory_Implementation(FInventorySlot Item)
+void UARInventoryComponent::ServerAddItemToInventory_Implementation(FARDragDropInfo Item)
 {
 	AddItemToInventory(Item);
 }
-bool UARInventoryComponent::ServerAddItemToInventory_Validate(FInventorySlot Item)
+bool UARInventoryComponent::ServerAddItemToInventory_Validate(FARDragDropInfo Item)
 {
 	return true;
 }
 
-void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 SlotID)
+void UARInventoryComponent::AddItemToInventoryOnSlot(FARDragDropInfo Item, int32 SlotID)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -131,23 +130,22 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 	{
 		if (Inventory.Num() <= MaxInventorySize)
 		{
-			for (FInventorySlot& item : Inventory)
-			{
-				if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			for (FARDragDropInfo& item : Inventory)
+			{//can be optimized by using indexes directly
+				if (item.SlotIndex == SlotID && item.ItemKey != NAME_None)
 				{
-					FInventorySlot oldItemTemp = item;
-					item.ItemID = Item.ItemID;
+					FARDragDropInfo oldItemTemp = item;
+					item.ItemKey = Item.ItemKey;
 					item.ItemSlot = Item.ItemSlot;
 					item.ItemIndex = Item.ItemIndex;
-					item.EEquipmentSlot = Item.EEquipmentSlot;
-					for (FInventorySlot& oldItem : Inventory)
+					item.DragDropSlot == EDragDropSlot::Inventory;
+					for (FARDragDropInfo& oldItem : Inventory)
 					{
-						if (Item.SlotID == oldItem.SlotID)
+						if (Item.SlotIndex == oldItem.SlotIndex)
 						{
-							oldItem.ItemID = oldItemTemp.ItemID;
+							oldItem.ItemKey = oldItemTemp.ItemKey;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.ItemIndex = oldItemTemp.ItemIndex;
-							oldItem.EEquipmentSlot = oldItemTemp.EEquipmentSlot;
 							IsInventoryChanged = true;
 							ClientSetInventoryChanged();
 							return;
@@ -157,16 +155,18 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 					ClientSetInventoryChanged();
 					return;
 				}
-				if (item.ItemID == NAME_None && item.SlotID == SlotID)
+				if (item.ItemKey == NAME_None && item.SlotIndex == SlotID)
 				{
-					item.ItemID = Item.ItemID;
+					item.ItemKey = Item.ItemKey;
 					item.ItemSlot = Item.ItemSlot;
 					item.ItemIndex = Item.ItemIndex;
-					item.EEquipmentSlot = Item.EEquipmentSlot;
+					item.DragDropSlot == EDragDropSlot::Inventory;
 
-					if (Item.EEquipmentSlot == EEquipmentSlot::Item_Inventory)
-						RemoveItemFromInventory(Item.ItemID, Item.OldSlotID);
+					if (Item.DragDropSlot == EDragDropSlot::Inventory)
+						RemoveItemFromInventory(Item.ItemKey, Item.OldSlotIndex);
 					
+
+
 					IsInventoryChanged = true;
 					ClientSetInventoryChanged();
 					return;
@@ -175,11 +175,11 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FInventorySlot Item, int32 
 		}
 	}
 }
-void UARInventoryComponent::ServerAddItemToInventoryOnSlot_Implementation(FInventorySlot Item, int32 SlotID)
+void UARInventoryComponent::ServerAddItemToInventoryOnSlot_Implementation(FARDragDropInfo Item, int32 SlotID)
 {
 	AddItemToInventoryOnSlot(Item, SlotID);
 }
-bool UARInventoryComponent::ServerAddItemToInventoryOnSlot_Validate(FInventorySlot Item, int32 SlotID)
+bool UARInventoryComponent::ServerAddItemToInventoryOnSlot_Validate(FARDragDropInfo Item, int32 SlotID)
 {
 	int32 ItemCount = PossesedItems.Num();
 	int32 CurrentIndex = 0;
@@ -187,18 +187,15 @@ bool UARInventoryComponent::ServerAddItemToInventoryOnSlot_Validate(FInventorySl
 	Since it is used to swap items, we check it user have particular item in inventory.
 	If he dosn't then he probably is trying to cheat.
 	*/
-	for (FInventorySlot& item : PossesedItems)
+	for (FARDragDropInfo& item : PossesedItems)
 	{
 		//check if incoming item, is indeed in possesion of player.
 		if (Item.ItemIndex == item.ItemIndex)
-		{
+		{ 
+			if (Item.OldSlotIndex == INDEX_NONE)
+				return false;
 			return true;
 		}
-		//
-		//if (CurrentIndex == ItemCount)
-		//{
-		//	
-		//}
 	}
 
 
@@ -213,17 +210,17 @@ bool UARInventoryComponent::RemoveItemFromInventory(FName ItemID, int32 SlotID)
 	}
 	else
 	{
-		for (FInventorySlot& item : Inventory)
+		for (FARDragDropInfo& item : Inventory)
 		{
-			if (item.SlotID == SlotID && item.ItemID != NAME_None)
+			if (item.SlotIndex == SlotID && item.ItemKey != NAME_None)
 			{
 				//we don't remove actually anything from array.
 				//just change ID and slot types, to match an "empty" slot 
 				// in inventory.
-				item.ItemID = NAME_None;
+				item.ItemKey = NAME_None;
 				item.ItemIndex = INDEX_NONE;
 				item.ItemSlot = EItemSlot::Item_Inventory;
-				item.EEquipmentSlot = EEquipmentSlot::Item_Inventory;
+				item.DragDropSlot = EDragDropSlot::Inventory;
 				IsInventoryChanged = true;
 				ClientSetInventoryChanged();
 				return true;
@@ -238,9 +235,9 @@ void UARInventoryComponent::ServerRemoveItemFromInventory_Implementation(FName I
 }
 bool UARInventoryComponent::ServerRemoveItemFromInventory_Validate(FName ItemID, int32 SlotID)
 {
-	for (FInventorySlot& item : PossesedItems)
+	for (FARDragDropInfo& item : PossesedItems)
 	{
-		if (ItemID == item.ItemID)
+		if (ItemID == item.ItemKey)
 		{
 			return true;
 		}

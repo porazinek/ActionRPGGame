@@ -70,9 +70,33 @@ namespace EEquipmentSlot
 		Item_RightHandOne,
 		Item_RightHandActive,
 		Item_Inventory,
+		Item_LootWindow,
 		Item_MAX
 	};
 }
+//UENUM(BlueprintType)
+//namespace EDragDropSlot
+//{
+	UENUM(BlueprintType)
+	enum EDragDropSlot
+	{
+		Inventory,
+		LootWindow,
+		Head,
+		Shoulders,
+		Chest,
+		Hands,
+		Legs,
+		Foot,
+		LeftHand,
+		LeftHandActive,
+		RightHand,
+		RightHandActive,
+		
+
+		DROP__MAX
+	};
+//}
 
 UENUM(BlueprintType)
 enum EAttachmentType

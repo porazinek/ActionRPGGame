@@ -9,6 +9,8 @@
 
 DECLARE_DELEGATE_RetVal(float, FOnGetFloat);
 
+
+
 //it probably will be better to store these informations in DataTable
 //or in database. For much faster lookups.
 //and the best option possible would be to create hard references at global level
@@ -416,3 +418,67 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Socket")
 		UAnimMontage* EquipMontage;
 };
+
+
+
+USTRUCT(BlueprintType)
+struct FARDragDropInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY()
+		int8 SlotIndex;
+	UPROPERTY()
+		int8 OldSlotIndex;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+		FName ItemKey;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+		int32 ItemIndex;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+		bool IsAttached;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+		TEnumAsByte<EItemSlot> ItemSlot; //to check which datasset we should query.
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+		TEnumAsByte<EDragDropSlot> DragDropSlot;
+
+	inline bool operator!= (const FARDragDropInfo& Other) const
+	{
+		return ItemKey != Other.ItemKey;
+	};
+
+	inline FARDragDropInfo& operator=(const FARDragDropInfo& Other)
+	{
+		if (*this != Other)
+		{
+			SlotIndex = Other.SlotIndex;
+			OldSlotIndex = Other.OldSlotIndex;
+			ItemIndex = Other.ItemIndex;
+			ItemKey = Other.ItemKey;
+			ItemSlot = Other.ItemSlot;
+			DragDropSlot = Other.DragDropSlot;
+		}
+		return *this;
+	};
+
+	inline bool operator==(const FARDragDropInfo& Other) const
+	{
+		return ItemKey == Other.ItemKey;
+	};
+
+	FARDragDropInfo()
+		: SlotIndex(INDEX_NONE)
+		, OldSlotIndex(INDEX_NONE)
+		, ItemKey(NAME_None)
+		, ItemIndex(INDEX_NONE)
+		, IsAttached(false)
+		, ItemSlot(EItemSlot::Item_MAX)
+		, DragDropSlot(EDragDropSlot::DROP__MAX)
+	{}
+};
+
+//DELCARE_DELEGATE_RetVal(TArray<FInventorySlot>, FOnGetLootableItems);

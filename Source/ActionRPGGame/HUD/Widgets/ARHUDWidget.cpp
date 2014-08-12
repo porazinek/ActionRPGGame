@@ -21,6 +21,8 @@
 #include "ARResourceWidget.h"
 #include "ARTargetInfoWidget.h"
 
+#include "ARLootingWidget.h"
+
 #include "ARHUDWidget.h"
 
 
@@ -161,6 +163,27 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							SNew(SARAbilityInventoryWidget)
 							.OwnerHUD(OwnerHUD)
 							.MyPC(MyPC)
+						]
+					]
+				]
+			+ SOverlay::Slot()
+				.HAlign(HAlign_Right)
+				.VAlign(VAlign_Top)
+				.Padding(FMargin(600, 0, 0, 0))
+				[
+					SNew(SBorder) //add visibility check
+					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+				//	.Visibility(this, &SARHUDWidget::GetAbilityInventoryVisibility)
+					[
+						SNew(SBox)
+						.HeightOverride(400)
+						.WidthOverride(400)
+						[
+							SNew(SARLootingWidget)
+							.MyPC(MyPC)
+							.Character(MyChar)
+							.Equipment(MyChar->Equipment.Get())
+							.Inventory(MyPC->Inventory.Get())
 						]
 					]
 				]

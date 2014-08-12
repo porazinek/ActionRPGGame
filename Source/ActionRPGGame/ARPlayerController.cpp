@@ -55,28 +55,6 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 		PlayerCameraManager->ViewPitchMax = 70.0f;
 	}
 
-	//initialize slots for left hand weapon.
-	//for (int32 i = 0; i < 4; i++)
-	//{
-	//	FInventorySlot in;
-	//	in.ItemID = NAME_None;
-	//	in.SlotID = i;
-	//	in.EEquipmentSlot = EEquipmentSlot::Item_LeftHandOne;
-	//	in.ItemSlot = EItemSlot::Item_Weapon;
-	//	LeftHandWeapons.Add(in);
-	//}
-	//LeftHandWeaponsUpdated = false;
-
-	//for (int32 i = 0; i < 4; i++)
-	//{
-	//	FInventorySlot in;
-	//	in.ItemID = NAME_None;
-	//	in.SlotID = i;
-	//	in.EEquipmentSlot = EEquipmentSlot::Item_RightHandOne;
-	//	in.ItemSlot = EItemSlot::Item_Weapon;
-	//	RightHandWeapons.Add(in);
-	//}
-	//RightHandWeaponsUpdated = false;
 
 	PlayerCameraManagerClass = AARPlayerCameraManager::StaticClass();
 
@@ -133,17 +111,17 @@ void AARPlayerController::PostInitializeComponents()
 
 void AARPlayerController::InputTempAddWeapons()
 {
-	FInventorySlot wep1;
+	FARDragDropInfo wep1;
 	FItemEntry item1 = TestItems->GetItemFromArray(0);
-	wep1.ItemID = item1.Key;
+	wep1.ItemKey = item1.Key;
 	wep1.ItemSlot = EItemSlot::Item_Weapon;
 	wep1.ItemIndex = 0;
 	Inventory->AddItemToInventory(wep1);
 
 	FItemEntry item2 = TestItems->GetItemFromArray(1);
-	FInventorySlot wep2;
+	FARDragDropInfo wep2;
 	wep2.ItemIndex = 1;
-	wep2.ItemID = item2.Key;
+	wep2.ItemKey = item2.Key;
 	wep2.ItemSlot = EItemSlot::Item_Weapon;
 	Inventory->AddItemToInventory(wep2);
 
@@ -294,9 +272,16 @@ void AARPlayerController::PickUpItem()
 		if (pickup)
 		{
 			pickup->GiveAllItemsTo(this);
+			ClientPickUpItem(pickup);
+			//OnItemPicked.ExecuteIfBound(pickup);
 		}
 	}
 }
+void AARPlayerController::ClientPickUpItem_Implementation(class AARItemPickup* PickupItem)
+{
+	OnItemPicked.ExecuteIfBound(PickupItem);
+}
+
 void AARPlayerController::ServerPickUpItem_Implementation()
 {
 	PickUpItem();

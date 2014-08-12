@@ -57,7 +57,7 @@ public:
 	TArray<FARAttachmentSocket> WeaponSockets;
 
 	UPROPERTY(ReplicatedUsing=OnRep_LeftHandWeapons) //not sure but I think we shouldn't really replicate this back.
-		TArray<FInventorySlot> LeftHandWeapons;
+		TArray<FARDragDropInfo> LeftHandWeapons;
 	/*
 		List of equiped weapons. They are not active but can be quickly switched.
 	*/
@@ -66,10 +66,10 @@ public:
 	/*
 		Change it to NetMulticast and push it directly without Repnotify ?
 	*/
-	void AttacheSheathedWeapon(TArray<FInventorySlot> WeaponsIn, TArray<FARAttachmentSocket> WeaponSocketsIn, int32 HandIn);
+	void AttacheSheathedWeapon(TArray<FARDragDropInfo> WeaponsIn, TArray<FARAttachmentSocket> WeaponSocketsIn, int32 HandIn);
 	
 	UFUNCTION(NetMulticast, Reliable)
-		void MulticastAttacheSheathedWeapon(FInventorySlot WeaponsIn, int32 HandIn);
+		void MulticastAttacheSheathedWeapon(FARDragDropInfo WeaponsIn, int32 HandIn);
 	UFUNCTION(NetMulticast, Reliable)
 		void AttachSheathhWeaponOnSwap(class AARWeapon* LastWeapon, const TArray<FARAttachmentSocket>& WeaponSocketsIn, int32 HandIn);
 	UFUNCTION(NetMulticast, Reliable)
@@ -77,9 +77,9 @@ public:
 	
 	void DetachSheathedWeapon(class AARWeapon* WeaponToDetach);
 	
-	void AddWeapon(FInventorySlot Weapon, int32 SlotID, int32 Hand);
+	void AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int32 Hand);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddWeapon(FInventorySlot Weapon, int32 SlotID, int32 Hand);
+		void ServerAddWeapon(FARDragDropInfo Weapon, int32 SlotID, int32 Hand);
 
 	bool RemoveWeapon(FName Weapon, int32 SlotID, int32 Hand);
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -93,7 +93,7 @@ public:
 	bool LeftHandWeaponsUpdated;
 
 	UPROPERTY(ReplicatedUsing = OnRep_RightHandWeapons)
-		TArray<FInventorySlot> RightHandWeapons;
+		TArray<FARDragDropInfo> RightHandWeapons;
 	UFUNCTION()
 		void OnRep_RightHandWeapons();
 	/*
@@ -122,7 +122,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerSwapWeapon(int32 Hand);
 
-	void SetWeapon(FInventorySlot Weapon, class AARWeapon* PrevWeapon, int32 Hand);
+	void SetWeapon(FARDragDropInfo Weapon, class AARWeapon* PrevWeapon, int32 Hand);
 	void UnEquipWeapon(FName ItemID, int32 Hand);
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerUnEquipWeapon(FName ItemID, int32 Hand);
@@ -140,7 +140,7 @@ public:
 		Helper struct, to retrieve information form data table.
 	*/
 	UPROPERTY()
-		FInventorySlot ActiveLeftHandWeaponStruct;
+		FARDragDropInfo ActiveLeftHandWeaponStruct;
 
 	/*
 		Socket to which left hand weapon will be attached.
@@ -154,7 +154,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_ActiveRightHandWeapon, Category="Active Weapons")
 	class AARWeapon* ActiveRightHandWeapon;
 	UPROPERTY()
-		FInventorySlot ActiveRightHandWeaponStruct;
+		FARDragDropInfo ActiveRightHandWeaponStruct;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FName RightWeaponSocket;
 	UFUNCTION()
@@ -172,24 +172,24 @@ public:
 
 	/**[Server] - central function to change item */
 	UFUNCTION(BlueprintCallable, Category = "Equipment")
-		void ChangeItem(FInventorySlot ItemIn, int32 OldItemSlotID);
+		void ChangeItem(FARDragDropInfo ItemIn, int32 OldItemSlotID);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerChangeItem(FInventorySlot ItemIn, int32 OldItemSlotID);
+		void ServerChangeItem(FARDragDropInfo ItemIn, int32 OldItemSlotID);
 
-	void UnEquipItem(FInventorySlot ItemIn);
+	void UnEquipItem(FARDragDropInfo ItemIn);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerUnEquipItem(FInventorySlot ItemIn);
+		void ServerUnEquipItem(FARDragDropInfo ItemIn);
 
 	UPROPERTY(ReplicatedUsing = OnRep_ChestItem)
-		FInventorySlot ChestItem;
+		FARDragDropInfo ChestItem;
 
 	UFUNCTION()
 		void OnRep_ChestItem();
 	void SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet);
 
-	bool ChangeChestItem(FInventorySlot ItemIn);
+	bool ChangeChestItem(FARDragDropInfo ItemIn);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerChangeChestItem(FInventorySlot ItemIn);
+		void ServerChangeChestItem(FARDragDropInfo ItemIn);
 
 	void DoAsyncChestChange();
 	FStringAssetReference ChestMeshToLoad;

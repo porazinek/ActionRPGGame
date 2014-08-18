@@ -131,6 +131,30 @@ public:
 	virtual bool IsOfType(int32 InID) const { return FARLineBoxDamageEvent::ClassID == InID; };
 };
 
+
+USTRUCT(BlueprintType)
+struct FARHealEvent
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
+		FAttribute Attribute;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Damage")
+		FGameplayTagContainer HealTag;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	struct FHitResult HitInfo;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+		bool IsComboFinisher;
+
+	static const int32 ClassID = 0;
+
+	virtual int32 GetTypeID() const { return FARDamageEvent::ClassID; }
+	virtual bool IsOfType(int32 InID) const { return FARDamageEvent::ClassID == InID; };
+};
+
 USTRUCT(BlueprintType)
 struct FAttributeChanged
 {

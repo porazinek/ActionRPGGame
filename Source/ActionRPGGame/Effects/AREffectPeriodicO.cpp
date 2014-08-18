@@ -2,6 +2,9 @@
 
 #include "ActionRPGGame.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
+
+#include "../ActionState/ARActionStateComponent.h"
+
 #include "Net/UnrealNetwork.h"
 #include "AREffectPeriodicO.h"
 
@@ -9,6 +12,7 @@ UAREffectPeriodicO::UAREffectPeriodicO(const class FPostConstructInitializePrope
 	: Super(PCIP)
 {
 	ReplicationTest = true;
+
 }
 void UAREffectPeriodicO::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {

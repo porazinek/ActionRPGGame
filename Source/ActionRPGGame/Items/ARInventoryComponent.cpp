@@ -38,6 +38,7 @@ void UARInventoryComponent::InitializeComponent()
 		Slot.SlotIndex = CurrentSlot;
 		Slot.ItemKey = NAME_None;
 		Slot.ItemIndex = INDEX_NONE;
+		Slot.SlotName = "Inv";
 		Slot.ItemSlot = EItemSlot::Item_Inventory;
 		Slot.DragDropSlot = EDragDropSlot::Inventory;
 		Inventory.Add(Slot);
@@ -141,7 +142,7 @@ void UARInventoryComponent::AddItemToInventoryOnSlot(FARDragDropInfo Item, int32
 					item.DragDropSlot == EDragDropSlot::Inventory;
 					for (FARDragDropInfo& oldItem : Inventory)
 					{
-						if (Item.SlotIndex == oldItem.SlotIndex)
+						if (Item.OldSlotIndex == oldItem.SlotIndex)
 						{
 							oldItem.ItemKey = oldItemTemp.ItemKey;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;

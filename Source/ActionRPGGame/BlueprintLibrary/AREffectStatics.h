@@ -12,7 +12,7 @@ class UAREffectStatics : public UBlueprintFunctionLibrary
 	GENERATED_UCLASS_BODY()
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
-		static void ApplyEffect(TSubclassOf<class UAREffectType> EffectIn, AActor* EffectCauser, AActor* EffectTarget, const FAttribute& AttributeIn, FAttribute& AttributeOut);
+		static void ApplyEffect(TSubclassOf<class UAREffect> EffectIn, AActor* EffectCauser, AActor* EffectTarget);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Static")
 		static void ApplyInstantEffect(TSubclassOf<class UAREffectType> EffectIn);
@@ -27,6 +27,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "AR|Damage Static")
 		static void ChangeAttribute(AActor* Target, AActor* CausedBy, float ModVal, FName AttributeName, TEnumAsByte<EAttrOp> OpType);
+
 
 	/*
 		Ahem. I want to add seprate Heal Damage functionality. which means:
@@ -89,6 +90,16 @@ public:
 
 	UFUNCTION()
 		static void StopTimer(AActor* Causer, int32 HandleIn);
+
+	/*
+		Attribute modification helpers.
+	*/
+
+	/*
+		Drains Attribute. Decrease Target Attribute and increase attribute on Causer.
+	*/
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Action RPG|Damage")
+		static void DrainAttribute(FName TargetAttribute, float TargetMod, FName CauserAttribute, float CauserMod, AActor* Target, AActor* Causer);
 };
 
 

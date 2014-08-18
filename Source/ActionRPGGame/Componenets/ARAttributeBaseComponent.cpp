@@ -29,8 +29,6 @@ UARAttributeBaseComponent::UARAttributeBaseComponent(const class FPostConstructI
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 	PrimaryComponentTick.bAllowTickOnDedicatedServer = true;
-	OnIncomingDamage.AddDynamic(this, &UARAttributeBaseComponent::SetAttributeForMod);
-	OnOutgoingDamage.AddDynamic(this, &UARAttributeBaseComponent::SetAttributeForMod);
 }
 
 void UARAttributeBaseComponent::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
@@ -269,14 +267,6 @@ void UARAttributeBaseComponent::SetIntValue(int32 InValue, FName AttributeName)
 
 }
 
-void UARAttributeBaseComponent::SetAttributeForMod(const FGameplayTagContainer& DamageTags, const FAttribute& Attribute)
-{
-	CachedAttribute = Attribute;
-}
-void UARAttributeBaseComponent::SetFinalDmage(const FAttribute& AttributeIn)
-{
-	CachedAttribute = AttributeIn;
-}
 //this could be split into multiple functions actially.
 //maybe that would not be OOP, but could be cleaner and do not invovlve casting.
 /*
@@ -289,10 +279,11 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 	if (attrChar)
 	{
 		/*
-			Fire even on Instigator, to set incoming base Damage to CachedAttribute on instigator.
+			Fire even on Instigator, to set incoming base Damage to DamageValueCached on instigator.
 			Then any effects on instigator might modify it.
 		*/
-		attrChar->OnOutgoingDamage.Broadcast(DamageEvent.DamageTag, DamageEvent.Attribute);
+		attrChar->DamageValueCached = DamageEvent.Attribute;
+		attrChar->OnOutgoingDamage.Broadcast(DamageEvent.DamageTag, DamageEvent.Attribute, attrChar);
 	}
 	
 	/*
@@ -342,20 +333,22 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 
 	Then any mods on target should appiled.
 	*/
-	FAttribute attrOut;
+
 	/*
 		Copy modified damage from Instigator to our local variable.
 	*/
-	attrOut = attrChar->CachedAttribute;
+	DamageValueCached = attrChar->DamageValueCached;
 
 	/*
 		Give chance to local effects to modify any incoming damage on this actor.
 	*/
-	OnIncomingDamage.Broadcast(DamageEvent.DamageTag, attrOut);
+	OnIncomingDamage.Broadcast(DamageEvent.DamageTag, DamageValueCached, this);
+
+	// Normal single target Damage.
 	if (DamageEvent.IsOfType(FARDamageEvent::ClassID))
 	{
 		//and finally we apply it.
-		SetFloatValue(AttributeOp(CachedAttribute.ModValue, GetFloatValue(CachedAttribute.AttributeName), CachedAttribute.OperationType), CachedAttribute.AttributeName);
+		SetFloatValue(AttributeOp(DamageValueCached.ModValue, GetFloatValue(DamageValueCached.AttributeName), DamageValueCached.OperationType), DamageValueCached.AttributeName);
 
 		//SetFloatValue(AttributeOp(DamageEvent.Attribute.ModValue, GetFloatValue(DamageEvent.Attribute.AttributeName), DamageEvent.Attribute.OperationType), DamageEvent.Attribute.AttributeName);
 		UDamageType* Damage = nullptr;
@@ -371,7 +364,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 			3. Split Damage Info (hit location, radius, damage type) from what was damaged.
 		*/
 
-		//SetAttributeChange(CachedAttribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+		//SetAttributeChange(DamageValueCached, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
 		//handle death.
 		IIAttribute* attrInt = InterfaceCast<IIAttribute>(GetOwner());
 		if (attrInt)
@@ -391,20 +384,11 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		if (attrChar)
 		{
 			SetDamageReplication(attrChar);
-			//attrChar->InstigatorAttributeDamageCaused(CachedAttribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
-			//attrChar->UIDamage.Value = CachedAttribute.ModValue;
-			//attrChar->UIDamage.Location = GetOwner()->GetActorLocation();
-			//attrChar->OnInstigatorDamage.Broadcast();
-
-			//AARHUD* hud = Cast<AARHUD>(attrChar->PlayerController->GetHUD());
-			//if (hud)
-			//{
-			//	hud->PawnDamaged(attrChar->UIDamage.Location, CachedAttribute.ModValue, UDamageType::StaticClass());
-			//}
 		}
 		
 		OnAttributeDamage.Broadcast(ChangedAttribute, DamageEvent.DamageTag);
 	}
+	//Point Damage. I'm not sure if I even need this.
 	else if (DamageEvent.IsOfType(FARPointDamageEvent::ClassID))
 	{
 		FARPointDamageEvent* const Point = (FARPointDamageEvent*)&DamageEvent;
@@ -440,6 +424,7 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		OnAttributeDamage.Broadcast(ChangedAttribute, Point->DamageTag);
 		OnPointAttributeDamage.Broadcast(Point->Attribute, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
 	}
+	//Radial Damage.
 	else if (DamageEvent.IsOfType(FARRadialDamageEvent::ClassID))
 	{
 		FARRadialDamageEvent* const Point = (FARRadialDamageEvent*)&DamageEvent;
@@ -476,22 +461,66 @@ void UARAttributeBaseComponent::DamageAttribute(FARDamageEvent const& DamageEven
 		
 		//OnPointAttributeDamage.Broadcast(Point->Attribute, EventInstigator, Point->HitInfo.ImpactPoint, Point->HitInfo.Component.Get(), Point->HitInfo.BoneName, Point->ShotDirection, Damage, DamageCauser);
 	}
+	//Add:
+	//1. Square Ddamage (essentially aoe, but can be narrow like recangle or actually square). (in line).
 }
-void UARAttributeBaseComponent::HealAttribute()
+void UARAttributeBaseComponent::HealAttribute(FARHealEvent const& HealEvent, AActor* EventInstigator, AActor* DamageCauser)
 {
+	UARAttributeBaseComponent* attrChar = EventInstigator->FindComponentByClass<UARAttributeBaseComponent>();
+	if (attrChar)
+	{
+		/*
+		Fire even on Instigator, to set incoming base Damage to DamageValueCached on instigator.
+		Then any effects on instigator might modify it.
+		*/
+		attrChar->HealValueCached = HealEvent.Attribute;
+		attrChar->OnOutgoingHeal.Broadcast(HealEvent.HealTag, HealEvent.Attribute, attrChar);
+	}
 
+	/*
+		Copy modified damage from Instigator to our local variable.
+	*/
+	HealValueCached = attrChar->HealValueCached;
+
+	/*
+		Give chance to local effects to modify any incoming damage on this actor.
+	*/
+	OnIncomingHeal.Broadcast(HealEvent.HealTag, HealValueCached, this);
+
+	// Normal single target Damage.
+	if (HealEvent.IsOfType(FARHealEvent::ClassID))
+	{
+		//and finally we apply it.
+		SetFloatValue(AttributeOp(DamageValueCached.ModValue, GetFloatValue(DamageValueCached.AttributeName), EAttrOp::Attr_Add), DamageValueCached.AttributeName);
+
+		//SetFloatValue(AttributeOp(DamageEvent.Attribute.ModValue, GetFloatValue(DamageEvent.Attribute.AttributeName), DamageEvent.Attribute.OperationType), DamageEvent.Attribute.AttributeName);
+		/*
+		TODO!!!
+		Part about setting up damage events and data is in need of serious rework!
+		1. Better organize what data is send.
+		2. Add more specialized function for Radial Damage
+		3. Split Damage Info (hit location, radius, damage type) from what was damaged.
+		*/
+
+		if (attrChar)
+		{
+
+		}
+
+	//	OnAttributeDamage.Broadcast(ChangedAttribute, DamageEvent.DamageTag);
+	}
 }
 
 void UARAttributeBaseComponent::SetDamageReplication(UARAttributeBaseComponent* Comp)
 {
-	//Comp->InstigatorAttributeDamageCaused(CachedAttribute, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
+	//Comp->InstigatorAttributeDamageCaused(DamageValueCached, DamageEvent.HitInfo.Location, GetOwner(), DamageCauser, EventInstigator, Damage, DamageEvent.DamageTag);
 	//Set for display on Instigator UI.
-	Comp->UIDamage.Value = CachedAttribute.ModValue;
+	Comp->UIDamage.Value = DamageValueCached.ModValue;
 	Comp->UIDamage.Location = GetOwner()->GetActorLocation();
 	Comp->UIDamage.Location += FVector(FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2));
 	Comp->UIDamage.DamageInstigator = Comp->GetOwner();
 
-	Comp->PlayerController->UIDamage.Value = CachedAttribute.ModValue;
+	Comp->PlayerController->UIDamage.Value = DamageValueCached.ModValue;
 	Comp->PlayerController->UIDamage.Location = GetOwner()->GetActorLocation();
 	Comp->PlayerController->UIDamage.Location += FVector(FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2));
 	Comp->PlayerController->UIDamage.DamageInstigator = Comp->GetOwner();
@@ -499,7 +528,7 @@ void UARAttributeBaseComponent::SetDamageReplication(UARAttributeBaseComponent* 
 	//Comp->PlayerController->UIDamage
 
 	//we also might want to display on target UI.
-	UIDamage.Value = CachedAttribute.ModValue;
+	UIDamage.Value = DamageValueCached.ModValue;
 	UIDamage.Location = GetOwner()->GetActorLocation();
 
 	UIDamage.Location += FVector(FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2), FMath::FRandRange(-2, 2));

@@ -28,6 +28,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 		TSubobjectPtr<class UARInventoryComponent> Inventory;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
+		TSubobjectPtr<class UARAbilityComponent> Abilities;
+
 	UPROPERTY(ReplicatedUsing=OnRep_UIDamage)
 	FARUIDamage UIDamage;
 	UFUNCTION()

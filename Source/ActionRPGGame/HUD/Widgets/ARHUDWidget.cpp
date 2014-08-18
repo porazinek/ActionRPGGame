@@ -144,6 +144,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							SNew(SARActionBarWidget)
 							.OwnerHUD(OwnerHUD)
 							.MyPC(MyPC)
+							.AbilityComp(MyPC->Abilities.Get())
 						]
 					]
 				]
@@ -163,30 +164,32 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							SNew(SARAbilityInventoryWidget)
 							.OwnerHUD(OwnerHUD)
 							.MyPC(MyPC)
+							.AbilityComp(MyPC->Abilities.Get())
 						]
 					]
 				]
-			+ SOverlay::Slot()
-				.HAlign(HAlign_Right)
-				.VAlign(VAlign_Top)
-				.Padding(FMargin(600, 0, 0, 0))
-				[
-					SNew(SBorder) //add visibility check
-					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-				//	.Visibility(this, &SARHUDWidget::GetAbilityInventoryVisibility)
-					[
-						SNew(SBox)
-						.HeightOverride(400)
-						.WidthOverride(400)
-						[
-							SNew(SARLootingWidget)
-							.MyPC(MyPC)
-							.Character(MyChar)
-							.Equipment(MyChar->Equipment.Get())
-							.Inventory(MyPC->Inventory.Get())
-						]
-					]
-				]
+			//Looting Widget (Window)
+			//+ SOverlay::Slot()
+			//	.HAlign(HAlign_Right)
+			//	.VAlign(VAlign_Top)
+			//	.Padding(FMargin(600, 0, 0, 0))
+			//	[
+			//		SNew(SBorder) //add visibility check
+			//		.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+			//	//	.Visibility(this, &SARHUDWidget::GetAbilityInventoryVisibility)
+			//		[
+			//			SNew(SBox)
+			//			.HeightOverride(400)
+			//			.WidthOverride(400)
+			//			[
+			//				SNew(SARLootingWidget)
+			//				.MyPC(MyPC)
+			//				.Character(MyChar)
+			//				.Equipment(MyChar->Equipment.Get())
+			//				.Inventory(MyPC->Inventory.Get())
+			//			]
+			//		]
+			//	]
 		];
 }
 TWeakObjectPtr<class UARAttributeComponent> SARHUDWidget::GetTargetAttrComp() const

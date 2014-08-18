@@ -19,6 +19,8 @@
 */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnWeaponInitialized);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnWeaponFired, TArray<FAttribute>, OutgoingDamage);
+
 UCLASS(minimalapi)
 class AARWeapon : public AARItem, public IIARActionState, public IIARFXEffect
 {
@@ -43,11 +45,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 		TArray<FAttribute> Attributes;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+		TArray<FAttribute> DamageToApply;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 		float Damage;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Properties")
 		TEnumAsByte<EWeaponHand> WeaponHand;
+
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
+		FDMDOnWeaponFired OnWeaponFired;
 
 	/*
 		If weapon is two handed, there can only one equiped at time.

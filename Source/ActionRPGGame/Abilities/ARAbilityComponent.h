@@ -4,13 +4,19 @@
 
 #include "ARAbilityComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionAddedToBar, FActionSlotInfo, ActionSlot);
+
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), editinlinenew, meta = (BlueprintSpawnableComponent))
 class UARAbilityComponent : public UActorComponent
 {
 	GENERATED_UCLASS_BODY()
 public:
+	virtual void InitializeComponent() override;
+
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
+	UPROPERTY(EditAnywhere, Category = "Ability Data Temp")
+		TArray<FARAbilityData> AbiltityDataTemp;
 	UPROPERTY()
 	class AARPlayerController* OwningController;
 
@@ -22,12 +28,23 @@ public:
 	UPROPERTY()
 	class AARAbility* ActionButtonOne;
 
+	UPROPERTY()
+		TArray<FActionSlotInfo> AbilityBook;
+	
+	UPROPERTY()
+		FActionSlotInfo ActiveAction;
+
+	UPROPERTY(EditAnywhere, Replicated, Category = "Action Bar")
+		FActionBarContainer ActionBars;
+
 	UPROPERTY(ReplicatedUsing=OnRep_ActionBarOne)
 		TArray<FAbilityInfo> ActionBarOne;
 	UFUNCTION()
 		void OnRep_ActionBarOne();
 	bool UpdateActionBarOne;
 
+
+	FOnActionAddedToBar OnActionAddedToBar;
 
 	//this would be probably best option.
 	//but TMap is not replicared
@@ -39,11 +56,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 		void AddAbility(FAbilityInfo AbilityIn);
 
+	UFUNCTION()
+		void SetActiveAbility(int32 SlotID, int32 ActionBarIndex);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSetActiveAbility(int32 SlotID, int32 ActionBarIndex);
 	//TEST!
 	UFUNCTION(BlueprintCallable, Category = "Ability")
-	void AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID);
+		void AddAbilityToActionBar(FActionSlotInfo AbilityIn, int32 SlotID, int32 ActionBarIndex);
 	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerAddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID);
+		void ServerAddAbilityToActionBar(FActionSlotInfo AbilityIn, int32 SlotID, int32 ActionBarIndex);
+
+	UFUNCTION()
+		void FireAbility();
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerFireAbility();
+
+	UFUNCTION(Client, Reliable)
+		void ClientOnAbilityAdded(int32 SlotID, int32 ActionBarIndex);
 
 };
 

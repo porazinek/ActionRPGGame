@@ -16,7 +16,9 @@ public:
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
 
-		SLATE_ARGUMENT(TSharedPtr<FAbilityInfo>, CurrentAbility)
+		SLATE_ARGUMENT(TWeakObjectPtr<class UARAbilityComponent>, AbilityComp)
+
+		SLATE_ARGUMENT(TSharedPtr<FActionSlotInfo>, CurrentAbility)
 
 		SLATE_ARGUMENT(EARAbilitySlot, SlotType)
 	SLATE_END_ARGS()
@@ -47,12 +49,16 @@ private:
 	TWeakObjectPtr<class AARPlayerController> MyPC;
 
 	//Ability currently equiped. Synced with server.
-	TSharedPtr<FAbilityInfo> CurrentAbility;
+	TSharedPtr<FActionSlotInfo> CurrentAbility;
 
 	EARAbilitySlot SlotType;
 
+	TSharedPtr<FActionSlotInfo> ActionItem;
+
 	//cosmetics only.
 	TWeakObjectPtr<class AARAbility> Ability;
+
+	TWeakObjectPtr<class UARAbilityComponent> AbilityComp;
 
 	FText GetCurrentCooldown() const;
 
@@ -67,11 +73,11 @@ public:
 	DRAG_DROP_OPERATOR_TYPE(FAbilityDragDrop, FDragDropOperation)
 public:
 
-	static TSharedRef<FAbilityDragDrop> New(TSharedPtr<FAbilityInfo> PickedItemIn, TSharedPtr<SARActionItemWidget> LastAbilitySlotIm);
+	static TSharedRef<FAbilityDragDrop> New(TSharedPtr<FActionSlotInfo> PickedItemIn, TSharedPtr<SARActionItemWidget> LastAbilitySlotIm);
 
 	virtual TSharedPtr<SWidget> GetDefaultDecorator() const override;
 
-	TSharedPtr<FAbilityInfo> PickedAbility;
+	TSharedPtr<FActionSlotInfo> PickedAbility;
 	TSharedPtr<SARActionItemWidget> LastAbilitySlot;
 private:
 	const FSlateBrush* GetDecoratorIcon() const;

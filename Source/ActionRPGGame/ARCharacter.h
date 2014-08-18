@@ -6,11 +6,23 @@
 #include "Slate.h"
 #include "ARCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnSomethingTest, float, floatInput);
+
 UCLASS(config = Game)
 class AARCharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
-	
+public:
+	UFUNCTION(NetMulticast, Reliable)
+		void ClientRunDelegate();
+
+	float testNumber;
+
+	void RunDelegate();
+	UFUNCTION()
+	void FunctionToCall(float input);
+	FDMDOnSomethingTest OnSomethingTest;
+
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(class AController* NewController) override;

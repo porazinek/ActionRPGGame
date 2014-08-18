@@ -18,13 +18,15 @@ void SARActionBarWidget::Construct(const FArguments& InArgs)
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
 
+	AbilityComp = InArgs._AbilityComp;
+
 	SyncAbilities();
 
 	ChildSlot
 		[
 			SNew(SBorder)
 			[
-				SAssignNew(AbilityTile, STileView<TSharedPtr<FAbilityInfo>>)
+				SAssignNew(AbilityTile, STileView<TSharedPtr<FActionSlotInfo>>)
 				.ListItemsSource(&Abilities)
 				.OnGenerateTile(this, &SARActionBarWidget::MakeTileViewWidget)
 				.ItemHeight(50)
@@ -37,21 +39,10 @@ void SARActionBarWidget::SyncAbilities()
 	if (!MyPC.IsValid())
 		return;
 
-	//const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(MyPC->GetPawn());
-
-	//if (!MyChar.IsValid())
-	//	return;
-	//
-	//Abilities.Empty(MyChar->Abilities->ActionBarOne.Num());
-	//for (const FAbilityInfo& AbilityIn : MyChar->Abilities->ActionBarOne)
-	//{
-	//	Abilities.Add(MakeShareable(new FAbilityInfo(AbilityIn)));
-	//}
-
-	Abilities.Empty(MyPC->ActionBarOne.Num());
-	for (const FAbilityInfo& AbilityIn : MyPC->ActionBarOne)
+	Abilities.Empty(AbilityComp->ActionBars.ActionBars[0].ActionSlots.Num());
+	for (const FActionSlotInfo& AbilityIn : AbilityComp->ActionBars.ActionBars[0].ActionSlots)
 	{
-		Abilities.Add(MakeShareable(new FAbilityInfo(AbilityIn)));
+		Abilities.Add(MakeShareable(new FActionSlotInfo(AbilityIn)));
 	}
 }
 
@@ -62,16 +53,6 @@ void SARActionBarWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	if (!MyPC.IsValid())
 		return;
 
-	//const TWeakObjectPtr<AARCharacter> MyChar = Cast<AARCharacter>(MyPC->GetPawn());
-
-	//if (!MyChar.IsValid())
-	//	return;
-	//if (MyChar->Abilities->UpdateActionBarOne)
-	//{
-	//	SyncAbilities();
-	//	AbilityTile->RequestListRefresh();
-	//	MyChar->Abilities->UpdateActionBarOne = false;
-	//}
 	if (MyPC->UpdateActionBarOne)
 	{
 		SyncAbilities();
@@ -80,12 +61,12 @@ void SARActionBarWidget::Tick(const FGeometry& AllottedGeometry, const double In
 	}
 }
 
-TSharedRef<ITableRow> SARActionBarWidget::MakeTileViewWidget(TSharedPtr<FAbilityInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
+TSharedRef<ITableRow> SARActionBarWidget::MakeTileViewWidget(TSharedPtr<FActionSlotInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
 {
 
 	if (AssetItem.IsValid())
 	{
-		TSharedRef< STableRow<TSharedPtr<FAbilityInfo> >> ReturnRow = SNew(STableRow<TSharedPtr<FAbilityInfo>>, OwnerTable)
+		TSharedRef< STableRow<TSharedPtr<FActionSlotInfo> >> ReturnRow = SNew(STableRow<TSharedPtr<FActionSlotInfo>>, OwnerTable)
 			.Content()
 			[
 				SNew(SARActionItemWidget)
@@ -95,6 +76,6 @@ TSharedRef<ITableRow> SARActionBarWidget::MakeTileViewWidget(TSharedPtr<FAbility
 			];
 		return ReturnRow;
 	}
-	TSharedPtr< STableRow<TSharedPtr<FAbilityInfo>> > TableRowWidget;
+	TSharedPtr< STableRow<TSharedPtr<FActionSlotInfo>> > TableRowWidget;
 	return TableRowWidget.ToSharedRef();
 }

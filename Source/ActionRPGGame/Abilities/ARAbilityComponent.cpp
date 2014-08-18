@@ -17,12 +17,41 @@ UARAbilityComponent::UARAbilityComponent(const class FPostConstructInitializePro
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 	PrimaryComponentTick.bAllowTickOnDedicatedServer = true;
 	UpdateActionBarOne = false;
+
+	bWantsInitializeComponent = true;
+
 	for (int8 i = 0; i < 5; i++)
 	{
 		FAbilityInfo ab;
 		ab.SlotID = i;
 		ab.Ability = nullptr;
 		ActionBarOne.Add(ab);
+	}
+}
+
+void UARAbilityComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		ActionBars.ActionBars.Empty(ActionBars.ActionBars.Num());
+		FActionSlotContainer asc;
+		asc.ActionBarIndex = 0;
+		for (int32 Idx = 0; Idx < 5; Idx++)
+		{
+			FActionSlotInfo asi;
+			asi.SlotIndex = Idx;
+			asi.ActionBarIndex = 0;
+			asc.ActionSlots.Add(asi);
+		}
+
+		ActionBars.ActionBars.Add(asc);
+
+		FActionSlotInfo abTest;
+		abTest.ActionIndex = 0;
+
+		AbilityBook.Add(abTest);
 	}
 }
 
@@ -36,6 +65,7 @@ void UARAbilityComponent::GetLifetimeReplicatedProps(TArray< class FLifetimeProp
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UARAbilityComponent, ActionBarOne);
+	DOREPLIFETIME_CONDITION(UARAbilityComponent, ActionBars, COND_OwnerOnly);
 }
 
 void UARAbilityComponent::OnRep_ActionBarOne()
@@ -51,54 +81,112 @@ void UARAbilityComponent::AddAbility(FAbilityInfo AbilityIn)
 	OwningController->AddAbilityToInventory(AbilityIn);
 }
 
-void UARAbilityComponent::AddAbilityToActionBar(FAbilityInfo AbilityIn, int32 SlotID)
+void UARAbilityComponent::AddAbilityToActionBar(FActionSlotInfo AbilityIn, int32 SlotID, int32 ActionBarIndex)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		ServerAddAbilityToActionBar(AbilityIn, SlotID);
+		ServerAddAbilityToActionBar(AbilityIn, SlotID, ActionBarIndex);
 	}
 	else
 	{
-		if (ActionBarOne.Num() <= 5)
-		{
-			//for (FAbilityInfo& ability : OwningController->AbilityInventory)
-			//{
-				//if (ability.AbilityName == AbilityIn.AbilityName)
-				//{
-					for (FAbilityInfo& abilityBar : ActionBarOne)
-					{
-						if (abilityBar.SlotID == SlotID)
-						{
-							if (abilityBar.Ability.IsValid())
-							{
-								abilityBar.Ability->Destroy();
-								abilityBar.Ability.Reset();
-							}
 
-							if (!AbilityIn.AbilityType)
-								return;
+		ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].ActionIndex = AbilityIn.ActionIndex;
+		ClientOnAbilityAdded(SlotID, ActionBarIndex);
+		//if (ActionBarOne.Num() <= 5)
+		//{
+		//	//for (FAbilityInfo& ability : OwningController->AbilityInventory)
+		//	//{
+		//		//if (ability.AbilityName == AbilityIn.AbilityName)
+		//		//{
+		//			for (FAbilityInfo& abilityBar : ActionBarOne)
+		//			{
+		//				if (abilityBar.SlotID == SlotID)
+		//				{
+		//					if (abilityBar.Ability.IsValid())
+		//					{
+		//						abilityBar.Ability->Destroy();
+		//						abilityBar.Ability.Reset();
+		//					}
 
-							FActorSpawnParameters SpawnInfo;
-							SpawnInfo.bNoCollisionFail = true;
+		//					if (!AbilityIn.AbilityType)
+		//						return;
 
-							AARAbility* tempAbi = GetWorld()->SpawnActor<AARAbility>(AbilityIn.AbilityType, SpawnInfo);
-							tempAbi->SetOwner(GetOwner());
-							
-							abilityBar.AbilityName = AbilityIn.AbilityName;
-							abilityBar.Ability = tempAbi;
-						}
-					}
-				//}
-			//}
+		//					FActorSpawnParameters SpawnInfo;
+		//					SpawnInfo.bNoCollisionFail = true;
+
+		//					AARAbility* tempAbi = GetWorld()->SpawnActor<AARAbility>(AbilityIn.AbilityType, SpawnInfo);
+		//					tempAbi->SetOwner(GetOwner());
+		//					
+		//					abilityBar.AbilityName = AbilityIn.AbilityName;
+		//					abilityBar.Ability = tempAbi;
+		//				}
+		//			}
+		//		//}
+		//	//}
+		//}
+	}
+}
+void UARAbilityComponent::ServerAddAbilityToActionBar_Implementation(FActionSlotInfo AbilityIn, int32 SlotID, int32 ActionBarIndex)
+{
+	AddAbilityToActionBar(AbilityIn, SlotID, ActionBarIndex);
+}
+
+bool UARAbilityComponent::ServerAddAbilityToActionBar_Validate(FActionSlotInfo AbilityIn, int32 SlotID, int32 ActionBarIndex)
+{
+	return true;
+}
+
+void UARAbilityComponent::ClientOnAbilityAdded_Implementation(int32 SlotID, int32 ActionBarIndex)
+{
+	OnActionAddedToBar.Broadcast(ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID]);
+}
+
+void UARAbilityComponent::SetActiveAbility(int32 SlotID, int32 ActionBarIndex)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerSetActiveAbility(SlotID, ActionBarIndex);
+	}
+	else
+	{
+		ActiveAction = ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID];
+	}
+}
+
+void UARAbilityComponent::ServerSetActiveAbility_Implementation(int32 SlotID, int32 ActionBarIndex)
+{
+	SetActiveAbility(SlotID, ActionBarIndex);
+}
+bool UARAbilityComponent::ServerSetActiveAbility_Validate(int32 SlotID, int32 ActionBarIndex)
+{
+	return true;
+}
+
+
+void UARAbilityComponent::FireAbility()
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerFireAbility();
+	}
+	else
+	{
+		if (ActiveAction.Ability.IsValid())
+		{//	ActiveAction.Ability->StartAction();
+
+			IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActiveAction.Ability.Get());
+			if (actionInterface)
+			{
+				actionInterface->InputPressed();
+			}
 		}
 	}
 }
-void UARAbilityComponent::ServerAddAbilityToActionBar_Implementation(FAbilityInfo AbilityIn, int32 SlotID)
+void UARAbilityComponent::ServerFireAbility_Implementation()
 {
-	AddAbilityToActionBar(AbilityIn, SlotID);
+	FireAbility();
 }
-
-bool UARAbilityComponent::ServerAddAbilityToActionBar_Validate(FAbilityInfo AbilityIn, int32 SlotID)
+bool UARAbilityComponent::ServerFireAbility_Validate()
 {
 	return true;
 }

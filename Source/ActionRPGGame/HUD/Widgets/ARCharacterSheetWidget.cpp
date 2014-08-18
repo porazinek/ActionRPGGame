@@ -21,6 +21,7 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 	Equipment = InArgs._Equipment;
 	SyncLeftHandWeapons();
 	SyncRightHandWeapons();
+	SyncEquipmentWeapons();
 	ChildSlot
 		[
 			SNew(SGridPanel)
@@ -32,216 +33,64 @@ void SARCharacterSheetWidget::Construct(const FArguments& InArgs)
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
+					[
+						SNew(SBox)
+						.HeightOverride(52)
+						.WidthOverride(400)
 						[
-							SNew(SBox)
-							.HeightOverride(52)
-							.WidthOverride(210)
-							[
-								SAssignNew(LeftWeapon, STileView<TSharedPtr<FARDragDropInfo>>)
-								.ListItemsSource(&LeftHandWeapons)
-								.OnGenerateTile(this, &SARCharacterSheetWidget::MakeLeftHandWeaponWidget)
-								.ItemHeight(50)
-								.ItemWidth(50)
-							]
+							SAssignNew(LeftWeapon, STileView<TSharedPtr<FARDragDropInfo>>)
+							.ListItemsSource(&LeftHandWeapons)
+							.OnGenerateTile(this, &SARCharacterSheetWidget::MakeLeftHandWeaponWidget)
+							.ItemHeight(50)
+							.ItemWidth(50)
 						]
+					]
 				]
 			]
-				+ SGridPanel::Slot(1, 2)
-					.ColumnSpan(6)
+			+ SGridPanel::Slot(1, 2)
+			.ColumnSpan(6)
+			[
+				SNew(SBorder) //add visibility check
+				.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
 				[
-					SNew(SBorder) //add visibility check
-					.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
+					SNew(SOverlay)
+					+ SOverlay::Slot()
 					[
-						SNew(SOverlay)
-						+ SOverlay::Slot()
+						SNew(SBox)
+						.HeightOverride(52)
+						.WidthOverride(400)
 						[
-							SNew(SBox)
-							.HeightOverride(52)
-							.WidthOverride(210)
-							[
-								SAssignNew(RightWeapon, STileView<TSharedPtr<FARDragDropInfo>>)
-								.ListItemsSource(&RightHandWeapons)
-								.OnGenerateTile(this, &SARCharacterSheetWidget::MakeRightHandWeaponWidget)
-								.ItemHeight(50)
-								.ItemWidth(50)
-							]
+							SAssignNew(RightWeapon, STileView<TSharedPtr<FARDragDropInfo>>)
+							.ListItemsSource(&RightHandWeapons)
+							.OnGenerateTile(this, &SARCharacterSheetWidget::MakeRightHandWeaponWidget)
+							.ItemHeight(50)
+							.ItemWidth(50)
 						]
 					]
 				]
+			]
 			+ SGridPanel::Slot(1, 3)
-				.HAlign(HAlign_Left)
+			.ColumnSpan(6)
+			[
+				SNew(SBorder) //add visibility check
+				.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
 				[
 					SNew(SOverlay)
 					+ SOverlay::Slot()
 					[
-						SNew(STextBlock)
-						.Text(FText::FromString(FString("Head")))
-					]
-					+ SOverlay::Slot()
+						SNew(SBox)
+						.HeightOverride(52)
+						.WidthOverride(400)
 						[
-							SNew(SBorder) //add visibility check
-							.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-							[
-								SNew(SBox)
-								.WidthOverride(50)
-								.HeightOverride(50)
-								[
-									SNew(SARInventoryItemWidget)
-									.SlotType(EItemSlot::Item_Head)
-								//	.EquipmentSlot(EEquipmentSlot::Item_Head)
-									.PlayerController(MyPC)
-									.SlotName(FText::FromName("Head"))
-									.Equipment(Equipment)
-									.Inventory(MyPC->Inventory.Get())
-								]
-							]
+							SAssignNew(EquipmentSlot, STileView<TSharedPtr<FARDragDropInfo>>)
+							.ListItemsSource(&EquipmentSlots)
+							.OnGenerateTile(this, &SARCharacterSheetWidget::MakeEquipmentSlotsWeaponWidget)
+							.ItemHeight(50)
+							.ItemWidth(50)
 						]
-				]
-			+ SGridPanel::Slot(2, 3)
-				.HAlign(HAlign_Left)
-				[
-					SNew(SOverlay)
-					+ SOverlay::Slot()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(FString("Shoulders")))
 					]
-					+ SOverlay::Slot()
-						[
-							SNew(SBorder) //add visibility check
-							.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-							[
-								SNew(SBox)
-								.WidthOverride(50)
-								.HeightOverride(50)
-								[
-									SNew(SARInventoryItemWidget)
-									.SlotType(EItemSlot::Item_Shoulders)
-								//	.EquipmentSlot(EEquipmentSlot::Item_Shoulders)
-									.PlayerController(MyPC)
-									.SlotName(FText::FromName("Shoulders"))
-									.Equipment(Equipment)
-									.Inventory(MyPC->Inventory.Get())
-								]
-							]
-						]
 				]
-			+ SGridPanel::Slot(3, 3)
-				.HAlign(HAlign_Left)
-				[
-					SNew(SOverlay)
-					+ SOverlay::Slot()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(FString("Hands")))
-					]
-					+ SOverlay::Slot()
-						[
-							SNew(SBorder) //add visibility check
-							.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-							[
-								SNew(SBox)
-								.WidthOverride(50)
-								.HeightOverride(50)
-								[
-									SNew(SARInventoryItemWidget)
-									.SlotType(EItemSlot::Item_Hands)
-							//		.EquipmentSlot(EEquipmentSlot::Item_Hands)
-									.PlayerController(MyPC)
-									.SlotName(FText::FromName("Hands"))
-									.Equipment(Equipment)
-									.Inventory(MyPC->Inventory.Get())
-								]
-							]
-						]
-				]
-			+ SGridPanel::Slot(4, 3)
-				.HAlign(HAlign_Left)
-				[
-					SNew(SOverlay)
-					+ SOverlay::Slot()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(FString("Chest")))
-					]
-					+ SOverlay::Slot()
-						[
-							SNew(SBorder) //add visibility check
-							.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-							[
-								SNew(SBox)
-								.WidthOverride(50)
-								.HeightOverride(50)
-								[
-									SNew(SARInventoryItemWidget)
-									.SlotType(EItemSlot::Item_Chest)
-								//	.EquipmentSlot(EEquipmentSlot::Item_Chest)
-									.PlayerController(MyPC)
-									.SlotName(FText::FromName("Chest"))
-									.Equipment(Equipment)
-									.Inventory(MyPC->Inventory.Get())
-								]
-							]
-						]
-				]
-			+ SGridPanel::Slot(5, 3)
-				.HAlign(HAlign_Left)
-				[
-					SNew(SOverlay)
-					+ SOverlay::Slot()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(FString("Legs")))
-					]
-					+ SOverlay::Slot()
-						[
-							SNew(SBorder) //add visibility check
-							.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-							[
-								SNew(SBox)
-								.WidthOverride(50)
-								.HeightOverride(50)
-								[
-									SNew(SARInventoryItemWidget)
-									.SlotType(EItemSlot::Item_Legs)
-								//	.EquipmentSlot(EEquipmentSlot::Item_Legs)
-									.PlayerController(MyPC)
-									.SlotName(FText::FromName("Legs"))
-									.Equipment(Equipment)
-									.Inventory(MyPC->Inventory.Get())
-								]
-							]
-						]
-				]
-			+ SGridPanel::Slot(6, 3)
-				.HAlign(HAlign_Left)
-				[
-					SNew(SOverlay)
-					+ SOverlay::Slot()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(FString("Foot")))
-					]
-					+ SOverlay::Slot()
-						[
-							SNew(SBorder) //add visibility check
-							.BorderBackgroundColor(FSlateColor(FLinearColor(1, 0, 0, 1)))
-							[
-								SNew(SBox)
-								.WidthOverride(50)
-								.HeightOverride(50)
-								[
-									SNew(SARInventoryItemWidget)
-									.SlotType(EItemSlot::Item_Foot)
-								//	.EquipmentSlot(EEquipmentSlot::Item_Foot)
-									.PlayerController(MyPC)
-									.SlotName(FText::FromName("Foot"))
-									.Equipment(Equipment)
-									.Inventory(MyPC->Inventory.Get())
-								]
-							]
-						]
-				]
+			]
 
 		];
 }
@@ -261,6 +110,11 @@ void SARCharacterSheetWidget::Tick(const FGeometry& AllottedGeometry, const doub
 		RightWeapon->RequestListRefresh();
 		Equipment->RightHandWeaponsUpdated = false;
 	}
+	if (false)
+	{
+		EquipmentSlot->RequestListRefresh();
+		SyncEquipmentWeapons();
+	}
 }
 
 TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
@@ -274,7 +128,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedP
 				.InventoryItem(AssetItem)
 				.PlayerController(MyPC)
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
-		//		.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
+				//		.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 				.SlotName(FText::FromName("LHand"))
 				.Inventory(MyPC->Inventory.Get())
 				.Equipment(Equipment)
@@ -308,7 +162,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TShared
 				.InventoryItem(AssetItem)
 				.PlayerController(MyPC)
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
-			//	.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
+				//	.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
 				.SlotName(FText::FromName("RHand"))
 				.Inventory(MyPC->Inventory.Get())
 				.Equipment(Equipment)
@@ -326,6 +180,39 @@ void SARCharacterSheetWidget::SyncRightHandWeapons()
 		for (const FARDragDropInfo& InventoryItem : Equipment->RightHandWeapons)
 		{
 			RightHandWeapons.Add(MakeShareable(new FARDragDropInfo(InventoryItem)));
+		}
+	}
+}
+
+TSharedRef<ITableRow> SARCharacterSheetWidget::MakeEquipmentSlotsWeaponWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable)
+{
+	if (AssetItem.IsValid())
+	{
+		TSharedRef< STableRow<TWeakObjectPtr<class UObject> >> ReturnRow = SNew(STableRow<TWeakObjectPtr<class UObject>>, OwnerTable)
+			.Content()
+			[
+				SNew(SARInventoryItemWidget)
+				.InventoryItem(AssetItem)
+				.PlayerController(MyPC)
+				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
+				//	.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
+				.SlotName(FText::FromName(AssetItem->SlotName))
+				.Inventory(MyPC->Inventory.Get())
+				.Equipment(Equipment)
+			];
+		return ReturnRow;
+	}
+	TSharedPtr< STableRow<TSharedPtr<FARDragDropInfo>> > TableRowWidget;
+	return TableRowWidget.ToSharedRef();
+}
+void SARCharacterSheetWidget::SyncEquipmentWeapons()
+{
+	if (Equipment.IsValid())
+	{
+		EquipmentSlots.Empty(Equipment->EquipmentSlots.Num());
+		for (const FARDragDropInfo& InventoryItem : Equipment->EquipmentSlots)
+		{
+			EquipmentSlots.Add(MakeShareable(new FARDragDropInfo(InventoryItem)));
 		}
 	}
 }

@@ -74,11 +74,11 @@ namespace EEquipmentSlot
 		Item_MAX
 	};
 }
-//UENUM(BlueprintType)
-//namespace EDragDropSlot
-//{
-	UENUM(BlueprintType)
-	enum EDragDropSlot
+UENUM(BlueprintType)
+namespace EDragDropSlot
+{
+//	UENUM(BlueprintType)
+	enum Type
 	{
 		Inventory,
 		LootWindow,
@@ -96,7 +96,7 @@ namespace EEquipmentSlot
 
 		DROP__MAX
 	};
-//}
+}
 
 UENUM(BlueprintType)
 enum EAttachmentType

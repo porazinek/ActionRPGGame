@@ -70,6 +70,7 @@ void UAREquipmentComponent::InitializeComponent()
 			FARDragDropInfo in;
 			in.ItemKey = NAME_None;
 			in.ItemIndex = INDEX_NONE;
+			in.SlotName = "LHand";
 			in.SlotIndex = i;
 			in.DragDropSlot = EDragDropSlot::LeftHand;
 			in.ItemSlot = EItemSlot::Item_Weapon;
@@ -82,6 +83,7 @@ void UAREquipmentComponent::InitializeComponent()
 			FARDragDropInfo in;
 			in.ItemKey = NAME_None;
 			in.ItemIndex = INDEX_NONE;
+			in.SlotName = "RHand";
 			in.SlotIndex = i;
 			in.DragDropSlot = EDragDropSlot::RightHand;
 			in.ItemSlot = EItemSlot::Item_Weapon;
@@ -89,6 +91,66 @@ void UAREquipmentComponent::InitializeComponent()
 			RightHandWeapons.Add(in);
 		}
 
+
+		FARDragDropInfo HeadItem;
+		HeadItem.ItemKey = NAME_None;
+		HeadItem.ItemIndex = INDEX_NONE;
+		HeadItem.SlotName = "Head";
+		HeadItem.SlotIndex = 0;
+		HeadItem.DragDropSlot = EDragDropSlot::Head;
+		HeadItem.ItemSlot = EItemSlot::Item_Head;
+		HeadItem.IsAttached = false;
+		EquipmentSlots.Add(HeadItem);
+
+		FARDragDropInfo ShouldersItem;
+		ShouldersItem.ItemKey = NAME_None;
+		ShouldersItem.ItemIndex = INDEX_NONE;
+		ShouldersItem.SlotName = "Shoulders";
+		ShouldersItem.SlotIndex = 1;
+		ShouldersItem.DragDropSlot = EDragDropSlot::Shoulders;
+		ShouldersItem.ItemSlot = EItemSlot::Item_Shoulders;
+		ShouldersItem.IsAttached = false;
+		EquipmentSlots.Add(ShouldersItem);
+
+		FARDragDropInfo ChestItem;
+		ChestItem.ItemKey = NAME_None;
+		ChestItem.ItemIndex = INDEX_NONE;
+		ChestItem.SlotName = "Chest";
+		ChestItem.SlotIndex = 2;
+		ChestItem.DragDropSlot = EDragDropSlot::Chest;
+		ChestItem.ItemSlot = EItemSlot::Item_Chest;
+		ChestItem.IsAttached = false;
+		EquipmentSlots.Add(ChestItem);
+
+		FARDragDropInfo HandsItem;
+		HandsItem.ItemKey = NAME_None;
+		HandsItem.ItemIndex = INDEX_NONE;
+		HandsItem.SlotName = "Hands";
+		HandsItem.SlotIndex = 3;
+		HandsItem.DragDropSlot = EDragDropSlot::Hands;
+		HandsItem.ItemSlot = EItemSlot::Item_Hands;
+		HandsItem.IsAttached = false;
+		EquipmentSlots.Add(HandsItem);
+
+		FARDragDropInfo LegsItem;
+		LegsItem.ItemKey = NAME_None;
+		LegsItem.ItemIndex = INDEX_NONE;
+		LegsItem.SlotName = "Legs";
+		LegsItem.SlotIndex = 4;
+		LegsItem.DragDropSlot = EDragDropSlot::Legs;
+		LegsItem.ItemSlot = EItemSlot::Item_Legs;
+		LegsItem.IsAttached = false;
+		EquipmentSlots.Add(LegsItem);
+
+		FARDragDropInfo FootItem;
+		FootItem.ItemKey = NAME_None;
+		FootItem.ItemIndex = INDEX_NONE;
+		FootItem.SlotName = "Foot";
+		FootItem.SlotIndex = 5;
+		FootItem.DragDropSlot = EDragDropSlot::Foot;
+		FootItem.ItemSlot = EItemSlot::Item_Foot;
+		FootItem.IsAttached = false;
+		EquipmentSlots.Add(FootItem);
 	}
 }
 void UAREquipmentComponent::BeginDestroy()
@@ -108,6 +170,8 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 	DOREPLIFETIME(UAREquipmentComponent, ActiveLeftHandWeapon);
 	DOREPLIFETIME(UAREquipmentComponent, ActiveRightHandWeapon);
 
+	DOREPLIFETIME_CONDITION(UAREquipmentComponent, EquipmentSlots, COND_OwnerOnly);
+
 	DOREPLIFETIME(UAREquipmentComponent, ChestItem);
 	/*
 		This shit is very heavy, but... For 8 players coop, who cares ?
@@ -116,6 +180,28 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 	DOREPLIFETIME(UAREquipmentComponent, LeftHandWeapons);
 	DOREPLIFETIME(UAREquipmentComponent, RightHandWeapons);
 }
+
+
+void UAREquipmentComponent::EquipItem(FARDragDropInfo ItemIn)
+{
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		ServerEquipItem(ItemIn);
+	}
+	else
+	{
+
+	}
+}
+void UAREquipmentComponent::ServerEquipItem_Implementation(FARDragDropInfo ItemIn)
+{
+	EquipItem(ItemIn);
+}
+bool UAREquipmentComponent::ServerEquipItem_Validate(FARDragDropInfo ItemIn)
+{
+	return true;
+}
+
 void UAREquipmentComponent::OnRep_LeftHandWeapons()
 {
 	LeftHandWeaponsUpdated = true;
@@ -196,6 +282,11 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 	}
 	else
 	{
+		if (Weapon.ItemSlot == EItemSlot::Item_Weapon
+			|| Weapon.ItemSlot == EItemSlot::Item_TwoHanded)
+		{
+
+		}
 		if (Hand == 0)
 		{
 			for (FARDragDropInfo& weapon : LeftHandWeapons)
@@ -206,7 +297,6 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.IsAttached = true;
 					for (FARDragDropInfo& oldItem : Inventory->Inventory)
 					{
@@ -214,7 +304,6 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 						{
 							oldItem.ItemKey = oldItemTemp.ItemKey;
 							oldItem.ItemIndex = oldItemTemp.ItemIndex;
-							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
 							//return;
 						}
@@ -228,7 +317,6 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 				{
 					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
-					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.ItemSlot = Weapon.ItemSlot;
 					weapon.IsAttached = true;
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
@@ -247,7 +335,7 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.DragDropSlot = Weapon.DragDropSlot;
+				//	weapon.DragDropSlot = Weapon.DragDropSlot;
 					for (FARDragDropInfo& oldItem : Inventory->Inventory)
 					{
 						if (weapon.SlotIndex == oldItem.SlotIndex)
@@ -255,7 +343,7 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 							oldItem.ItemKey = oldItemTemp.ItemKey;
 							oldItem.ItemIndex = oldItemTemp.ItemIndex;
 							oldItem.ItemSlot = oldItemTemp.ItemSlot;
-							oldItem.DragDropSlot = oldItemTemp.DragDropSlot;
+					//		oldItem.DragDropSlot = oldItemTemp.DragDropSlot;
 							//return;
 						}
 					}
@@ -269,7 +357,7 @@ void UAREquipmentComponent::AddWeapon(FARDragDropInfo Weapon, int32 SlotID, int3
 					weapon.ItemKey = Weapon.ItemKey;
 					weapon.ItemIndex = Weapon.ItemIndex;
 					weapon.ItemSlot = Weapon.ItemSlot;
-					weapon.DragDropSlot = Weapon.DragDropSlot;
+				//	weapon.DragDropSlot = Weapon.DragDropSlot;
 					MulticastAttacheSheathedWeapon(Weapon, Hand);
 					RightHandWeaponsUpdated = true;
 					return;
@@ -472,20 +560,23 @@ void UAREquipmentComponent::SetSeathedWeapon(class AARWeapon* WeaponIn, FName So
 }
 void UAREquipmentComponent::MulticastDetachWeaponSlotSwap_Implementation(FName WeaponID, int32 HandIn)
 {
-	for (AARWeapon* weap : EquipedWeapons)
+	if (EquipedWeapons.Num() > 0)
 	{
-		if (weap->ItemID == WeaponID &&
-			weap->WeaponHand == HandIn)
+		for (AARWeapon* weap : EquipedWeapons)
 		{
-			for (FARAttachmentSocket& socket : WeaponSockets)
+			if (weap->ItemID == WeaponID &&
+				weap->WeaponHand == HandIn)
 			{
-				if (socket.SocketName == weap->LastAttachmentSocket)
+				for (FARAttachmentSocket& socket : WeaponSockets)
 				{
-					socket.IsSlotAvailable = true;
+					if (socket.SocketName == weap->LastAttachmentSocket)
+					{
+						socket.IsSlotAvailable = true;
+					}
 				}
+				EquipedWeapons.Remove(weap);
+				weap->Destroy();
 			}
-			EquipedWeapons.Remove(weap);
-			weap->Destroy();
 		}
 	}
 }
@@ -916,6 +1007,7 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 			//ActiveLeftHandWeapon->OnWeaponActive();
 			//OnRightWeaponActive.Broadcast(ActiveLeftHandWeapon);
 			ActiveLeftHandWeapon->Initialize();
+			OnLeftWeaponActive.Broadcast(ActiveLeftHandWeapon);
 			MulticastDetachWeaponSlotSwap(Weapon.ItemKey, Hand);
 			SetAttachWeapon(ActiveLeftHandWeapon, LeftWeaponSocket);
 		}
@@ -955,6 +1047,7 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 
 			ActiveRightHandWeapon = weaponBase;
 			ActiveRightHandWeapon->Initialize();
+			OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
 			//ActiveLeftHandWeapon->OnWeaponActive();
 			//OnRightWeaponActive.Broadcast(ActiveRightHandWeapon);
 			MulticastDetachWeaponSlotSwap(Weapon.ItemKey, Hand);

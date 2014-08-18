@@ -104,6 +104,8 @@ void AARCharacter::BeginPlay()
 
 	Equipment->SetIsReplicated(true);
 	Attributes->SetIsReplicated(true);
+
+	OnSomethingTest.AddDynamic(this, &AARCharacter::FunctionToCall);
 }
 
 void AARCharacter::PostInitializeComponents()
@@ -114,7 +116,7 @@ void AARCharacter::PostInitializeComponents()
 	{
 		OnCharacterInitialize();
 		SpawnDefaultAbility();
-
+		testNumber = 12;
 		for (TSubclassOf<UAREffectType> featClass : FeatClasses)
 		{
 			UAREffectType* effect = ConstructObject<UAREffectType>(featClass);
@@ -334,10 +336,29 @@ void AARCharacter::InputActionButtonOne()
 	}
 }
 
+void AARCharacter::RunDelegate()
+{
+	if (Role < ROLE_Authority)
+	{
+		ClientRunDelegate();
+	}
+}
 
+void AARCharacter::ClientRunDelegate_Implementation()
+{
+	OnSomethingTest.Broadcast(testNumber);
+}
+void AARCharacter::FunctionToCall(float input)
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0, FColor::Red, FString::FormatAsNumber(input));
+	}
+}
 void AARCharacter::InputSwapLeftWeapon()
 {
 	Equipment->SwapWeapon(0);
+	RunDelegate();
 }
 void AARCharacter::InputSwapRightWeapon()
 {

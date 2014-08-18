@@ -192,6 +192,76 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
 		TWeakObjectPtr<class AARAbility> Ability;
 };
+USTRUCT(BlueprintType)
+struct FARAbilityData
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category="Index")
+		int32 AbilityIndex;
+
+	UPROPERTY(EditAnywhere, Category = "Action Class")
+		TSubclassOf<class AARAbility> AbilityClass;
+
+	UPROPERTY(EditAnywhere, Category = "Icon")
+		FSlateBrush AbilityIcon;
+};
+
+
+USTRUCT(BlueprintType)
+struct FActionSlotInfo
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	/* Must be the same as Index in array */
+	UPROPERTY(EditAnywhere, Category="Slot Index")
+		int32 SlotIndex;
+	UPROPERTY()
+		int32 OldSlotIndex;
+	UPROPERTY()
+		int32 ActionBarIndex;
+
+	UPROPERTY()
+		int32 ActionIndex;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ability Object")
+		TWeakObjectPtr<class AARAbility> Ability;
+
+	UPROPERTY()
+		float CurrentCooldown;
+};
+
+/* Essentialy represents single action bar */
+USTRUCT(BlueprintType)
+struct FActionSlotContainer
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Slot Index")
+		int32 ActionBarIndex;
+
+	UPROPERTY(EditAnywhere, Category = "Action Slots")
+	TArray<FActionSlotInfo> ActionSlots;
+
+	FActionSlotContainer()
+		: ActionBarIndex(INDEX_NONE)
+		, ActionSlots()
+	{}
+};
+
+/* Contains  multiple action bars */
+USTRUCT(BlueprintType)
+struct FActionBarContainer
+{
+	GENERATED_USTRUCT_BODY()
+public:
+	UPROPERTY(EditAnywhere, Category = "Action Bars")
+	TArray<FActionSlotContainer> ActionBars;
+
+	FActionBarContainer()
+		: ActionBars()
+	{}
+};
 
 USTRUCT(BlueprintType)
 struct FActivePeriodicEffects
@@ -430,6 +500,8 @@ public:
 		int8 SlotIndex;
 	UPROPERTY()
 		int8 OldSlotIndex;
+	UPROPERTY()
+		FName SlotName;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
 		FName ItemKey;
@@ -444,7 +516,7 @@ public:
 		TEnumAsByte<EItemSlot> ItemSlot; //to check which datasset we should query.
 
 	UPROPERTY(EditAnywhere, Category = "Item")
-		TEnumAsByte<EDragDropSlot> DragDropSlot;
+		TEnumAsByte<EDragDropSlot::Type> DragDropSlot;
 
 	inline bool operator!= (const FARDragDropInfo& Other) const
 	{
@@ -473,6 +545,7 @@ public:
 	FARDragDropInfo()
 		: SlotIndex(INDEX_NONE)
 		, OldSlotIndex(INDEX_NONE)
+		, SlotName(NAME_None)
 		, ItemKey(NAME_None)
 		, ItemIndex(INDEX_NONE)
 		, IsAttached(false)

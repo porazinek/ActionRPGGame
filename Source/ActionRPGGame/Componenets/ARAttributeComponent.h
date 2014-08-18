@@ -33,6 +33,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
 		float Stamina;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
+		float Strenght;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
+		float Dexterity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
+		float Constitution;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
+		float Magic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
+		float Intelligence;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
 		float MaxHealth;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, ReplicatedUsing = OnRep_Health, Category = "Derived Attribute")
@@ -49,6 +60,12 @@ public:
 		void OnRep_Health();
 
 	TArray<class UAREffectType*> DefaultEffects;
+
+	UPROPERTY(EditAnywhere, Category = "Default Feats")
+	TArray<TSubclassOf<class UAREffectType> > DefaultEffectClasses;
+
+	UFUNCTION(BlueprintCallable, Category = "AR|Debug")
+		void DebugAddFeat(TSubclassOf<class UAREffectType> FeatIn);
 
 };
 

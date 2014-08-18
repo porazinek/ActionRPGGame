@@ -28,7 +28,7 @@ public:
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARItemPickup>, LootedObject)
 
 		/*
-			Information about current item slot in inventory.
+			Information describing current slot, and data in it.
 		*/
 		SLATE_ARGUMENT(TSharedPtr<FARDragDropInfo>, InventoryItem)
 

@@ -25,28 +25,29 @@ void SARActionItemWidget::Construct(const FArguments& InArgs)
 	MyPC = InArgs._MyPC;
 	CurrentAbility = InArgs._CurrentAbility;
 	SlotType = InArgs._SlotType;
+	AbilityComp = InArgs._AbilityComp;
 
-	if (MyPC.IsValid())
-	{
-		if (Ability.IsValid())
-		{
-			Ability->Destroy();
-			Ability.Reset();
-		}
+	//if (MyPC.IsValid())
+	//{
+	//	if (Ability.IsValid())
+	//	{
+	//		Ability->Destroy();
+	//		Ability.Reset();
+	//	}
 
-		if (CurrentAbility.IsValid())
-		{
-			if (CurrentAbility->AbilityType)
-			{
-				FActorSpawnParameters SpawnInfo;
-				SpawnInfo.bNoCollisionFail = true;
-				SpawnInfo.Owner = MyPC->GetPawn();
-				Ability = MyPC->GetWorld()->SpawnActor<AARAbility>(CurrentAbility->AbilityType, SpawnInfo);
-				Ability->SetOwner(MyPC->GetPawn());
-				Ability->Instigator = MyPC->GetPawn();
-			}
-		}
-	}
+	//	if (CurrentAbility.IsValid())
+	//	{
+	//		if (CurrentAbility->AbilityType)
+	//		{
+	//			FActorSpawnParameters SpawnInfo;
+	//			SpawnInfo.bNoCollisionFail = true;
+	//			SpawnInfo.Owner = MyPC->GetPawn();
+	//			Ability = MyPC->GetWorld()->SpawnActor<AARAbility>(CurrentAbility->AbilityType, SpawnInfo);
+	//			Ability->SetOwner(MyPC->GetPawn());
+	//			Ability->Instigator = MyPC->GetPawn();
+	//		}
+	//	}
+	//}
 
 	ChildSlot
 		[
@@ -136,10 +137,10 @@ FReply SARActionItemWidget::OnDrop(const FGeometry& MyGeometry, const FDragDropE
 	*/
 	if (Operation->LastAbilitySlot->SlotType == EARAbilitySlot::Ability_Inventory)
 	{
-		if (!MyPC.IsValid())
+		if (!AbilityComp.IsValid())
 			return FReply::Unhandled();
 
-		MyPC->AddAbilityToActionBar(*Operation->PickedAbility, this->CurrentAbility->SlotID);
+		AbilityComp->AddAbilityToActionBar(*Operation->PickedAbility, this->CurrentAbility->SlotIndex, 0);
 		return FReply::Handled();
 	}
 	else if (Operation->LastAbilitySlot->SlotType == EARAbilitySlot::Ability_ActionBar)
@@ -180,7 +181,7 @@ FReply SARActionItemWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const F
 
 
 
-TSharedRef<FAbilityDragDrop> FAbilityDragDrop::New(TSharedPtr<FAbilityInfo> PickedItemIn, TSharedPtr<SARActionItemWidget> LastAbilitySlotIn)
+TSharedRef<FAbilityDragDrop> FAbilityDragDrop::New(TSharedPtr<FActionSlotInfo> PickedItemIn, TSharedPtr<SARActionItemWidget> LastAbilitySlotIn)
 {
 	TSharedRef<FAbilityDragDrop> Operation = MakeShareable(new FAbilityDragDrop);
 

@@ -6,6 +6,8 @@
 #include "../Effects/AREffectPeriodicO.h"
 #include "../Effects/AREffectType.h"
 
+#include "../Effects/AREffect.h"
+
 #include "../Componenets/ARAttributeComponent.h"
 #include "../Types/AREffectTypes.h"
 #include "ARTraceStatics.h"
@@ -22,24 +24,19 @@ UAREffectStatics::UAREffectStatics(const class FPostConstructInitializePropertie
 
 }
 
-void UAREffectStatics::ApplyEffect(TSubclassOf<class UAREffectType> EffectIn, AActor* EffectCauser, AActor* EffectTarget, const FAttribute& AttributeIn, FAttribute& AttributeOut)
+void UAREffectStatics::ApplyEffect(TSubclassOf<class UAREffect> EffectIn, AActor* EffectCauser, AActor* EffectTarget)
 {
 	if (!EffectIn || !EffectCauser || !EffectTarget)
 		return;
 
-	UAREffectType* tempEffect = ConstructObject<UAREffectType>(EffectIn);
+	UAREffect* tempEff = ConstructObject<UAREffect>(EffectIn);
 
-	//probably doesn't need it.
-	if (!tempEffect)
-		return;
-
-	tempEffect->EffectCausedBy = EffectCauser;
-	tempEffect->EffectTarget = EffectTarget;
-	tempEffect->EffectInstigator = EffectCauser;
-	tempEffect->AttributeOut = AttributeIn;
-	tempEffect->Initialize();
-
-	AttributeOut = tempEffect->AttributeOut;
+	if (tempEff)
+	{
+		tempEff->EffectTarget = EffectTarget;
+		tempEff->EffectCausedBy = EffectCauser;
+		tempEff->InitializeEffect();
+	}
 }
 
 void UAREffectStatics::ApplyInstantEffect(TSubclassOf<class UAREffectType> EffectIn)
@@ -473,4 +470,41 @@ void UAREffectStatics::SpawnField(TSubclassOf<class AARFieldBase> Field, AActor*
 		//field->Instigator = Instigator;
 		UGameplayStatics::FinishSpawningActor(field, SpawnTM);
 	}
+}
+
+void UAREffectStatics::DrainAttribute(FName TargetAttribute, float TargetMod, FName CauserAttribute, float CauserMod, AActor* Target, AActor* Causer)
+{
+	if (!Causer || !Target)
+		return;
+
+	UARAttributeBaseComponent* targetAttr = Target->FindComponentByClass<UARAttributeBaseComponent>();
+	UARAttributeBaseComponent* causerAttr = Causer->FindComponentByClass<UARAttributeBaseComponent>();
+
+	if (!targetAttr || !causerAttr)
+		return;
+
+	FAttribute TargAttribute;
+	TargAttribute.AttributeName = TargetAttribute;
+	TargAttribute.ModValue = TargetMod;
+	TargAttribute.OperationType = EAttrOp::Attr_Subtract;
+
+	//FPointAttributeChangeEvent AttributeEvent(Attribute, HitInfo, HitFromLocation, DamageType);
+	FARDamageEvent TarAttributeEvent;
+	TarAttributeEvent.Attribute = TargAttribute;
+	TarAttributeEvent.IsComboFinisher = false;
+
+	FAttribute CausAttribute;
+	CausAttribute.AttributeName = CauserAttribute;
+	CausAttribute.ModValue = CauserMod;
+	CausAttribute.OperationType = EAttrOp::Attr_Add;
+
+	//FPointAttributeChangeEvent AttributeEvent(Attribute, HitInfo, HitFromLocation, DamageType);
+	FARHealEvent CausAttributeEvent;
+	CausAttributeEvent.Attribute = CausAttribute;
+	CausAttributeEvent.IsComboFinisher = false;
+
+
+	targetAttr->DamageAttribute(TarAttributeEvent, Causer, Causer);
+
+	causerAttr->HealAttribute(CausAttributeEvent, Causer, Causer);
 }

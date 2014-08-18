@@ -6,6 +6,7 @@
 #include "ARCharacter.h"
 #include "Items/ARWeapon.h"
 #include "Abilities/ARAbility.h"
+#include "Abilities/ARAbilityComponent.h"
 #include "../Componenets/ARAttributeBaseComponent.h"
 
 
@@ -29,6 +30,10 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 	InventoryVisibility = EVisibility::Collapsed;
 	CharacterSheetVisibility = EVisibility::Collapsed;
 	AbilityInventoryVisibility = EVisibility::Collapsed;
+
+	Abilities = PCIP.CreateDefaultSubobject<UARAbilityComponent>(this, TEXT("Abilities"));
+	Abilities->SetIsReplicated(true);
+	Abilities->SetNetAddressable();
 
 	Attributes = PCIP.CreateDefaultSubobject<UARAttributeBaseComponent>(this, TEXT("Attributes"));
 	Attributes->SetIsReplicated(true);
@@ -70,6 +75,7 @@ void AARPlayerController::BeginPlay()
 		Maybe somwhere else in hierarchy call would also work, like PostInitializeComponents.
 	*/
 	Inventory->SetIsReplicated(true);
+	Abilities->SetIsReplicated(true);
 }
 void AARPlayerController::SetPawn(APawn* InPawn)
 {

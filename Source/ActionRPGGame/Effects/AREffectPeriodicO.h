@@ -34,6 +34,7 @@ public:
 	UFUNCTION()
 		void OnRep_Test();
 
+
 	float CurrentDuration;
 	float MaxDuration;
 

@@ -20,19 +20,24 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FDMDOnInstigatorDamage, FARUIDamage);
 /*
 	Event called when this component receives any damage
 */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDMDOnIncomingDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDMDOnIncomingDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute, class UARAttributeBaseComponent*, Target);
 /*
 	Event called, when instigator (causer), caused any damage. So it is called from component owned
 	by Instigator/Causer.
 */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDMDOnOutgoingDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDMDOnOutgoingDamage, const FGameplayTagContainer&, DamageTags, const FAttribute&, Attribute, class UARAttributeBaseComponent*, Target);
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDMDOnOutgoingHeal, const FGameplayTagContainer&, HealTags, const FAttribute&, Attribute, class UARAttributeBaseComponent*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDMDOnIncomingHeal, const FGameplayTagContainer&, HealTags, const FAttribute&, Attribute, class UARAttributeBaseComponent*, Target);
 /* stubs */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectAppiled, FGameplayTagContainer, OwnedTags);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectRemoved, FGameplayTagContainer, OwnedTags);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPeriodicEffectInstigated, const FGameplayTagContainer&, DamageTag);
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOn)
+
 /*
 	Despite the name, AttributeBaseComponent DO NOT hold any attributes.
 	Attributes should be defined in component derived from this class.
@@ -155,6 +160,7 @@ public:
 	/*
 		Called when damage is incoming to this component.
 		Ie. it's going to change attribute on this component.
+		This event will be called on Actor that is currently DAMAGED!
 	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FDMDOnIncomingDamage OnIncomingDamage;
@@ -165,25 +171,18 @@ public:
 	*/
 	/*
 		Damage is going from instigator component. 
+
+		This event is going to be called from actor which is CAUSING DAMAGE!.
 	*/
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Attribute")
 		FDMDOnOutgoingDamage OnOutgoingDamage;
-	/*
-	
-	*/
-	UFUNCTION()
-		void SetAttributeForMod(const FGameplayTagContainer& DamageTags, const FAttribute& Attribute);
+
 	/*
 		Store current damage value. In conjuction with SetAttributeForMod and SetFinalDmage.
 	*/
-	FAttribute CachedAttribute;
+	UPROPERTY(BlueprintReadWrite, Category = "Damage")
+		FAttribute DamageValueCached;
 
-	/*
-		Helper function. When Effect modify damage, this function should be called,
-		and it will set new damage to CachedAttribute;
-	*/
-	UFUNCTION(BlueprintCallable, Category = "AR|Attribute Dmage")
-		void SetFinalDmage(const FAttribute& AttributeIn);
 private:
 	void SetDamageReplication(UARAttributeBaseComponent* Comp);
 public:
@@ -198,6 +197,19 @@ public:
 
 public:
 	/*
+		There are two functions. DamageAttribute and HealAttribute. First subtract value from 
+		attribute. Second add value to attribute.
+		In theory it all could be simply routed trough single function, and in that function,
+		check what Event is incoming.
+		I split it to two functions, because it allow clear distiction btween their functionality,
+		and it's going to be easier to read.
+
+		All attribute changes have their own events (for aoe, point, simple, healing and damage).
+		With Tags it also could all be routed trough single delegate.
+		But making use of multiplie delegates each for it's own task, make it easier, to
+		create event driven modifiers for damage/healing, as well as route values for UI to display.
+	*/
+	/*
 		Final point of changing attributes. All attribute changes should be at some point routed
 		to this function.
 		This function shouldn't ever implement things like armor reduction or other math formulas.
@@ -205,8 +217,24 @@ public:
 		It is important, because here we will call all events and set replicated properties.
 	*/
 	virtual void DamageAttribute(FARDamageEvent const& DamageEvent, AActor* EventInstigator, AActor* DamageCauser);
+	/*
+		Couterpart to Damage attribute. It will add to attribute, and set all events properties
+		for healing value.
+	*/
+	virtual void HealAttribute(FARHealEvent const& HealEvent, AActor* EventInstigator, AActor* DamageCauser);
+	
+	UPROPERTY(BlueprintCallable, Category = "Attribute")
+	FDMDOnOutgoingHeal OnOutgoingHeal;
 
-	virtual void HealAttribute();
+	UPROPERTY(BlueprintCallable, Category = "Attribute")
+	FDMDOnIncomingHeal OnIncomingHeal;
+	
+	/*
+		Modified Heal value, which will be appiled.
+	*/
+	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
+		FAttribute HealValueCached;
+
 	void ChangeAttribute(FName AttributeName, float ModValue, TEnumAsByte<EAttrOp> OperationType);
 	
 	/*

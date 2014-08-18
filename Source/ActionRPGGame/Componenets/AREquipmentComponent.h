@@ -16,6 +16,7 @@
 */
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnRightWeaponActive, AARWeapon*, Weapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnLeftWeaponActive, AARWeapon*, Weapon); 
 
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), meta = (BlueprintSpawnableComponent), DefaultToInstanced, BlueprintType) //, Within = ARPlayerController
 class UAREquipmentComponent : public UActorComponent
@@ -33,6 +34,9 @@ public:
 	virtual void InitializeComponent() override;
 	virtual void BeginDestroy() override;
 
+	UPROPERTY(Replicated)
+		TArray<FARDragDropInfo> EquipmentSlots;
+
 	/*
 		Consolidate all Left/Right Hand function.
 		0 - left hand 
@@ -42,6 +46,29 @@ public:
 	/* Inventory Handling **/
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 		TArray<class AARItem*> EquippedItems;
+
+	void EquipItem(FARDragDropInfo ItemIn);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerEquipItem(FARDragDropInfo ItemIn);
+
+	UPROPERTY(ReplicatedUsing = OnRep_ChestItem)
+		FARDragDropInfo ChestItem;
+
+	UFUNCTION()
+		void OnRep_ChestItem();
+	void SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet);
+
+	bool ChangeChestItem(FARDragDropInfo ItemIn);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerChangeChestItem(FARDragDropInfo ItemIn);
+
+	void DoAsyncChestChange();
+	FStringAssetReference ChestMeshToLoad;
+
+	void ChangeLegItem(FName ItemName);
+	void DoAsyncLegChange();
+	FStringAssetReference LegMeshToLoad;
+
 
 	int8 MaxEquippedItems;
 	
@@ -163,6 +190,9 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
 		FDMDOnRightWeaponActive OnRightWeaponActive;
 
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
+		FDMDOnLeftWeaponActive OnLeftWeaponActive;
+
 	//Weapon general
 	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
 
@@ -180,23 +210,7 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerUnEquipItem(FARDragDropInfo ItemIn);
 
-	UPROPERTY(ReplicatedUsing = OnRep_ChestItem)
-		FARDragDropInfo ChestItem;
 
-	UFUNCTION()
-		void OnRep_ChestItem();
-	void SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet);
-
-	bool ChangeChestItem(FARDragDropInfo ItemIn);
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerChangeChestItem(FARDragDropInfo ItemIn);
-
-	void DoAsyncChestChange();
-	FStringAssetReference ChestMeshToLoad;
-
-	void ChangeLegItem(FName ItemName);
-	void DoAsyncLegChange();
-	FStringAssetReference LegMeshToLoad;
 
 	/*
 		Helper functions.

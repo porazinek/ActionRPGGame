@@ -37,6 +37,11 @@ private:
 
 	TWeakObjectPtr<class UAREquipmentComponent> Equipment;
 
+	TSharedPtr<STileView<TSharedPtr<FARDragDropInfo>>> EquipmentSlot;
+	TSharedRef<ITableRow> MakeEquipmentSlotsWeaponWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TArray<TSharedPtr<FARDragDropInfo>> EquipmentSlots;
+	void SyncEquipmentWeapons();
+
 	TSharedPtr<STileView<TSharedPtr<FARDragDropInfo>>> LeftWeapon;
 	TSharedRef<ITableRow> MakeLeftHandWeaponWidget(TSharedPtr<FARDragDropInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
 	TArray<TSharedPtr<FARDragDropInfo>> LeftHandWeapons;

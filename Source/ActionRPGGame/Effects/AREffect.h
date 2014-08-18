@@ -1,7 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "../Types/ARAttributeTypes.h"
-#include "AREffectType.generated.h"
+#include "AREffect.generated.h"
 
 /*
 	EffectType Is NEVER replicated to client. It is always run on server.
@@ -29,12 +29,13 @@
 	case. Like feats or traits, which can modify abilities, attributes weapons or items.
 */
 
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnEffectInitialized);
+
 UCLASS(Blueprintable, BlueprintType)
-class UAREffectType : public UObject
+class UAREffect : public UObject
 {
 	GENERATED_UCLASS_BODY()
-
-
+public:
 	/*
 		For example. We have projectile shooter by player1 and that projectile hit player2. 
 		Chain look like this:
@@ -71,22 +72,15 @@ class UAREffectType : public UObject
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
 		FGameplayTagContainer RequiredTags;
 
-	FAttribute AttributeToMod;
-
 	UFUNCTION()
-		virtual void Initialize();
+		virtual void InitializeEffect();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly)
 		void OnEffectInitialized();
 
-	/*
-		Set AttributeOut, so it can be returned back to other object after it has been modified.
-	*/
-	UFUNCTION(BlueprintCallable, Category="AR|Effect")
-		void SetOutAttribute(const FAttribute& AttributeIn);
+	//UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Effect")
+	//	FDMDOnEffectInitialized OnEffectInit;
 public:
-	UPROPERTY(BlueprintReadWrite, Category = "Attribute")
-	FAttribute AttributeOut;
 	/*
 		Get World from EffectTarget
 	*/

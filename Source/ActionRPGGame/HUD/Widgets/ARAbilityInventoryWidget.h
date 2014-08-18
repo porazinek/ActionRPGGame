@@ -15,6 +15,8 @@ public:
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARHUD>, OwnerHUD)
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
+
+		SLATE_ARGUMENT(TWeakObjectPtr<class UARAbilityComponent>, AbilityComp)
 	SLATE_END_ARGS()
 
 public:
@@ -31,10 +33,12 @@ private:
 
 	void SyncAbilities();
 
-	TArray<TSharedPtr<FAbilityInfo>> Abilities;
+	TWeakObjectPtr<class UARAbilityComponent> AbilityComp;
 
-	TSharedPtr<STileView<TSharedPtr<FAbilityInfo>>> AbilityTile;
-	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FAbilityInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
+	TArray<TSharedPtr<FActionSlotInfo>> Abilities;
+
+	TSharedPtr<STileView<TSharedPtr<FActionSlotInfo>>> AbilityTile;
+	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FActionSlotInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
 
 };
 

@@ -33,7 +33,6 @@ AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
 	WeaponState->SetNetAddressable();
 	WeaponState->SetIsReplicated(true);
 	WeaponState->OwnedTags = OwnedTags;
-
 	LastAttachmentSocket = NAME_None;
 
 	bNetUseOwnerRelevancy = true;
@@ -143,6 +142,7 @@ void AARWeapon::InputReleased()
 }
 void AARWeapon::StartAction()
 {
+	OnWeaponFired.Broadcast(DamageToApply);
 	Execute_ServerOnActionStart(this);
 	WeaponState->StartAction();
 }

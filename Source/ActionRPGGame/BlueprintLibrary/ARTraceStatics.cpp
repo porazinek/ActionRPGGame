@@ -197,3 +197,40 @@ FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* 
 	}
 	return Impact;
 }
+
+FHitResult UARTraceStatics::GetHitResultCorrected(float Range, FName StartSocket, AARCharacter* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand, FName CorrectionSocket)
+{
+	const FVector ShootDir = GetCameraAim(InitiatedBy);
+
+	//FVector StartTrace = GetCameraDamageStartLocation(ShootDir, InitiatedBy);
+	FVector StartTrace = InitiatedBy->Mesh->GetSocketLocation(CorrectionSocket);
+
+	//const FVector EndTrace = (StartTrace + ShootDir * Range);
+	const FVector EndTrace = (GetCameraDamageStartLocation(ShootDir, InitiatedBy) + ShootDir * Range);
+
+	FHitResult Impact = RangedTrace(StartTrace, EndTrace, InitiatedBy, TraceType);
+	if (DrawDebug)
+	{
+		DrawDebugLine(InitiatedBy->GetWorld(), StartTrace, EndTrace, FColor::Black, true, 10.0f, 0.0f, 1.0f);
+	}
+	if (Impact.GetActor())
+	{
+		if (UseStartSocket)
+		{
+			FVector Origin = GetStartLocation(StartSocket, InitiatedBy, Hand);
+			FHitResult hitResult = RangedTrace(Origin, Impact.ImpactPoint, InitiatedBy, TraceType); //Origin + impactDir*range);
+			if (DrawDebug)
+			{
+				DrawDebugLine(InitiatedBy->GetWorld(), Origin, Impact.ImpactPoint, FColor::Blue, true, 10.0f, 0.0f, 1.0f);
+			}
+			if (hitResult.GetActor())
+			{
+				DrawDebugLine(InitiatedBy->GetWorld(), Origin, Impact.ImpactPoint, FColor::Red, true, 10.0f, 0.0f, 1.0f);
+				return hitResult;
+			}
+			return Impact;
+		}
+		//SetTargetAttributes(Impact.GetActor());
+	}
+	return Impact;
+}

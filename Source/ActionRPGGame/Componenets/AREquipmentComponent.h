@@ -18,6 +18,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnRightWeaponActive, AARWeapon*, Weapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnLeftWeaponActive, AARWeapon*, Weapon); 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnWeaponActive, AARWeapon*, Weapon);
+
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), meta = (BlueprintSpawnableComponent), DefaultToInstanced, BlueprintType) //, Within = ARPlayerController
 class UAREquipmentComponent : public UActorComponent
 {
@@ -193,6 +195,8 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
 		FDMDOnLeftWeaponActive OnLeftWeaponActive;
 
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
+		FDMDOnWeaponActive OnWeaponActive;
 	//Weapon general
 	void SetAttachWeapon(class AARWeapon* Weapon, FName SocketName);
 

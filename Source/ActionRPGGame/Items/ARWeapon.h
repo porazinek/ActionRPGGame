@@ -2,7 +2,6 @@
 #pragma once
 #include "ARItem.h"
 #include "../ActionState/IARActionState.h"
-#include "../Interfaces/IARFXEffect.h"
 #include "../Types/ARAttributeTypes.h"
 #include "../Types/AREnumTypes.h"
 
@@ -22,7 +21,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDMDOnWeaponInitialized);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnWeaponFired, TArray<FAttribute>, OutgoingDamage);
 
 UCLASS(minimalapi)
-class AARWeapon : public AARItem, public IIARActionState, public IIARFXEffect
+class AARWeapon : public AARItem, public IIARActionState
 {
 	GENERATED_UCLASS_BODY()
 public:

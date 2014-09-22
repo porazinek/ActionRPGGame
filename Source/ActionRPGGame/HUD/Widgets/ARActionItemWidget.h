@@ -55,10 +55,16 @@ private:
 
 	TSharedPtr<FActionSlotInfo> ActionItem;
 
+	FARAbilityData* ActionData;
+
 	//cosmetics only.
 	TWeakObjectPtr<class AARAbility> Ability;
 
 	TWeakObjectPtr<class UARAbilityComponent> AbilityComp;
+
+
+
+	void DrawAbility();
 
 	FText GetCurrentCooldown() const;
 
@@ -76,6 +82,8 @@ public:
 	static TSharedRef<FAbilityDragDrop> New(TSharedPtr<FActionSlotInfo> PickedItemIn, TSharedPtr<SARActionItemWidget> LastAbilitySlotIm);
 
 	virtual TSharedPtr<SWidget> GetDefaultDecorator() const override;
+	
+	FARAbilityData* ActionData;
 
 	TSharedPtr<FActionSlotInfo> PickedAbility;
 	TSharedPtr<SARActionItemWidget> LastAbilitySlot;

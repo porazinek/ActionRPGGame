@@ -37,6 +37,8 @@ private:
 	TSharedPtr<STileView<TSharedPtr<FActionSlotInfo>>> AbilityTile;
 	TSharedRef<ITableRow> MakeTileViewWidget(TSharedPtr<FActionSlotInfo> AssetItem, const TSharedRef<STableViewBase>& OwnerTable);
 
+	void OnRefreshBar(FActionSlotInfo ActionSlot);
+
 	void SyncAbilities();
 };
 

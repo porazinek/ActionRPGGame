@@ -5,6 +5,8 @@
 
 #include "../../Types/ARStructTypes.h"
 #include "../../ARPlayerController.h"
+#include "../../Abilities/ARAbilityComponent.h"
+
 #include "../../Abilities/ARAbility.h"
 
 #include "ARCharacterSheetWidget.h"
@@ -26,29 +28,8 @@ void SARActionItemWidget::Construct(const FArguments& InArgs)
 	CurrentAbility = InArgs._CurrentAbility;
 	SlotType = InArgs._SlotType;
 	AbilityComp = InArgs._AbilityComp;
-
-	//if (MyPC.IsValid())
-	//{
-	//	if (Ability.IsValid())
-	//	{
-	//		Ability->Destroy();
-	//		Ability.Reset();
-	//	}
-
-	//	if (CurrentAbility.IsValid())
-	//	{
-	//		if (CurrentAbility->AbilityType)
-	//		{
-	//			FActorSpawnParameters SpawnInfo;
-	//			SpawnInfo.bNoCollisionFail = true;
-	//			SpawnInfo.Owner = MyPC->GetPawn();
-	//			Ability = MyPC->GetWorld()->SpawnActor<AARAbility>(CurrentAbility->AbilityType, SpawnInfo);
-	//			Ability->SetOwner(MyPC->GetPawn());
-	//			Ability->Instigator = MyPC->GetPawn();
-	//		}
-	//	}
-	//}
-
+	ActionData = nullptr;
+	DrawAbility();
 	ChildSlot
 		[
 			SNew(SBox)
@@ -77,14 +58,28 @@ void SARActionItemWidget::Construct(const FArguments& InArgs)
 		];
 }
 
+void SARActionItemWidget::DrawAbility()
+{
+	if (AbilityComp.IsValid())
+	{
+		if (AbilityComp->AbiltityDataTemp.Num() > 0 && CurrentAbility->ActionIndex >= 0
+			&& AbilityComp->AbiltityDataTemp.IsValidIndex(CurrentAbility->ActionIndex))
+			ActionData = &AbilityComp->AbiltityDataTemp[CurrentAbility->ActionIndex];
+	}
+}
+
 FText SARActionItemWidget::GetCurrentCooldown() const
 {
-	if (CurrentAbility->Ability.IsValid())
+	if (AbilityComp.IsValid())
 	{
-		if (CurrentAbility->Ability->IsOnCooldown)
+		if (CurrentAbility->Ability.IsValid())
 		{
-			return FText::AsNumber(CurrentAbility->Ability->CurrentCooldownTime);
+			if (CurrentAbility->Ability->IsOnCooldown)
+			{
+				return FText::AsNumber(CurrentAbility->Ability->CurrentCooldownTime);
+			}
 		}
+
 	}
 	return FText::AsNumber(0);
 }
@@ -93,9 +88,9 @@ const FSlateBrush* SARActionItemWidget::GetAbilityIcon() const
 {
 	//FSlateBrush* icon = NULL;
 	//AbilityIcon = NULL;
-	if (Ability.IsValid())
+	if (ActionData)
 	{
-		return &Ability->AbilityIcon;
+		return &ActionData->AbilityIcon;
 	}
 
 	return nullptr;
@@ -184,7 +179,7 @@ FReply SARActionItemWidget::OnMouseButtonUp(const FGeometry& MyGeometry, const F
 TSharedRef<FAbilityDragDrop> FAbilityDragDrop::New(TSharedPtr<FActionSlotInfo> PickedItemIn, TSharedPtr<SARActionItemWidget> LastAbilitySlotIn)
 {
 	TSharedRef<FAbilityDragDrop> Operation = MakeShareable(new FAbilityDragDrop);
-
+	Operation->ActionData = nullptr;
 	Operation->PickedAbility = PickedItemIn;
 	Operation->LastAbilitySlot = LastAbilitySlotIn;
 	Operation->Construct();

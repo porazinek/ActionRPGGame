@@ -8,6 +8,7 @@
 
 #include "../../Abilities/ARAbility.h"
 #include "../../ActionState/ARActionStateComponent.h"
+#include "../../Abilities/ARAbilityComponent.h"
 
 #include "ARCastingBarWidget.h"
 
@@ -16,6 +17,7 @@ void SARCastingBarWidget::Construct(const FArguments& InArgs)
 {
 	OwnerHUD = InArgs._OwnerHUD;
 	MyPC = InArgs._MyPC;
+	AbilityComp = InArgs._AbilityComp;
 	MaxValue = InArgs._MaxValue.Get();
 	CurrentValue = InArgs._CurrentValue.Get();
 	OnGetFloat = InArgs._OnGetFloat;
@@ -47,14 +49,14 @@ int32 SARCastingBarWidget::OnPaint(const FPaintArgs& Args, const FGeometry& Allo
 		ESlateDrawEffect::None,
 		FLinearColor::Gray * 0.35f
 		);
-	if (MyPC.IsValid())
+	if (AbilityComp.IsValid())
 	{
-		if (MyPC->ActiveAbility)
+		if (AbilityComp->ActiveAbility)
 		{
 			//if (MyPC->ActiveAbility->OnGetFloat.IsBound())
 			//{
 				FVector2D WidgetSize = MyClippingRect.GetSize();
-				float HealthWidth = (MyPC->ActiveAbility->CurrentCastTime * WidgetSize.X) / MyPC->ActiveAbility->MaxCastTime;
+				float HealthWidth = (AbilityComp->ActiveAbility->CurrentCastTime * WidgetSize.X) / AbilityComp->ActiveAbility->MaxCastTime;
 
 				// Draw current health
 				FSlateDrawElement::MakeBox(

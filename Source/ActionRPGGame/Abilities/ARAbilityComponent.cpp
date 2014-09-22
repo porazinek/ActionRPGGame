@@ -47,11 +47,6 @@ void UARAbilityComponent::InitializeComponent()
 		}
 
 		ActionBars.ActionBars.Add(asc);
-
-		FActionSlotInfo abTest;
-		abTest.ActionIndex = 0;
-
-		AbilityBook.Add(abTest);
 	}
 }
 
@@ -91,39 +86,18 @@ void UARAbilityComponent::AddAbilityToActionBar(FActionSlotInfo AbilityIn, int32
 	{
 
 		ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].ActionIndex = AbilityIn.ActionIndex;
+		ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].Ability = GetWorld()->SpawnActor<AARAbility>(AbiltityDataTemp[AbilityIn.ActionIndex].AbilityClass);
+		ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].Ability->OwningCharacter = OwningCharacter;
+		ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].Ability->SetOwner(OwningCharacter);
+		ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].Ability->Initialize();
+		
+		//it's only called on server.
+		OnAbilityAdded.Broadcast(ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].Ability.Get());
+
+		float abSize = sizeof(*ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID].Ability.Get());
+		GEngine->AddOnScreenDebugMessage(0, 2.0f, FColor::Red, FString::FormatAsNumber(abSize));
+
 		ClientOnAbilityAdded(SlotID, ActionBarIndex);
-		//if (ActionBarOne.Num() <= 5)
-		//{
-		//	//for (FAbilityInfo& ability : OwningController->AbilityInventory)
-		//	//{
-		//		//if (ability.AbilityName == AbilityIn.AbilityName)
-		//		//{
-		//			for (FAbilityInfo& abilityBar : ActionBarOne)
-		//			{
-		//				if (abilityBar.SlotID == SlotID)
-		//				{
-		//					if (abilityBar.Ability.IsValid())
-		//					{
-		//						abilityBar.Ability->Destroy();
-		//						abilityBar.Ability.Reset();
-		//					}
-
-		//					if (!AbilityIn.AbilityType)
-		//						return;
-
-		//					FActorSpawnParameters SpawnInfo;
-		//					SpawnInfo.bNoCollisionFail = true;
-
-		//					AARAbility* tempAbi = GetWorld()->SpawnActor<AARAbility>(AbilityIn.AbilityType, SpawnInfo);
-		//					tempAbi->SetOwner(GetOwner());
-		//					
-		//					abilityBar.AbilityName = AbilityIn.AbilityName;
-		//					abilityBar.Ability = tempAbi;
-		//				}
-		//			}
-		//		//}
-		//	//}
-		//}
 	}
 }
 void UARAbilityComponent::ServerAddAbilityToActionBar_Implementation(FActionSlotInfo AbilityIn, int32 SlotID, int32 ActionBarIndex)
@@ -138,7 +112,14 @@ bool UARAbilityComponent::ServerAddAbilityToActionBar_Validate(FActionSlotInfo A
 
 void UARAbilityComponent::ClientOnAbilityAdded_Implementation(int32 SlotID, int32 ActionBarIndex)
 {
-	OnActionAddedToBar.Broadcast(ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID]);
+	OnActionAddedToBar.ExecuteIfBound(ActionBars.ActionBars[ActionBarIndex].ActionSlots[SlotID]);
+}
+
+void UARAbilityComponent::SetActiveAction(FActionSlotInfo ActionIn)
+{
+	ActiveAbility = ActionIn.Ability.Get(); //GetWorld()->SpawnActor<AARAbility>(AbiltityDataTemp[ActionIn.ActionIndex].AbilityClass);
+//	ActiveAbility->OwningCharacter = OwningCharacter;
+//	ActiveAbility->Initialize();
 }
 
 void UARAbilityComponent::SetActiveAbility(int32 SlotID, int32 ActionBarIndex)

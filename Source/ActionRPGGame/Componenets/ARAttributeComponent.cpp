@@ -41,7 +41,8 @@ void UARAttributeComponent::InitializeComponent()
 	{
 		for (TSubclassOf<UAREffectType> eff : DefaultEffectClasses)
 		{
-			DefaultEffects.Add(ConstructObject<UAREffectType>(eff));
+			if (eff)
+				DefaultEffects.Add(ConstructObject<UAREffectType>(eff));
 		}
 	}
 	//DefaultEffects.Add(ConstructObject<UARAbilityCostEffect>(UARAbilityCostEffect::StaticClass()));
@@ -56,7 +57,6 @@ void UARAttributeComponent::Initialize()
 	for (UAREffectType* effect : DefaultEffects)
 	{
 		effect->EffectTarget = PlayerController;
-		//effect->EffectTarget = PlayerCharacter;
 		effect->EffectInstigator = PlayerCharacter;
 		effect->EffectCausedBy = PlayerCharacter;
 		effect->Initialize();

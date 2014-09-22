@@ -25,6 +25,8 @@ class UARActionStateCasting : public UARActionState
 	virtual void BeginActionSequence() override;
 	virtual void EndActionSequence() override;
 
+	FTimerHandle CastingHandle;
+
 	void FireAction();
 
 	bool IsCasting;

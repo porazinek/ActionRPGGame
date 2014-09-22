@@ -53,6 +53,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 					SNew(SARCastingBarWidget)
 					.OwnerHUD(OwnerHUD)
 					.MyPC(MyPC)
+					.AbilityComp(MyPC->Abilities.Get())
 				]
 			]
 			+ SOverlay::Slot()

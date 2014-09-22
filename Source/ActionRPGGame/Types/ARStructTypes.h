@@ -73,7 +73,7 @@ public:
 		int8 OldSlotID;
 
 	UPROPERTY(EditAnywhere, Category="Item")
-		FName ItemID;
+		FName ARItemID;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
 		int32 ItemIndex;
@@ -89,7 +89,7 @@ public:
 
 	inline bool operator!= (const FInventorySlot& Other) const
 	{
-		return ItemID != Other.ItemID;
+		return ARItemID != Other.ARItemID;
 	};
 
 	inline FInventorySlot& operator=(const FInventorySlot& Other)
@@ -99,7 +99,7 @@ public:
 			SlotID = Other.SlotID;
 			OldSlotID = Other.OldSlotID;
 			ItemIndex = Other.ItemIndex;
-			ItemID = Other.ItemID;
+			ARItemID = Other.ARItemID;
 			ItemSlot = Other.ItemSlot;
 			EEquipmentSlot = Other.EEquipmentSlot;
 		}
@@ -108,7 +108,7 @@ public:
 
 	inline bool operator==(const FInventorySlot& Other) const
 	{
-		return ItemID == Other.ItemID;
+		return ARItemID == Other.ARItemID;
 	};
 };
 
@@ -203,6 +203,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Action Class")
 		TSubclassOf<class AARAbility> AbilityClass;
 
+	UPROPERTY(EditAnywhere, Category = "Cooldown")
+		float MaxCooldown;
+
 	UPROPERTY(EditAnywhere, Category = "Icon")
 		FSlateBrush AbilityIcon;
 };
@@ -221,7 +224,7 @@ public:
 	UPROPERTY()
 		int32 ActionBarIndex;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Slot Index")
 		int32 ActionIndex;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Ability Object")
@@ -229,6 +232,9 @@ public:
 
 	UPROPERTY()
 		float CurrentCooldown;
+
+	UPROPERTY()
+		float MaxCooldown;
 };
 
 /* Essentialy represents single action bar */
@@ -239,6 +245,12 @@ struct FActionSlotContainer
 public:
 	UPROPERTY(EditAnywhere, Category = "Slot Index")
 		int32 ActionBarIndex;
+	/*
+		If true, it will be swapped to another action bar.
+		If false, it will displayed as standalone action bar.
+	*/
+	UPROPERTY(EditAnywhere, Category = "Swappable")
+		bool IsActionBarSwappable;
 
 	UPROPERTY(EditAnywhere, Category = "Action Slots")
 	TArray<FActionSlotInfo> ActionSlots;

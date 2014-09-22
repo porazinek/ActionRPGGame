@@ -19,7 +19,7 @@ void SARActionBarWidget::Construct(const FArguments& InArgs)
 	MyPC = InArgs._MyPC;
 
 	AbilityComp = InArgs._AbilityComp;
-
+	AbilityComp->OnActionAddedToBar.BindRaw(this, &SARActionBarWidget::OnRefreshBar);
 	SyncAbilities();
 
 	ChildSlot
@@ -34,9 +34,21 @@ void SARActionBarWidget::Construct(const FArguments& InArgs)
 			]
 		];
 }
+void SARActionBarWidget::OnRefreshBar(FActionSlotInfo ActionSlot)
+{
+	if (!AbilityComp.IsValid())
+		return;
+
+	Abilities.Empty(AbilityComp->ActionBars.ActionBars[0].ActionSlots.Num());
+	for (const FActionSlotInfo& AbilityIn : AbilityComp->ActionBars.ActionBars[0].ActionSlots)
+	{
+		Abilities.Add(MakeShareable(new FActionSlotInfo(AbilityIn)));
+	}
+	AbilityTile->RequestListRefresh();
+}
 void SARActionBarWidget::SyncAbilities()
 {
-	if (!MyPC.IsValid())
+	if (!AbilityComp.IsValid())
 		return;
 
 	Abilities.Empty(AbilityComp->ActionBars.ActionBars[0].ActionSlots.Num());
@@ -71,6 +83,7 @@ TSharedRef<ITableRow> SARActionBarWidget::MakeTileViewWidget(TSharedPtr<FActionS
 			[
 				SNew(SARActionItemWidget)
 				.MyPC(MyPC)
+				.AbilityComp(AbilityComp)
 				.CurrentAbility(AssetItem)
 				.SlotType(EARAbilitySlot::Ability_ActionBar)
 			];

@@ -18,6 +18,6 @@ void AARItem::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AARItem, ItemID);
+	DOREPLIFETIME(AARItem, ARItemID);
 	DOREPLIFETIME(AARItem, ItemIndex);
 }

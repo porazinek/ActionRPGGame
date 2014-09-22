@@ -32,12 +32,17 @@ public:
 		TSubobjectPtr<class UARActionState> ActiveState;
 	UPROPERTY(Instanced, BlueprintReadOnly, Category = "State")
 		TSubobjectPtr<class UARActionState> CooldownState;
+	/*
+		Same shit as CooldownState, but used in different context.
+		To prevent player from spamming attacks by mashing buttons ;).
+	*/
+	UPROPERTY(Instanced, BlueprintReadOnly, Category = "State")
+		TSubobjectPtr<class UARActionState> RefireState;
 
 	/*
 		Tags Owned by this action (weapon, ability, other).
 	*/
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Tags")
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Tags")
 		FGameplayTagContainer OwnedTags;
 	/*
 		Tags Required by this action (weapon, ability, other).
@@ -136,29 +141,38 @@ public:
 
 	inline void SetMaxCastTime(float ValueIn){ MaxCastTime = ValueIn; };
 
+	inline void SetCooldownTime(float ValueIn){ ActionCooldownTime = ValueIn; };
+
+	inline void SetRefireTime(float ValueIn){ RefireTime = ValueIn; };
+
+	inline void SetIntervalTime(float ValueIn){ IntervalTime = ValueIn; };
 	/*
 		How much time before action will be Fired.
 		Can be used in automatic or charged actions.
 		*/
-	UPROPERTY(BlueprintReadOnly, Category = "Action Usage")
+	UPROPERTY()
 		float MaxCastTime;
 	/*
 		How often should action be perfomed
-		*/
-	UPROPERTY(EditAnywhere, Category = "Action Usage")
+	*/
+	UPROPERTY()
 		float IntervalTime;
+	/*
+		In most cases the same as IntervalTime.
+		But you might want to set it differently depending on your weapon/ability.
+	*/
+	UPROPERTY()
+		float RefireTime;
 	/*
 		How much time before action can be used again.
 		For example weapon ammo reaload or RPG type ability recast cooldown.
-		*/
-	UPROPERTY(EditAnywhere, Category = "Action Usage")
+	*/
+	UPROPERTY()
 		float ActionCooldownTime;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action Usage")
+	UPROPERTY()
 		float CurrentCastTime;
-	UPROPERTY(BlueprintReadOnly, Category = "Action Usage")
+	UPROPERTY()
 		float CurrentCooldownTime;
-
 	UPROPERTY()
 		bool IsOnCooldown;
 

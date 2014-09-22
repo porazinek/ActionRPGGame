@@ -28,18 +28,26 @@ void UARActionStateCasting::Tick(float DeltaTime)
 
 void UARActionStateCasting::BeginState(UARActionState* PrevState)
 {
+	FTimerManager& CastingTimer = GetOuterUARActionStateComponent()->GetWorld()->GetTimerManager();
+
+	FTimerDelegate CastingDelegate;
+	CastingDelegate.BindUObject(this, &UARActionStateCasting::FireAction);
+	CastingTimer.SetTimer(CastingHandle, CastingDelegate, GetOuterUARActionStateComponent()->MaxCastTime,
+		false, GetOuterUARActionStateComponent()->MaxCastTime);
+
 	GetOuterUARActionStateComponent()->CastBegin();
 	//GetOuterUARActionStateComponent()->GetOwner()->GetWorldTimerManager().SetTimer(this, &UARActionStateCasting::FireAction, GetOuterUARActionStateComponent()->MaxCastTime, false);
-	IsCasting = true;
+	//IsCasting = true;
 }
 void UARActionStateCasting::FireAction()
 {
 	GetOuterUARActionStateComponent()->FireAction();
+	GetOuterUARActionStateComponent()->GotoState(GetOuterUARActionStateComponent()->CooldownState);
 	//GetOuterUARActionStateComponent()->GotoState(GetOuterUARActionStateComponent()->ActiveState); //it should go to cooldown.
 }
 void UARActionStateCasting::EndState()
 {
-	GetOuterUARActionStateComponent()->GetOwner()->GetWorldTimerManager().ClearTimer(this, &UARActionStateCasting::FireAction);
+	//GetOuterUARActionStateComponent()->GetOwner()->GetWorldTimerManager().ClearTimer(this, &UARActionStateCasting::FireAction);
 	CurrentCastTime = 0;
 	IsCasting = false;
 }

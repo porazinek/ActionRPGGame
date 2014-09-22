@@ -6,6 +6,7 @@
 #include "ARActionStateActive.h"
 #include "ARACtionStateCooldown.h"
 #include "ARActionStateCasting.h"
+#include "ARActionStateRefire.h"
 #include "../BlueprintLibrary/ARTraceStatics.h"
 #include "../ARCharacter.h"
 
@@ -26,6 +27,7 @@ UARActionStateComponent::UARActionStateComponent(const class FPostConstructIniti
 	IsRecharing = false;
 	ActiveState = PCIP.CreateDefaultSubobject<UARActionStateActive>(this, TEXT("StateActive"));
 	CooldownState = PCIP.CreateDefaultSubobject<UARActionStateCooldown>(this, TEXT("StateCooldown"));
+	RefireState = PCIP.CreateDefaultSubobject<UARActionStateRefire>(this, TEXT("StateRefire"));
 }
 
 void UARActionStateComponent::InitializeComponent()

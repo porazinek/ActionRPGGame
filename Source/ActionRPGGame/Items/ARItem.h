@@ -35,7 +35,7 @@ public:
 
 	//Set when adding to equipped items.
 	UPROPERTY(Replicated)
-		FName ItemID;
+		FName ARItemID;
 	UPROPERTY(Replicated)
 		int32 ItemIndex;
 

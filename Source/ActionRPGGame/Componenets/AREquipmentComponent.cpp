@@ -58,7 +58,7 @@ void UAREquipmentComponent::InitializeComponent()
 			ActiveRightHandWeapon = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 			if (ActiveRightHandWeapon)
 			{
-				//ActiveRightHandWeapon->ItemName = Weapon.ItemID;
+				//ActiveRightHandWeapon->ItemName = Weapon.ARItemID;
 				ActiveRightHandWeapon->SetOwner(MyChar);
 				ActiveRightHandWeapon->Instigator = MyChar;
 				ActiveRightHandWeapon->WeaponOwner = MyChar;
@@ -215,7 +215,7 @@ void UAREquipmentComponent::OnRep_RightHandWeapons()
 
 void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FARDragDropInfo WeaponIn, int32 HandIn)
 {
-	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(WeaponIn.ItemID, usless);
+	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(WeaponIn.ARItemID, usless);
 	FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(WeaponIn.ItemIndex);
 	if (data)
 	{
@@ -233,7 +233,7 @@ void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FARDra
 			weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 
 		weaponBase->ItemName = WeaponIn.ItemKey;
-		weaponBase->ItemID = WeaponIn.ItemKey;
+		weaponBase->ARItemID = WeaponIn.ItemKey;
 		weaponBase->ItemIndex = WeaponIn.ItemIndex;
 		weaponBase->SetOwner(TargetCharacter);
 		weaponBase->Instigator = TargetCharacter;
@@ -414,7 +414,7 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FARDragDropInfo> Weapon
 				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 			
 			weaponBase->ItemName = Weapon.ItemKey;
-			weaponBase->ItemID = Weapon.ItemKey;
+			weaponBase->ARItemID = Weapon.ItemKey;
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->ItemInfo = data->ItemInfo;
 
@@ -455,7 +455,7 @@ void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWe
 
 	//if (!WeaponIn.IsAttached)
 	//{
-	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(LastWeapon->ItemID, usless);
+	//FARItemData* data = WeaponItemDataTable->FindRow<FARItemData>(LastWeapon->ARItemID, usless);
 	FARItemInfo* data = TestItems->GetItemDataFromArrayPtr(LastWeapon->ItemIndex);
 	if (data)
 	{
@@ -469,8 +469,8 @@ void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWe
 		else
 			weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 		
-		weaponBase->ItemName = LastWeapon->ItemID;
-		weaponBase->ItemID = LastWeapon->ItemID;
+		weaponBase->ItemName = LastWeapon->ARItemID;
+		weaponBase->ARItemID = LastWeapon->ARItemID;
 		weaponBase->ItemIndex = LastWeapon->ItemIndex;
 		weaponBase->SetOwner(TargetCharacter);
 		weaponBase->Instigator = TargetCharacter;
@@ -488,7 +488,7 @@ void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWe
 					if (socket.SocketSide != HandIn)
 					{
 						socket.IsSlotAvailable = false;
-						socket.LastItemID = LastWeapon->ItemID;
+						socket.LastItemID = LastWeapon->ARItemID;
 						EquipedWeapons.Add(weaponBase);
 						//Weapon.IsAttached = true;
 						SetSeathedWeapon(weaponBase, socket.SocketName);
@@ -506,7 +506,7 @@ void UAREquipmentComponent::DetachSheathedWeapon(AARWeapon* WeaponToDetach)
 {
 	for (AARWeapon* weap : EquipedWeapons)
 	{
-		if (weap->ItemID == WeaponToDetach->ItemID)
+		if (weap->ARItemID == WeaponToDetach->ARItemID)
 		{
 			//for (FInventorySlot& weapInfo : )
 			//We need to clear socket info from RightHandWeapons and LeftHandWeapons
@@ -564,7 +564,7 @@ void UAREquipmentComponent::MulticastDetachWeaponSlotSwap_Implementation(FName W
 	{
 		for (AARWeapon* weap : EquipedWeapons)
 		{
-			if (weap->ItemID == WeaponID &&
+			if (weap->ARItemID == WeaponID &&
 				weap->WeaponHand == HandIn)
 			{
 				for (FARAttachmentSocket& socket : WeaponSockets)
@@ -576,6 +576,7 @@ void UAREquipmentComponent::MulticastDetachWeaponSlotSwap_Implementation(FName W
 				}
 				EquipedWeapons.Remove(weap);
 				weap->Destroy();
+				return;
 			}
 		}
 	}
@@ -682,11 +683,11 @@ void UAREquipmentComponent::SetChestMesh(TAssetPtr<USkeletalMesh> MeshToSet)
 // 4. If item have for example 4 stats, the array will need to be sorted 4 times, each time for each stat on item.
 void UAREquipmentComponent::SortEquipedItemsByAttribute(FName AttributeName)
 {
-	//for (int32 itemIdx = 0; itemIdx < EquippedItems.Num(); itemIdx++)
+	//for (int32 ARItemIDx = 0; ARItemIDx < EquippedItems.Num(); ARItemIDx++)
 	//{
 	//	for (int32 i = 0; i < EquippedItems.Num() - 1; i++)
 	//	{
-	//		for (int32 attrIdx = 0; attrIdx < EquippedItems[itemIdx].Attributes.Num(); attrIdx++)
+	//		for (int32 attrIdx = 0; attrIdx < EquippedItems[ARItemIDx].Attributes.Num(); attrIdx++)
 	//		{
 	//			if (EquippedItems[i].Attributes[attrIdx].AttributeName == AttributeName)
 	//			{
@@ -725,7 +726,7 @@ void UAREquipmentComponent::ChangeItem(FARDragDropInfo ItemIn, int32 OldItemSlot
 			if (eqItem->ItemSlotEquipped == ItemIn.ItemSlot)
 			{
 				FARDragDropInfo tempItem;
-				tempItem.ItemKey = eqItem->ItemID;
+				tempItem.ItemKey = eqItem->ARItemID;
 				tempItem.ItemSlot = eqItem->ItemSlotEquipped;
 				//if there is, Unequip it. Before we proceed.
 				UnEquipItem(ItemIn);
@@ -826,16 +827,16 @@ bool UAREquipmentComponent::ChangeChestItem(FARDragDropInfo ItemIn)
 		AARArmor* itemBase = GetWorld()->SpawnActor<AARArmor>(gen->GeneratedClass, SpawnInfo);
 		itemBase->SetOwner(MyChar);
 		itemBase->Instigator = MyChar;
-		itemBase->ItemID = ItemIn.ItemKey;
+		itemBase->ARItemID = ItemIn.ItemKey;
 		itemBase->ItemSlotEquipped = ItemIn.ItemSlot;
 		if (itemBase)
 		{
-			for (int32 itemIdx = 0; itemIdx < EquippedItems.Num(); itemIdx++)
+			for (int32 ARItemIDx = 0; ARItemIDx < EquippedItems.Num(); ARItemIDx++)
 			{
-				if (EquippedItems[itemIdx]->IsA(itemBase->GetClass()))
+				if (EquippedItems[ARItemIDx]->IsA(itemBase->GetClass()))
 				{
-					EquippedItems[itemIdx]->Destroy();
-					EquippedItems.RemoveAt(itemIdx);
+					EquippedItems[ARItemIDx]->Destroy();
+					EquippedItems.RemoveAt(ARItemIDx);
 				}
 			}
 
@@ -888,7 +889,7 @@ void UAREquipmentComponent::ChangeLegItem(FName ItemName)
 	//	//do it this way until I figure out predicate...
 	//	for (FARItemInfo& item : ItemDataAsset->Items)
 	//	{
-	//		if (item.ItemID == ItemName)
+	//		if (item.ARItemID == ItemName)
 	//		{
 	//			//LegMeshToLoad = item.ItemMesh.ToStringReference();
 	//			ObjToLoad.AddUnique(LegMeshToLoad);
@@ -994,7 +995,7 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 			
 			weaponBase->ItemName = Weapon.ItemKey;
-			weaponBase->ItemID = Weapon.ItemKey;
+			weaponBase->ARItemID = Weapon.ItemKey;
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
@@ -1035,7 +1036,7 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 				weaponBase = GetWorld()->SpawnActor<AARWeapon>(AARWeapon::StaticClass(), SpawnInfo);
 
 			weaponBase->ItemName = Weapon.ItemKey;
-			weaponBase->ItemID = Weapon.ItemKey;
+			weaponBase->ARItemID = Weapon.ItemKey;
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
@@ -1056,11 +1057,11 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 	}
 
 }
-void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
+void UAREquipmentComponent::UnEquipWeapon(FName ARItemID, int32 Hand)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		ServerUnEquipWeapon(ItemID, Hand);
+		ServerUnEquipWeapon(ARItemID, Hand);
 	}
 	else
 	{
@@ -1071,7 +1072,7 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 			Each socket coresponds to single slot in PlayerController->LeftHandWeapons
 			Bur for now it will suffice.
 			*/
-			if (ActiveLeftHandWeapon && ActiveLeftHandWeapon->ItemName == ItemID)
+			if (ActiveLeftHandWeapon && ActiveLeftHandWeapon->ItemName == ARItemID)
 			{
 				//we don't want to move item back to inventory.
 				//we just need to reset pointer to weapon, and un attach mesh.
@@ -1083,7 +1084,7 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 		}
 		else if (Hand == 1)
 		{
-			if (ActiveRightHandWeapon && ActiveRightHandWeapon->ItemName == ItemID)
+			if (ActiveRightHandWeapon && ActiveRightHandWeapon->ItemName == ARItemID)
 			{
 				//we don't want to move item back to inventory.
 				//we just need to reset pointer to weapon, and un attach mesh.
@@ -1095,11 +1096,11 @@ void UAREquipmentComponent::UnEquipWeapon(FName ItemID, int32 Hand)
 		}
 	}
 }
-void UAREquipmentComponent::ServerUnEquipWeapon_Implementation(FName ItemID, int32 Hand)
+void UAREquipmentComponent::ServerUnEquipWeapon_Implementation(FName ARItemID, int32 Hand)
 {
-	UnEquipWeapon(ItemID, Hand);
+	UnEquipWeapon(ARItemID, Hand);
 }
-bool UAREquipmentComponent::ServerUnEquipWeapon_Validate(FName ItemID, int32 Hand)
+bool UAREquipmentComponent::ServerUnEquipWeapon_Validate(FName ARItemID, int32 Hand)
 {
 	return true;
 }

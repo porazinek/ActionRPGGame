@@ -33,6 +33,9 @@ class UARTraceStatics : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, Category = "AR|Trace")
 		static FHitResult GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand);
+
+	UFUNCTION(BlueprintCallable, Category = "AR|Trace")
+		static FHitResult GetHitResultCorrected(float Range, FName StartSocket, class AARCharacter* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand, FName CorrectionSocket = "TestSocket");
 };
 
 

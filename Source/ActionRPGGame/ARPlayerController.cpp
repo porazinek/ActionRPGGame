@@ -76,11 +76,13 @@ void AARPlayerController::BeginPlay()
 	*/
 	Inventory->SetIsReplicated(true);
 	Abilities->SetIsReplicated(true);
+	
 }
 void AARPlayerController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	ARCharacter = Cast<AARCharacter>(InPawn);
+	Abilities->OwningCharacter = ARCharacter;
 }
 
 void AARPlayerController::SetupInputComponent()
@@ -101,6 +103,9 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("FireRightWeapon", IE_Pressed, this, &AARPlayerController::InputFireRightWeapon);
 	InputComponent->BindAction("FireLeftWeapon", IE_Released, this, &AARPlayerController::InputStopFireLeftWeapon);
 	InputComponent->BindAction("FireRightWeapon", IE_Released, this, &AARPlayerController::InputStopFireRightWeapon);
+	
+	InputComponent->BindAction("ReloadLeftWeapon", IE_Released, this, &AARPlayerController::InputReloadLeftWeapon);
+	InputComponent->BindAction("ReloadRightWeapon", IE_Released, this, &AARPlayerController::InputReloadRightWeapon);
 
 	InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARPlayerController::InputSwapLeftWeapon);
 	InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARPlayerController::InputSwapRightWeapon);
@@ -138,9 +143,9 @@ void AARPlayerController::InputTempAddWeapons()
 
 void AARPlayerController::InputActivateAbility()
 {
-	if (ActiveAbility)
+	if (Abilities->ActiveAbility)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActiveAbility);
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Abilities->ActiveAbility);
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();
@@ -151,17 +156,11 @@ void AARPlayerController::InputActivateAbility()
 void AARPlayerController::InputActionButtonOne()
 {
 	//second press should deactivate ability and remove it from here.
-	if (ActionBarOne[0].Ability.IsValid())
-	{
-		SetActiveAbility(ActionBarOne[0].Ability.Get());
-		//ActiveAbility = ActionBarOne[0].Ability.Get();
-		//ActiveAbility->Initialize();
-		/*IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActionBarOne[0].Ability.Get());
-		if (actionInterface)
-		{
-		actionInterface->InputPressed();
-		}*/
-	}
+//	if (ActionBarOne[0].Ability.IsValid())
+	//{
+		Abilities->SetActiveAction(Abilities->ActionBars.ActionBars[0].ActionSlots[0]);
+	//	SetActiveAbility(ActionBarOne[0].Ability.Get());
+//	}
 }
 void AARPlayerController::InputActionButtonTwo()
 {
@@ -203,6 +202,21 @@ void AARPlayerController::InputStopFireRightWeapon()
 	if (ARCharacter)
 	{
 		ARCharacter->InputStopFireRightWeapon();
+	}
+}
+
+void AARPlayerController::InputReloadLeftWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputReloadLeftWeapon();
+	}
+}
+void AARPlayerController::InputReloadRightWeapon()
+{
+	if (ARCharacter)
+	{
+		ARCharacter->InputReloadRightWeapon();
 	}
 }
 

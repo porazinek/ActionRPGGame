@@ -62,6 +62,9 @@ class IIARActionState
 	UFUNCTION()
 		virtual void InputReleased();
 
+	UFUNCTION()
+		virtual void ActionReload();
+
 	inline TWeakObjectPtr<class AARWeapon> GetCurrentWeapon() { return CurrentWeapon; };
 	inline void SetCurrentWeapon(class AARWeapon* WeaponIn) { CurrentWeapon = WeaponIn; };
 private:

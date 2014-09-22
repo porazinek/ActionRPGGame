@@ -36,12 +36,12 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	CameraBoom = PCIP.CreateDefaultSubobject<USpringArmComponent>(this, TEXT("CameraBoom"));
 	CameraBoom->AttachTo(CapsuleComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character
-	CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
+	//CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
 	CameraBoom->SocketOffset = FVector(0.0f, 50.0f, 100.0f);
 	// Create a follow camera
 	FollowCamera = PCIP.CreateDefaultSubobject<UCameraComponent>(this, TEXT("FollowCamera"));
 	FollowCamera->AttachTo(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUseControllerViewRotation = false; // Camera does not rotate relative to arm
+	//FollowCamera->bUseControllerViewRotation = false; // Camera does not rotate relative to arm
 
 	bReplicates = true;
 	// Don't rotate when the controller rotates. Let that just affect the camera.
@@ -411,7 +411,29 @@ void AARCharacter::InputStopFireRightWeapon()
 	}
 }
 
+void AARCharacter::InputReloadLeftWeapon()
+{
+	if (Equipment->ActiveLeftHandWeapon)
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
+		if (actionInterface)
+		{
+			actionInterface->ActionReload();
+		}
+	}
+}
+void AARCharacter::InputReloadRightWeapon()
+{
+	if (Equipment->ActiveRightHandWeapon)
+	{
+		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveRightHandWeapon);
+		if (actionInterface)
+		{
+			actionInterface->ActionReload();
+		}
+	}
 
+}
 float AARCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
 	return 0;

@@ -104,6 +104,10 @@ public:
 	void InputFireRightWeapon();
 	void InputStopFireLeftWeapon();
 	void InputStopFireRightWeapon();
+
+	void InputReloadLeftWeapon();
+	void InputReloadRightWeapon();
+
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling
 

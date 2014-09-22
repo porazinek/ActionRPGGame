@@ -37,10 +37,10 @@ void SARAbilityInventoryWidget::Construct(const FArguments& InArgs)
 
 void SARAbilityInventoryWidget::SyncAbilities()
 {
-	if (!MyPC.IsValid())
+	if (!AbilityComp.IsValid())
 		return;
 
-	Abilities.Empty(MyPC->AbilityInventory.Num());
+	Abilities.Empty(AbilityComp->AbilityBook.Num());
 
 	for (const FActionSlotInfo& AbilityIn : AbilityComp->AbilityBook)
 	{
@@ -72,6 +72,7 @@ TSharedRef<ITableRow> SARAbilityInventoryWidget::MakeTileViewWidget(TSharedPtr<F
 			[
 				SNew(SARActionItemWidget)
 				.MyPC(MyPC)
+				.AbilityComp(AbilityComp)
 				.CurrentAbility(AssetItem)
 				.SlotType(EARAbilitySlot::Ability_Inventory)
 			];

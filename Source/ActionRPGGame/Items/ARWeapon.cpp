@@ -5,7 +5,6 @@
 #include "Net/UnrealNetwork.h"
 #include "../ARCharacter.h"
 #include "../ActionState/ARActionStateComponent.h"
-#include "../FXEffects/ARFXEffectComponent.h"
 
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"

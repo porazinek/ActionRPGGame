@@ -3,6 +3,8 @@
 #include "ActionRPGGame.h"
 #include "../../ARPlayerController.h"
 #include "../../Abilities/ARAbility.h"
+#include "../../Abilities/ARAbilityComponent.h"
+
 #include "ARAbilityCostEffect.h"
 
 UARAbilityCostEffect::UARAbilityCostEffect(const class FPostConstructInitializeProperties& PCIP)
@@ -17,12 +19,18 @@ void UARAbilityCostEffect::Initialize()
 
 	if (EffectTarget.IsValid())
 	{
-		AARPlayerController* MyPC = Cast<AARPlayerController>(EffectTarget.Get());
-		MyPC->OnAbilityEquiped.AddDynamic(this, &UARAbilityCostEffect::ChangeAbilityCost);
+		UARAbilityComponent* tempComp = EffectTarget->FindComponentByClass<UARAbilityComponent>();
+		if (tempComp)
+		{
+			//tempComp->OnActionAddedToBar.BindUObject(this, &UARAbilityCostEffect::ModifyAbility);
+			tempComp->OnAbilityAdded.AddDynamic(this, &UARAbilityCostEffect::ModifyAbility);
+		}
+		//AARPlayerController* MyPC = Cast<AARPlayerController>(EffectTarget.Get());
+		//MyPC->OnAbilityEquiped.AddDynamic(this, &UARAbilityCostEffect::ChangeAbilityCost);
 	}
 }
 
-void UARAbilityCostEffect::ChangeAbilityCost(class AARAbility* AbilityIn)
+void UARAbilityCostEffect::ModifyAbility_Implementation(AARAbility* AbilityIn)
 {
 	if (AbilityIn)
 	{

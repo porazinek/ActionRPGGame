@@ -78,6 +78,9 @@ public:
 	void InputStopFireLeftWeapon();
 	void InputStopFireRightWeapon();
 
+	void InputReloadLeftWeapon();
+	void InputReloadRightWeapon();
+
 	void InputTempAddWeapons();
 
 	void InputSwapLeftWeapon();

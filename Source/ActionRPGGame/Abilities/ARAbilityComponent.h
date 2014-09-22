@@ -4,7 +4,9 @@
 
 #include "ARAbilityComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionAddedToBar, FActionSlotInfo, ActionSlot);
+DECLARE_DELEGATE_OneParam(FOnActionAddedToBar, FActionSlotInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnAbilityAdded, class AARAbility*, AbilityIn);
 
 UCLASS(hidecategories = (Object, LOD, Lighting, Transform, Sockets, TextureStreaming), editinlinenew, meta = (BlueprintSpawnableComponent))
 class UARAbilityComponent : public UActorComponent
@@ -17,6 +19,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Ability Data Temp")
 		TArray<FARAbilityData> AbiltityDataTemp;
+
 	UPROPERTY()
 	class AARPlayerController* OwningController;
 
@@ -28,7 +31,7 @@ public:
 	UPROPERTY()
 	class AARAbility* ActionButtonOne;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Ability List Temp")
 		TArray<FActionSlotInfo> AbilityBook;
 	
 	UPROPERTY()
@@ -41,10 +44,16 @@ public:
 		TArray<FAbilityInfo> ActionBarOne;
 	UFUNCTION()
 		void OnRep_ActionBarOne();
+
+	void SetActiveAction(FActionSlotInfo ActionIn);
+
 	bool UpdateActionBarOne;
 
 
 	FOnActionAddedToBar OnActionAddedToBar;
+
+	UPROPERTY(BlueprintCallable, Category = "Ability")
+		FDMDOnAbilityAdded OnAbilityAdded;
 
 	//this would be probably best option.
 	//but TMap is not replicared

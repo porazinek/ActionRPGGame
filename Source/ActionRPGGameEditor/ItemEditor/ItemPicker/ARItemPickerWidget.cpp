@@ -7,8 +7,8 @@
 class FEdGraphSchemaAction_ItemPickerEntry : public FEdGraphSchemaAction_Dummy
 {
 public:
-	static FString StaticGetTypeId() { static FString Type = TEXT("FEdGraphSchemaAction_ItemPickerEntry"); return Type; }
-	virtual FString GetTypeId() const override { return StaticGetTypeId(); }
+	static FName StaticGetTypeId() { static FName Type = TEXT("FEdGraphSchemaAction_ItemPickerEntry"); return Type; }
+	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
 
 	FEdGraphSchemaAction_ItemPickerEntry(FString ItemNameIn, int32 ItemIndexIn)
 		//: ItemData(ItemDataIn)

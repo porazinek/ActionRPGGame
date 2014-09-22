@@ -113,8 +113,8 @@ FReply SAddItemOptions::OnCancel()
 class FEdGraphSchemaAction_RPGItemEntry : public FEdGraphSchemaAction_Dummy
 {
 public:
-	static FString StaticGetTypeId() { static FString Type = TEXT("FEdGraphSchemaAction_RPGItemEntry "); return Type; }
-	virtual FString GetTypeId() const override { return StaticGetTypeId(); }
+	static FName StaticGetTypeId() { static FName Type = TEXT("FEdGraphSchemaAction_RPGItemEntry "); return Type; }
+	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
 
 	FEdGraphSchemaAction_RPGItemEntry(UARItemsData* ItemsDataIn, FName InKey, FString ItemNameIn, int32 ItemIndexIn)
 		: FEdGraphSchemaAction_Dummy()

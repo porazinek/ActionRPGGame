@@ -46,5 +46,5 @@ void UARActionStateFiring::BeginActionSequence()
 }
 void UARActionStateFiring::EndActionSequence()
 {
-	GetOuterUARActionStateComponent()->GotoActiveState();
+	GetOuterUARActionStateComponent()->GotoState(GetOuterUARActionStateComponent()->RefireState);
 }

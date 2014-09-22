@@ -34,12 +34,16 @@ AARAbility::AARAbility(const class FPostConstructInitializeProperties& PCIP)
 
 	ActionState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
 	ActionState->SetMaxCastTime(MaxCastTime);
-	ActionState->SetNetAddressable();
-	ActionState->SetIsReplicated(true);
+	ActionState->SetCooldownTime(RechargeTime);
+
 
 	LeftHandSocket = "LeftHandSocket";
 	RightHandSocket = "RightHandSocket";
 	WeaponSocket = "WeaponSocket";
+
+	CurrentWeapon = nullptr;
+	LeftWeapon = nullptr;
+	RightWeapon = nullptr;
 }
 void AARAbility::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
@@ -58,31 +62,33 @@ void AARAbility::Tick(float DeltaSeconds)
 	/*
 		This is only for cosmetic client side. It will also fire up action events on client (assuming they are bound).
 		This will help with other systems, like spawning effects on client AND server.
+
+		I probabaly should not do it inside tick.
 	*/
 	if (IsBeingUsed)
 	{
 		CurrentCastTime += DeltaSeconds*CastingSpeed;
 		if (CurrentCastTime >= ActionState->MaxCastTime)
 		{
-			//ActionState->FireAction();
 			CurrentCastTime = 0;
 			IsBeingUsed = false;
 			IsOnCooldown = true;
-			//ActionState->CooldownBegin();
 			
 		}
 	}
-	if (IsOnCooldown)
+	if (IsOnCooldown && ActionState->IsRecharing)
 	{
 		CurrentCooldownTime += DeltaSeconds*CastingSpeed;
 		if (CurrentCooldownTime >= ActionState->ActionCooldownTime)
 		{
-			//ActionState->CooldownEnded();
-			IsOnCooldown = false;
-			CurrentCooldownTime = 0;
-			//PrimaryActorTick.SetTickFunctionEnable(false);
-			//PrimaryActorTick.UnRegisterTickFunction();
+			//IsOnCooldown = false;
+		//	CurrentCooldownTime = 0;
 		}
+	}
+	if (!ActionState->IsRecharing)
+	{
+		//IsOnCooldown = false;
+		CurrentCooldownTime = 0;
 	}
 
 }
@@ -90,9 +96,31 @@ void AARAbility::Tick(float DeltaSeconds)
 void AARAbility::Initialize()
 {
 	Execute_OnActionPrepared(this);
+	OwnerEquipment = OwningCharacter->Equipment.Get();
+	OwnerAttributes = OwningCharacter->Attributes.Get();
+
+	OwnerEquipment->OnLeftWeaponActive.AddDynamic(this, &AARAbility::OnLeftHandWeapon);
+	OwnerEquipment->OnRightWeaponActive.AddDynamic(this, &AARAbility::OnRightHandWeapon);
+	LeftWeapon = OwnerEquipment->ActiveLeftHandWeapon;
+	RightWeapon = OwnerEquipment->ActiveRightHandWeapon;
+
 	ActionState->Owner = OwningCharacter;
 }
 
+void AARAbility::BeginPlay()
+{
+	Super::BeginPlay();
+	ActionState->SetNetAddressable();
+	ActionState->SetIsReplicated(true);
+}
+void AARAbility::OnLeftHandWeapon(class AARWeapon* WeaponIn)
+{
+	LeftWeapon = WeaponIn;
+}
+void AARAbility::OnRightHandWeapon(class AARWeapon* WeaponIn)
+{
+	RightWeapon = WeaponIn;
+}
 FVector AARAbility::GetOriginLocation()
 {
 	FVector Origin = FVector::ZeroVector;
@@ -162,6 +190,8 @@ void AARAbility::InputReleased()
 {
 
 }
+
+//Executes On Server.
 void AARAbility::StartAction()
 {
 	// 1. We need to check if player have right weapon equiped. - done
@@ -206,22 +236,23 @@ bool AARAbility::CheckWeapon()
 	/*
 		What if, ability require two weapon of specific type to be equiped ?
 	*/
-	if (!OwningCharacter->Equipment->ActiveLeftHandWeapon && !OwningCharacter->Equipment->ActiveRightHandWeapon)
+
+	if (!LeftWeapon && !RightWeapon)
 		return false;
 
-	if (OwningCharacter->Equipment->ActiveLeftHandWeapon)
+	if (LeftWeapon)
 	{
-		if (WeaponRequiredTags.MatchesAny(OwningCharacter->Equipment->ActiveLeftHandWeapon->WeaponState->OwnedTags, false))
+		if (WeaponRequiredTags.MatchesAny(LeftWeapon->WeaponState->OwnedTags, false))
 		{
-			CurrentWeapon = OwningCharacter->Equipment->ActiveLeftHandWeapon;
+			CurrentWeapon = LeftWeapon;
 			return true;
 		}
 	}
-	if (OwningCharacter->Equipment->ActiveRightHandWeapon)
+	if (RightWeapon)
 	{
-		if (WeaponRequiredTags.MatchesAny(OwningCharacter->Equipment->ActiveRightHandWeapon->WeaponState->OwnedTags, false))
+		if (WeaponRequiredTags.MatchesAny(RightWeapon->WeaponState->OwnedTags, false))
 		{
-			CurrentWeapon = OwningCharacter->Equipment->ActiveRightHandWeapon;
+			CurrentWeapon = RightWeapon;
 			return true;
 		}
 	}

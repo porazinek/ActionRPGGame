@@ -16,6 +16,8 @@ public:
 
 		SLATE_ARGUMENT(TWeakObjectPtr<class AARPlayerController>, MyPC)
 
+		SLATE_ARGUMENT(TWeakObjectPtr<class UARAbilityComponent>, AbilityComp)
+
 		SLATE_EVENT(FOnGetFloat, OnGetFloat)
 
 		SLATE_ATTRIBUTE(float, MaxValue)
@@ -35,6 +37,8 @@ private:
 	TWeakObjectPtr<class AARHUD> OwnerHUD;
 
 	TWeakObjectPtr<class AARPlayerController> MyPC;
+	
+	TWeakObjectPtr<class UARAbilityComponent> AbilityComp;
 
 	FText GetCurrentCastTime() const;
 

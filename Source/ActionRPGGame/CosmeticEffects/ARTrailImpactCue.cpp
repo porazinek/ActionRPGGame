@@ -11,6 +11,9 @@
 #include "../Componenets/AREquipmentComponent.h"
 #include "../Abilities/ARAbility.h"
 
+
+#include "IARCosmeticEffects.h"
+
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -30,8 +33,6 @@ UARTrailImpactCue::UARTrailImpactCue(const class FPostConstructInitializePropert
 void UARTrailImpactCue::InitializeComponent()
 {
 	Super::InitializeComponent();
-	OwnerChar = Cast<AARCharacter>(UGameplayStatics::GetPlayerCharacter(GetOwner(), 0));
-	OriginWeapon = Cast<AARWeapon>(GetOwner());
 }
 void UARTrailImpactCue::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
@@ -48,35 +49,11 @@ void UARTrailImpactCue::OnRep_Hit()
 void UARTrailImpactCue::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocketIn)
 {
 	if (TrailFX)
-	{ 
-		/*
-			This is just bad, but I don't have any better idea at time, and it works.
-			So I leave it like that for now.
-		*/
-		AARCharacter* chara = Cast<AARCharacter>(GetOuter()->GetOuter());
-		//Location += FVector(FMath::FRandRange(-0.1, 0.1),0,0);
-		//Origin += FVector(FMath::FRandRange(-0.1, 0.1), 0, 0);
-		AARWeapon* weap = Cast<AARWeapon>(GetOwner());
-		if (weap)
+	{
+		IIARCosmeticEffects* cosInt = InterfaceCast<IIARCosmeticEffects>(GetOwner());
+		if (cosInt)
 		{
-			FVector locOrigin = UARTraceStatics::GetStartLocation(StartSocket, weap->WeaponOwner, weap->WeaponHand);
-			TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, locOrigin);
-			if (TrailPSC)
-			{
-				const FVector AdjustedDir = (Location - locOrigin).SafeNormal();
-				FVector ParticleSpeed = AdjustedDir * TrailSpeed2;
-				TrailPSC->SetVectorParameter(TrailSpeedParam2, ParticleSpeed);
-			}
-			if (ImpactFX)
-				UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), ImpactFX, Location);
-
-			return;
-		}
-
-		AARAbility* ability = Cast<AARAbility>(GetOwner());
-		if (ability)
-		{
-			FVector locOrigin = ability->GetOriginLocation();
+			FVector locOrigin = cosInt->GetOriginLocation();
 			TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, locOrigin);
 			if (TrailPSC)
 			{

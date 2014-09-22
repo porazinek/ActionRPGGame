@@ -2,6 +2,9 @@
 #pragma once
 
 #include "../ActionState/IARActionState.h"
+
+#include "../CosmeticEffects/IARCosmeticEffects.h"
+
 #include "../Types/ARStructTypes.h"
 
 #include "ARAbility.generated.h"
@@ -12,9 +15,12 @@ enum EAbilityOrigin
 	OpositeHandToWeapon,
 	UseWeaponLocation
 };
-
-UCLASS(hidecategories = (Input, Movement, Collision, Rendering, "Utilities|Transformation"), MinimalAPI, Blueprintable, notplaceable)
-class AARAbility : public AActor, public IIARActionState
+/*
+	Probabaly need to split abilities into more descriptive and contained classes. Like
+	Mele, Ranged, Spell, etc. Where it makes sense of course.
+*/
+UCLASS(hidecategories = (Input, Movement, Collision, Rendering, "Utilities|Transformation"), MinimalAPI, Blueprintable, notplaceable, DefaultToInstanced)
+class AARAbility : public AActor, public IIARActionState, public IIARCosmeticEffects
 {
 	GENERATED_UCLASS_BODY()
 public:
@@ -22,6 +28,8 @@ public:
 
 	//Mainly used on server. To assign Owner properties;
 	virtual void Initialize();
+
+	virtual void BeginPlay() override;
 
 	/* 
 		Currently Active weapon, must have any of these tags.
@@ -54,6 +62,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Reuired Weapons")
 		bool MustHaveTwoWeaponActive;
 
+	/*
+		Three properties below are actually only usefull for ranged abilities.
+		For mele too, if you really want to spawn some effect from socket for whatever reason.
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Cosmetics")
 		FName LeftHandSocket;
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Cosmetics")
@@ -73,10 +85,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Cosmetics")
 		TEnumAsByte<EAbilityOrigin>  StartLocation;
 
-	UFUNCTION(BlueprintCallable, Category="AR|Ability")
-		FVector GetOriginLocation();
+	//UFUNCTION(BlueprintCallable, Category="AR|Ability")
+	//	FVector GetOriginLocation();
 
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Ownership")
 	class AARCharacter* OwningCharacter;
 	UPROPERTY()
 	class AARPlayerController* OwiningController;
@@ -88,9 +100,23 @@ public:
 	UPROPERTY(Replicated)
 	class AARWeapon* CurrentWeapon;
 
+	UPROPERTY()
+	class AARWeapon* LeftWeapon;
+	UPROPERTY()
+	class AARWeapon* RightWeapon;
+
 	/* [client] OVERIDE from IIARActionState */
 	virtual void InputPressed() override;
 	virtual void InputReleased() override;
+
+
+	/** IIARCosmeticEffects - Begin */
+
+	virtual FVector GetOriginLocation() override;
+
+	/** IIARCosmeticEffects - End */
+
+
 	/*[Server]*/
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ServerStartAction();
@@ -109,6 +135,12 @@ public:
 public:
 
 	float GetCurrentCastTime();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
+		float RechargeTime;
+
+	//CastTime should be at least, as long as animation needed to play, before ability is executed.
+	//even instant abilities, have same delay, because of animation ;).
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability")
 		float MaxCastTime;
 	/*[Client Prediction]*/
@@ -144,6 +176,11 @@ protected:
 		Check if player have resourced needed to use ability, and subtracts them.
 	*/
 	bool CheckResources();
+
+	UFUNCTION()
+	void OnLeftHandWeapon(class AARWeapon* WeaponIn);
+	UFUNCTION()
+	void OnRightHandWeapon(class AARWeapon* WeaponIn);
 };
 
 

@@ -17,8 +17,8 @@ class UARAbilityCostEffect : public UAREffectType
 public:
 	virtual void Initialize() override;
 
-	UFUNCTION()
-	void ChangeAbilityCost(class AARAbility* AbilityIn);
+	UFUNCTION(BlueprintNativeEvent)
+		void ModifyAbility(AARAbility* AbilityIn);
 };
 
 

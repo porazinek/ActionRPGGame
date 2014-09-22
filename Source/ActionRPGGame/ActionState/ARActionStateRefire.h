@@ -1,7 +1,9 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
+
 #include "ARActionState.h"
-#include "ARActionStateFiring.generated.h"
+
+#include "ARActionStateRefire.generated.h"
 
 /*
 	For lulz I will implement basic state here,
@@ -12,23 +14,23 @@
 */
 
 UCLASS(DefaultToInstanced, Within = ARActionStateComponent)
-class UARActionStateFiring : public UARActionState
+class UARActionStateRefire : public UARActionState
 {
 	GENERATED_UCLASS_BODY()
 
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime);
+
 
 	virtual void BeginState(UARActionState* PrevState) override;
 	virtual void EndState() override;
 	virtual void BeginActionSequence() override;
 	virtual void EndActionSequence() override;
 
-	FTimerHandle FireHandle;
+private:
+	float CurrentCooldownTime;
+	bool IsOnCooldown;
 
-	bool FireStarted;
-	bool IsFirstFire;
-	float CurrentIntervalTime;
-
+	void CooldownEnded();
 };
 
 

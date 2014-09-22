@@ -20,8 +20,8 @@
 class FEdGraphSchemaAction_ItemContainerEntry : public FEdGraphSchemaAction_Dummy
 {
 public: //this will need chagne to FName
-	static FString StaticGetTypeId() { static FString Type = TEXT("FEdGraphSchemaAction_ItemContainerEntry"); return Type; }
-	virtual FString GetTypeId() const override { return StaticGetTypeId(); }
+	static FName StaticGetTypeId() { static FName Type = TEXT("FEdGraphSchemaAction_ItemContainerEntry"); return Type; }
+	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
 
 	FEdGraphSchemaAction_ItemContainerEntry(FString ItemNameIn, FARItemPickupCont* ItemContIn)
 		//: ItemData(ItemDataIn)
@@ -119,8 +119,8 @@ void SARItemContainerList::HandleActionSelected(const TArray< TSharedPtr<FEdGrap
 class FEdGraphSchemaAction_SelectedItemContainerEntry : public FEdGraphSchemaAction_Dummy
 {
 public: //this will need chagne to FName
-	static FString StaticGetTypeId() { static FString Type = TEXT("FEdGraphSchemaAction_SelectedItemContainerEntry"); return Type; }
-	virtual FString GetTypeId() const override { return StaticGetTypeId(); }
+	static FName StaticGetTypeId() { static FName Type = TEXT("FEdGraphSchemaAction_SelectedItemContainerEntry"); return Type; }
+	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
 
 	FEdGraphSchemaAction_SelectedItemContainerEntry(FString ItemNameIn, FARItemPickupCont* ItemContIn, int32 ItemIDIn)
 		: ItemName(ItemNameIn)

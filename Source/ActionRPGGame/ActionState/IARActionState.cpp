@@ -18,3 +18,8 @@ void IIARActionState::InputReleased()
 {
 
 }
+
+void IIARActionState::ActionReload()
+{
+
+}

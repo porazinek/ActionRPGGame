@@ -3,8 +3,8 @@
 #include "ActionRPGGame.h"
 #include "AREffectType.h"
 
-UAREffectType::UAREffectType(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREffectType::UAREffectType(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

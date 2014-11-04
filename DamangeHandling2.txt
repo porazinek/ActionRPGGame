@@ -1,0 +1,22 @@
+Use Weapon Or Ability -> Modify damage by Instigator Attributes ->
+-> Modify damage by Instigator Effects ->
+-> Modify damage by target Attributes -> 
+-> Modify damage by target Effects -> ApplyDamage -> Broadcast damage taken
+
+Instigator attributes - access directly in weapon/ability from attribute component and apply to weapon/ability
+Target attributes - determine incoming damage type, and then apply attribute modifications to damage (like armor will reduce physical damage).
+
+Instigator Effects - trigger delegate in effect in weapon/ability and modify damage (if tags match), write damage back to weapon, before it is 
+appiled to target.
+UObject:
+1. intercept outgoing damage
+2. Modify damage.
+3. Write it back.
+Next UObject do the same thing.
+Until there are no objects to modify damage.
+Then send damage to Target.
+
+On Target do the same thing, before it will be applied.
+
+
+Target Effects - trigger delegate in effect, in attribute component, write modified damage back and then apply it as final.

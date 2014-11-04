@@ -33,8 +33,6 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_Hit, RepRetry, BlueprintReadWrite, Category = "Hit Info")
 		FHitInfo HitInfo;
 	
-	UPROPERTY()
-	class AARWeapon* OriginWeapon;
 	UFUNCTION()
 		void OnRep_Hit();
 	/*

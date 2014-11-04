@@ -4,8 +4,8 @@
 
 #include "ARActionStateCooldown.h"
 
-UARActionStateCooldown::UARActionStateCooldown(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionStateCooldown::UARActionStateCooldown(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	CurrentCooldownTime = 0;
 	IsOnCooldown = false;

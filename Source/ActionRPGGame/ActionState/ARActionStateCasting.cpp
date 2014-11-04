@@ -6,8 +6,8 @@
 
 #include "ARActionStateCasting.h"
 
-UARActionStateCasting::UARActionStateCasting(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionStateCasting::UARActionStateCasting(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	GetOuterUARActionStateComponent();
 }

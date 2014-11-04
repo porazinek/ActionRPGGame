@@ -8,8 +8,8 @@
 #include "Net/UnrealNetwork.h"
 #include "AREffectPeriodicO.h"
 
-UAREffectPeriodicO::UAREffectPeriodicO(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREffectPeriodicO::UAREffectPeriodicO(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	ReplicationTest = true;
 

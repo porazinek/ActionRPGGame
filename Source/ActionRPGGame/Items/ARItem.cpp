@@ -7,8 +7,8 @@
 
 #include "ARItem.h"
 
-AARItem::AARItem(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARItem::AARItem(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bReplicates = true;
 	bNetUseOwnerRelevancy = true;
@@ -20,4 +20,6 @@ void AARItem::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & Out
 
 	DOREPLIFETIME(AARItem, ARItemID);
 	DOREPLIFETIME(AARItem, ItemIndex);
+	DOREPLIFETIME(AARItem, ARCharacterOwner);
+	DOREPLIFETIME(AARItem, ARPCOwner);
 }

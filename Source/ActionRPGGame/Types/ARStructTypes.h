@@ -1,7 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "AREnumTypes.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 #include "Slate/SlateBrushAsset.h"
 
 #include "ARAttributeTypes.h"
@@ -9,7 +9,7 @@
 
 DECLARE_DELEGATE_RetVal(float, FOnGetFloat);
 
-
+DECLARE_DELEGATE_RetVal(const AActor*, FOnGetEffectActor);
 
 //it probably will be better to store these informations in DataTable
 //or in database. For much faster lookups.
@@ -515,19 +515,19 @@ public:
 	UPROPERTY()
 		FName SlotName;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		FName ItemKey;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		int32 ItemIndex;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		bool IsAttached;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		TEnumAsByte<EItemSlot> ItemSlot; //to check which datasset we should query.
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 		TEnumAsByte<EDragDropSlot::Type> DragDropSlot;
 
 	inline bool operator!= (const FARDragDropInfo& Other) const

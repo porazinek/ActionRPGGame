@@ -55,7 +55,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Ownership")
 		TWeakObjectPtr<AActor> EffectTarget;
 	/*
-		What caused this effect to EffectTargetl
+		What caused this effect to EffectTarget
 	*/
 	UPROPERTY(BlueprintReadOnly, Category = "Ownership")
 		TWeakObjectPtr<AActor> EffectCausedBy;
@@ -76,7 +76,10 @@ public:
 		virtual void InitializeEffect();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly)
-		void OnEffectInitialized();
+		void OnPreInitializeEffect();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly)
+		void OnEffectInitialized(const AActor* ActorOut);
 
 	//UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Effect")
 	//	FDMDOnEffectInitialized OnEffectInit;

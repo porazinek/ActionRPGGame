@@ -6,29 +6,34 @@
 #include "../ARCharacter.h"
 #include "../ActionState/ARActionStateComponent.h"
 
+
+
+
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
 
 #include "ARWeapon.h"
 
-AARWeapon::AARWeapon(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARWeapon::AARWeapon(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	ArrowComp = PCIP.CreateDefaultSubobject<UArrowComponent>(this, TEXT("ArrowComp"));
-	WeaponMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponMesh"));
+	ArrowComp = ObjectInitializer.CreateDefaultSubobject<UArrowComponent>(this, TEXT("ArrowComp"));
+	WeaponMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponMesh"));
 	WeaponMesh->AlwaysLoadOnClient = true;
 	WeaponMesh->AlwaysLoadOnServer = true;
 	WeaponMesh->AttachParent = ArrowComp;
 	//WeaponMesh->SetNetAddressable();
 	//WeaponMesh->SetIsReplicated(true);
 
+	
+
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
 
-	WeaponState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
-	WeaponState->Owner = WeaponOwner;
+	WeaponState = ObjectInitializer.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
+	WeaponState->Owner = ARCharacterOwner;
 	WeaponState->SetNetAddressable();
 	WeaponState->SetIsReplicated(true);
 	WeaponState->OwnedTags = OwnedTags;
@@ -62,20 +67,21 @@ void AARWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	WeaponState->SetIsReplicated(true);
-	WeaponState->Owner = WeaponOwner;
+	WeaponState->Owner = ARCharacterOwner;
 }
 void AARWeapon::Initialize()
 {
 	Execute_OnActionPrepared(this);
 	WeaponState->SetIsReplicated(true);
-	WeaponState->Owner = WeaponOwner;
+	WeaponState->Owner = ARCharacterOwner;
 }
 void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AARWeapon, WeaponOwner);
+	DOREPLIFETIME(AARWeapon, ReplicationHelper);
 }
+
+
 
 //void AARWeapon::OnRep_WeaponOwner()
 //{
@@ -89,22 +95,22 @@ void AARWeapon::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & O
 //}
 void AARWeapon::AttachWeapon()
 {
-	if (WeaponOwner)
+	if (ARCharacterOwner)
 	{
 		// Remove and hide both first and third person meshes
 
 		// For locally controller players we attach both weapons and let the bOnlyOwnerSee, bOwnerNoSee flags deal with visibility.
 		//FName AttachPoint = WeaponOwner->GetWeaponAttachPoint();
-		if (WeaponOwner->IsLocallyControlled() == true)
+		if (ARCharacterOwner->IsLocallyControlled() == true)
 		{
-			USkeletalMeshComponent* PawnMesh3p = WeaponOwner->Mesh;
+			USkeletalMeshComponent* PawnMesh3p = ARCharacterOwner->GetMesh();
 			WeaponMesh->SetHiddenInGame(false);
 			WeaponMesh->AttachTo(PawnMesh3p, "TestSocket");
 		}
 		else
 		{
 			USkeletalMeshComponent* UseWeaponMesh = WeaponMesh;
-			USkeletalMeshComponent* UsePawnMesh = WeaponOwner->Mesh;
+			USkeletalMeshComponent* UsePawnMesh = ARCharacterOwner->GetMesh();
 			UseWeaponMesh->AttachTo(UsePawnMesh, "TestSocket");
 			UseWeaponMesh->SetHiddenInGame(false);
 		}
@@ -141,7 +147,7 @@ void AARWeapon::InputReleased()
 }
 void AARWeapon::StartAction()
 {
-	OnWeaponFired.Broadcast(DamageToApply);
+	//OnWeaponFired.Broadcast(DamageToApply);
 	Execute_ServerOnActionStart(this);
 	WeaponState->StartAction();
 }

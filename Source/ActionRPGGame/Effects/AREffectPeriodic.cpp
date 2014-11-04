@@ -13,8 +13,8 @@
 
 #include "AREffectPeriodic.h"
 
-AAREffectPeriodic::AAREffectPeriodic(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AAREffectPeriodic::AAREffectPeriodic(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PeriodDuration = 1;
 	CurrentDuration = 0;

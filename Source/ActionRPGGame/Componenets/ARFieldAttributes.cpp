@@ -8,8 +8,8 @@
 
 #include "ARFieldAttributes.h"
 
-UARFieldAttributes::UARFieldAttributes(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARFieldAttributes::UARFieldAttributes(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

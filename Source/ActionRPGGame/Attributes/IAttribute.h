@@ -20,6 +20,11 @@ public:
 	UFUNCTION()
 		virtual void Died();
 
+	//UFUNCTION()
+	//	virtual float DamageTaken() { return 0; }
+	//UFUNCTION()
+	//	virtual float DamageDealt() { return 0; }
+
 	inline FName GetDeathAttribute(){ return DeathAttribute; };
 	inline void SetDeathAttribute(FName ValueIn) { DeathAttribute = ValueIn; };
 

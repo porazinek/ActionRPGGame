@@ -8,6 +8,9 @@
 #include "../ARCharacter.h"
 #include "../Items/ARWeapon.h"
 
+
+#include "IARCosmeticEffects.h"
+
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -16,8 +19,8 @@
 
 #include "ARTrailCue.h"
 
-UARTrailCue::UARTrailCue(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARTrailCue::UARTrailCue(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SetIsReplicated(true);
 
@@ -27,8 +30,6 @@ UARTrailCue::UARTrailCue(const class FPostConstructInitializeProperties& PCIP)
 void UARTrailCue::InitializeComponent()
 {
 	Super::InitializeComponent();
-
-	OriginWeapon = Cast<AARWeapon>(GetOwner());
 }
 void UARTrailCue::GetLifetimeReplicatedProps(TArray< class FLifetimeProperty > & OutLifetimeProps) const
 {
@@ -45,10 +46,10 @@ void UARTrailCue::SimulateHitOnClients(FVector Origin, FVector Location, FName S
 {
 	if (TrailFX)
 	{
-		//AARWeapon* weap = Cast<AARWeapon>(GetOwner());
-		if (OriginWeapon)
+		IIARCosmeticEffects* cosInt = Cast<IIARCosmeticEffects>(GetOwner());
+		if (cosInt)
 		{
-			FVector locOrigin = UARTraceStatics::GetStartLocation(StartSocket, OriginWeapon->WeaponOwner, OriginWeapon->WeaponHand);
+			FVector locOrigin = cosInt->GetOriginLocation();// UARTraceStatics::GetStartLocation(StartSocket, OriginWeapon->ARCharacterOwner, OriginWeapon->WeaponHand);
 			TrailPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, locOrigin);
 			if (TrailPSC)
 			{
@@ -58,6 +59,7 @@ void UARTrailCue::SimulateHitOnClients(FVector Origin, FVector Location, FName S
 			}
 		}
 	}
+	HitInfo.HitCounter++;
 }
 
 void UARTrailCue::SpawnEffectOnOwner()

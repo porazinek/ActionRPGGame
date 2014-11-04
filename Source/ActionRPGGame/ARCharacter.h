@@ -3,7 +3,7 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Types/ARStructTypes.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 #include "ARCharacter.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnSomethingTest, float, floatInput);
@@ -17,6 +17,7 @@ public:
 		void ClientRunDelegate();
 
 	float testNumber;
+	int32 supermegalol;
 
 	void RunDelegate();
 	UFUNCTION()
@@ -31,8 +32,8 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 	
 
-	UPROPERTY(BlueprintReadOnly, Category = "Feats")
-		TArray<class UAREffectType*> Feats;
+	//UPROPERTY(BlueprintReadOnly, Category = "Feats")
+	//	TArray<class UAREffectType*> Feats;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Feats")
 		TArray<TSubclassOf<class UAREffectType>> FeatClasses;
@@ -40,34 +41,37 @@ public:
 	UPROPERTY()
 		UParticleSystemComponent* PresistentParticle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-		TSubobjectPtr<class USpringArmComponent> CameraBoom;
+		class USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-		TSubobjectPtr<class UCameraComponent> FollowCamera;
+		class UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
-		TSubobjectPtr<class UARAttributeComponent> Attributes;
+		class UARAttributeComponent* Attributes;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+		class UARFeatComponent* Feats;
 	/*
 		Deprecated!
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
-		TSubobjectPtr<class UAREquipmentComponent> Equipment;
+		class UAREquipmentComponent* Equipment;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
-		TSubobjectPtr<class UARAbilityComponent> Abilities;
+		class UARAbilityComponent* Abilities;
 
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
-		TSubobjectPtr<class USkeletalMeshComponent> HeadMesh;
+		class USkeletalMeshComponent* HeadMesh;
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
-		TSubobjectPtr<class USkeletalMeshComponent> ShoulderMesh;
+		class USkeletalMeshComponent* ShoulderMesh;
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
-		TSubobjectPtr<class USkeletalMeshComponent> ChestMesh;
+		class USkeletalMeshComponent* ChestMesh;
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
-		TSubobjectPtr<class USkeletalMeshComponent> LegsMesh;
+		class USkeletalMeshComponent* LegsMesh;
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
-		TSubobjectPtr<class USkeletalMeshComponent> HandsMesh;
+		class USkeletalMeshComponent* HandsMesh;
 	UPROPERTY(VisibleAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = "Character Mesh")
-		TSubobjectPtr<class USkeletalMeshComponent> FootMesh;
+		class USkeletalMeshComponent* FootMesh;
 
 	/////TESTING ONLY
 	UPROPERTY(EditAnywhere, Category = "Abilities")
@@ -108,11 +112,21 @@ public:
 	void InputReloadLeftWeapon();
 	void InputReloadRightWeapon();
 
+
+	void InputStartCrouch();
+	void InputStopCrouch();
+	void InputStartJump();
+	void InputStopJump();
+
+	UPROPERTY(BlueprintReadOnly, Category = "AR Character")
+		bool bIsJumpButtonPressed;
 	///////////////////////////////////////////////////////////////
 	///////::: Input Handling
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input")
 		bool IsCharacterTurningYaw;
+	UPROPERTY(BlueprintReadOnly, Category = "Input")
+		float TurningDirection;
 protected:
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);

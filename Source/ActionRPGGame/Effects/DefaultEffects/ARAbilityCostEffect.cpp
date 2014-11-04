@@ -7,8 +7,8 @@
 
 #include "ARAbilityCostEffect.h"
 
-UARAbilityCostEffect::UARAbilityCostEffect(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARAbilityCostEffect::UARAbilityCostEffect(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

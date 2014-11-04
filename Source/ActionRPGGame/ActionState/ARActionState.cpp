@@ -6,8 +6,8 @@
 
 #include "ARActionState.h"
 
-UARActionState::UARActionState(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionState::UARActionState(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	GetOuterUARActionStateComponent();
 }

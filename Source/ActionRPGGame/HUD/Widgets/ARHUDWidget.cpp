@@ -53,7 +53,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 					SNew(SARCastingBarWidget)
 					.OwnerHUD(OwnerHUD)
 					.MyPC(MyPC)
-					.AbilityComp(MyPC->Abilities.Get())
+					.AbilityComp(MyPC->Abilities)
 				]
 			]
 			+ SOverlay::Slot()
@@ -108,7 +108,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 						.Character(MyChar)
 						.InventoryColumns(5)
 						.InventoryRows(10)
-						.Inventory(MyPC->Inventory.Get())
+						.Inventory(MyPC->Inventory)
 					]
 				]
 			]
@@ -127,7 +127,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							SNew(SARCharacterSheetWidget)
 							.MyPC(MyPC)
 							.Character(MyChar)
-							.Equipment(MyChar->Equipment.Get())
+							.Equipment(MyChar->Equipment)
 						]
 					]
 				]
@@ -145,7 +145,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							SNew(SARActionBarWidget)
 							.OwnerHUD(OwnerHUD)
 							.MyPC(MyPC)
-							.AbilityComp(MyPC->Abilities.Get())
+							.AbilityComp(MyPC->Abilities)
 						]
 					]
 				]
@@ -165,7 +165,7 @@ void SARHUDWidget::Construct(const FArguments& InArgs)
 							SNew(SARAbilityInventoryWidget)
 							.OwnerHUD(OwnerHUD)
 							.MyPC(MyPC)
-							.AbilityComp(MyPC->Abilities.Get())
+							.AbilityComp(MyPC->Abilities)
 						]
 					]
 				]

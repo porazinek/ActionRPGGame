@@ -3,8 +3,8 @@
 #include "ActionRPGGame.h"
 #include "IARActionState.h"
 
-UIARActionState::UIARActionState(const class FPostConstructInitializeProperties& PCIP)
-: Super(PCIP)
+UIARActionState::UIARActionState(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
 {
 
 }

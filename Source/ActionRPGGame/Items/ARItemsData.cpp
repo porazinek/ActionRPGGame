@@ -3,8 +3,8 @@
 #include "ActionRPGGame.h"
 #include "ARItemsData.h"
 
-UARItemsData::UARItemsData(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARItemsData::UARItemsData(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	
 }
@@ -134,10 +134,10 @@ void UARItemsData::SetCurrentEntry(const FName& Key)
 	RebuildEditEntries();
 }
 
-void UARItemsData::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
+//void UARItemsData::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+//{
+//	Super::PostEditChangeProperty(PropertyChangedEvent);
+//}
 
 /*
 	Should be more functions which handle refreshing list.

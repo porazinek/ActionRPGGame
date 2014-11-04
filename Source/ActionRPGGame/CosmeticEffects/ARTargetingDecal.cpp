@@ -12,8 +12,8 @@
 
 #include "ARTargetingDecal.h"
 
-UARTargetingDecal::UARTargetingDecal(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARTargetingDecal::UARTargetingDecal(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	//it should tick because we need to update position, when player move.
 	//we also don't really care at which thread it will tick, since it's only cosmetics.

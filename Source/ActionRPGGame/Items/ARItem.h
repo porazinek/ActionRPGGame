@@ -30,10 +30,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Item")
 		USlateBrushAsset* ItemIconAsset;
 
-	UPROPERTY()
-	class AARCharacter* ItemOwner;
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Ownership")
+	class AARCharacter* ARCharacterOwner;
 
-	//Set when adding to equipped items.
+	UPROPERTY(BlueprintReadOnly, Replicated, Category = "Ownership")
+	class AARPlayerController* ARPCOwner;
+
+	//This should work with replication. Investigate!
 	UPROPERTY(Replicated)
 		FName ARItemID;
 	UPROPERTY(Replicated)

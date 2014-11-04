@@ -17,7 +17,7 @@ class AARActorCue : public AActor
 {
 	GENERATED_UCLASS_BODY()
 public:
-	TSubobjectPtr<UArrowComponent> ArrowRoot;
+	UArrowComponent* ArrowRoot;
 
 	UFUNCTION()
 		void InitializeAttachment(AActor* AttachToIn, FName AttachNameIn);

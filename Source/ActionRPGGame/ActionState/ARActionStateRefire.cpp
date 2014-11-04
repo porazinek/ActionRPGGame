@@ -6,8 +6,8 @@
 
 #include "ARActionStateRefire.h"
 
-UARActionStateRefire::UARActionStateRefire(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionStateRefire::UARActionStateRefire(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	CurrentCooldownTime = 0;
 	IsOnCooldown = false;

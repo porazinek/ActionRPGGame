@@ -21,36 +21,30 @@
 
 #include "ARHUD.h"
 
-AARHUD::AARHUD(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARHUD::AARHUD(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshairTexObj(TEXT("Texture2D'/Game/SharedAssets/HUD/crosshair.crosshair'"));
 	CrosshairTex = CrosshairTexObj.Object;
-
+	LookSpeed = 1.0;
 	DrawInventoryWidget = false;
-
+	CursorDirty = true;
+	DirtyFrameCount = 0;
 	FCTAnimDirection = FVector2D(1, 1);
 	DamageIndicators.AddZeroed(10);
+	TargetModeSwaped = false;
+
+	TargetModeDirtyFrames = 0;
 }
 
+void AARHUD::PostRender()
+{
+	Super::PostRender();
 
+}
 void AARHUD::DrawHUD()
 {
 	Super::DrawHUD();
-
-	// find center of the screen/Canvas
-	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
-	if (CrosshairTex && Canvas)
-	{
-		FVector2D CrosshairDrawStart(Center);
-		CrosshairDrawStart.X -= CrosshairTex->GetSurfaceWidth() * 0.5f;
-		CrosshairDrawStart.Y -= CrosshairTex->GetSurfaceHeight() * 0.5f;
-
-		FCanvasTileItem TileItem(CrosshairDrawStart, CrosshairTex->Resource, FLinearColor::Red);
-		TileItem.BlendMode = SE_BLEND_Translucent;
-		Canvas->DrawItem(TileItem);
-	}
-
 	if (GetOwningPawn() && !OwnerChar.IsValid())
 	{
 		OwnerChar = Cast<AARCharacter>(GetOwningPawn());
@@ -60,17 +54,168 @@ void AARHUD::DrawHUD()
 	{
 		OwnerPC = Cast<AARPlayerController>(GetOwningPlayerController());
 	}
+	// find center of the screen/Canvas
+	//const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+	//if (CrosshairTex && Canvas)
+	//{
+	//	FVector2D CrosshairDrawStart(Center);
+	//	CrosshairDrawStart.X -= CrosshairTex->GetSurfaceWidth() * 0.5f;
+	//	CrosshairDrawStart.Y -= CrosshairTex->GetSurfaceHeight() * 0.5f;
+
+	//	FCanvasTileItem TileItem(CrosshairDrawStart, CrosshairTex->Resource, FLinearColor::Red);
+	//	TileItem.BlendMode = SE_BLEND_Translucent;
+	//	Canvas->DrawItem(TileItem);
+	//}
+	if (!HUDLocalPlayer)
+		HUDLocalPlayer = Cast<ULocalPlayer>(GetOwningPlayerController()->Player);
+	if (CursorDirty)
+	{
+		if (HUDLocalPlayer)
+		{
+			FViewport* Viewport = HUDLocalPlayer->ViewportClient->Viewport;
+
+			//FVector2D ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+			FVector2D MousePosition;
+			//just testing probabaly need less hardcoded math, for the subtraction part.
+			MousePosition.X = Canvas->ClipX * 0.5f - 50.0f;
+			MousePosition.Y = Canvas->ClipY * 0.5f + 56.0f;
+
+			Viewport->SetMouse(MousePosition.X, MousePosition.Y);
+			GEngine->AddOnScreenDebugMessage(1, 10, FColor::Red, FString::FormatAsNumber(MousePosition.X));
+			DirtyFrameCount++;
+			if (DirtyFrameCount > 5)
+			{
+				CursorDirty = false;
+				DirtyFrameCount = 0;
+			}
+			//GEngine->AddOnScreenDebugMessage(0, 2, FColor::Blue, FString::FormatAsNumber(MousePosition.Y));
+		}
+	}
+
+
+	if (OwnerPC->AimMode)
+	{
+		if (OwnerPC->FreeTargetMode)
+		{
+			if (HUDLocalPlayer)
+			{
+				if (TargetModeSwaped)
+				{
+					TargetModeDirtyFrames++;
+					if (TargetModeDirtyFrames > 4)
+					{
+						OwnerPC->SetIgnoreLookInput(false);
+						TargetModeDirtyFrames = 0;
+						TargetModeSwaped = false;
+					}
+				}
+				else
+				{
+					FViewport* Viewport = HUDLocalPlayer->ViewportClient->Viewport;
+
+					//FVector2D ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+					FVector2D MouseMaxTopLeft;
+					FVector2D MouseMaxBottomRight;
+					FVector2D MousePos;
+					float ofTop, ofLeft, ofBottom, ofRight;
+
+					GetOwningPlayerController()->GetMousePosition(MousePos.X, MousePos.Y);
+					ofLeft = (Canvas->ClipX * 0.5f - 50.0f) - 160;
+					ofTop = (Canvas->ClipY * 0.5f + 56.0f) - 100;
+					ofRight = (Canvas->ClipX * 0.5f - 50.0f) + 40;
+					ofBottom = (Canvas->ClipY * 0.5f + 56.0f) + 100;
+					if (MousePos.X > ofRight)
+					{
+						Viewport->SetMouse(ofRight, MousePos.Y);
+						GetOwningPlayerController()->AddYawInput(LookSpeed);
+					}
+					else if (MousePos.X < ofLeft)
+					{
+						GetOwningPlayerController()->AddYawInput(-LookSpeed);
+						Viewport->SetMouse(ofLeft, MousePos.Y);
+					}
+
+					if (MousePos.Y > ofBottom)
+					{
+						Viewport->SetMouse(MousePos.X, ofBottom);
+						GetOwningPlayerController()->AddPitchInput(LookSpeed);
+					}
+					else if (MousePos.Y < ofTop)
+					{
+						GetOwningPlayerController()->AddPitchInput(-LookSpeed);
+						Viewport->SetMouse(MousePos.X, ofTop);
+					}
+
+					if (MousePos.X < ofLeft && MousePos.Y < ofTop)
+					{
+						Viewport->SetMouse(ofLeft, ofTop);
+						GetOwningPlayerController()->AddYawInput(-(LookSpeed / 6));
+						GetOwningPlayerController()->AddPitchInput(-(LookSpeed / 6));
+					}
+					else if (MousePos.X < ofLeft && MousePos.Y > ofBottom)
+					{
+						Viewport->SetMouse(ofLeft, ofBottom);
+						GetOwningPlayerController()->AddYawInput(-(LookSpeed / 6));
+						GetOwningPlayerController()->AddPitchInput((LookSpeed / 6));
+					}
+					else if (MousePos.X > ofRight && MousePos.Y > ofBottom)
+					{
+						Viewport->SetMouse(ofRight, ofBottom);
+						GetOwningPlayerController()->AddYawInput((LookSpeed / 6));
+						GetOwningPlayerController()->AddPitchInput((LookSpeed / 6));
+					}
+					else if (MousePos.X > ofRight && MousePos.Y < ofTop)
+					{
+						Viewport->SetMouse(ofRight, ofTop);
+						GetOwningPlayerController()->AddYawInput((LookSpeed / 6));
+						GetOwningPlayerController()->AddPitchInput(-(LookSpeed / 6));
+					}
+				}
+			}
+		}
+		else
+		{
+			if (TargetModeSwaped)
+			{
+				TargetModeDirtyFrames++;
+				if (TargetModeDirtyFrames > 4)
+				{
+					OwnerPC->SetIgnoreLookInput(false);
+					TargetModeDirtyFrames = 0;
+					TargetModeSwaped = false;
+				}
+			}
+		}
+	}
+	/*
+	Top0,Left0*************,Top0,Left1
+	*
+	*
+	*
+	*
+	*
+	Bottom1,Left0***************Bottom1,Right1
+	*/
+
+	FVector2D DepPosition;
+
+	DepPosition.X = Canvas->ClipX * 0.5f - 40.0f;
+	DepPosition.Y = Canvas->ClipY * 0.5f + 56.0f;
+
+	Deproject(DepPosition.X, DepPosition.Y, DeprojectWorldPosition, DeprojectWorldDirection);
+
+
 	/*
 		Don't draw if we don't have proper character.
 		WE REALLY NEED PROPER CHARACTER!!!!
-	*/
+		*/
 	if (!HUDWidget.IsValid() && OwnerChar.IsValid())
 	{
 		AARPlayerController* MyPC = Cast<AARPlayerController>(GetOwningPlayerController());
 		//null on BeginPlay
 
 		//TWeakObjectPtr<UARAttributeComponent> MyAttr = Character->Attributes.Get();
-		SAssignNew(HUDWidget, SARHUDWidget).OwnerHUD(this).IsEnabled(true).MyPC(MyPC).MyChar(OwnerChar).MyAttrComp(OwnerChar->Attributes.Get()).CastbarHeight(CastbarHeight)
+		SAssignNew(HUDWidget, SARHUDWidget).OwnerHUD(this).IsEnabled(true).MyPC(MyPC).MyChar(OwnerChar).MyAttrComp(OwnerChar->Attributes).CastbarHeight(CastbarHeight)
 			.CastbarWidth(CastbarWidth).CastbarPositionX(Canvas->ClipX*CastbarPositionX).CastbarPositionY(Canvas->ClipY*CastbarPositionY);
 
 
@@ -102,7 +247,7 @@ void AARHUD::DrawHUD()
 		{
 			OwnerChar->Attributes->OnInstigatorDamage.AddUObject(this, &AARHUD::PawnDamaged);
 		}
-		
+
 		if (Canvas)
 		{
 			//FVector temp = Canvas->Project(OwnerChar->Attributes->ChangedAttribute.DamageTarget->GetActorLocation());
@@ -181,7 +326,7 @@ void AARHUD::DrawDamageIndicators()
 			vec2d.Y = vecTemp.Y + DamageIndicators[i].CurrentLocation.Y;
 			//FVector2D((Canvas->ClipX * 0.5) - Half, (Canvas->ClipY * 0.5) - Half)
 			FCanvasTextItem TextItem = FCanvasTextItem(vec2d, FText::AsNumber(DamageIndicators[i].DamageAmount), FCTSettings.FontType, FCTSettings.FontColor);
-			
+
 			TextItem.Scale = FVector2D(FCTSettings.FontScale, FCTSettings.FontScale);
 
 			Canvas->DrawItem(TextItem);
@@ -228,12 +373,12 @@ void AARHUD::DrawResourceBar(float CurrentValue, float MaxValue, FVector2D Size,
 		Size, Background);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(TileItem);
-	
+
 	TileItem.Size = FVector2D(200 * HealthBarPrecentage, 20);
 	TileItem.SetColor(Foreground);
 
 	Canvas->DrawItem(TileItem);
-	
+
 	FCanvasTextItem TextItem = FCanvasTextItem(FVector2D((Canvas->ClipX*PosX) + Offset.X, (Canvas->ClipY*PosY) + Offset.Y), FText::AsNumber(CurrentValue), FCTSettings.FontType, FCTSettings.FontColor);
 
 	TextItem.SetColor(FLinearColor::Black);
@@ -243,15 +388,16 @@ void AARHUD::DrawResourceBar(float CurrentValue, float MaxValue, FVector2D Size,
 
 void AARHUD::DrawTargetHealth()
 {
-	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
-	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
+	//FHitResult HitResult = UARTraceStatics::GetHitResultCorrected(10000, NAME_None, OwnerChar.Get(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
+	//FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
+	//AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
 
-	if (TargetChar)
-	{
-		DrawResourceBar(TargetChar->Attributes->Health, TargetChar->Attributes->MaxHealth, TargetInfo.HealthSize, 
-			TargetInfo.Position.X, TargetInfo.Position.Y, FVector2D(0, 0), TargetInfo.HealthColor,
-			ResourceBars.BackgroundColor);
-	}
+	//if (TargetChar)
+	//{
+	//	DrawResourceBar(TargetChar->Attributes->Health, TargetChar->Attributes->MaxHealth, TargetInfo.HealthSize,
+	//		TargetInfo.Position.X, TargetInfo.Position.Y, FVector2D(0, 0), TargetInfo.HealthColor,
+	//		ResourceBars.BackgroundColor);
+	//}
 }
 
 void AARHUD::DrawOwnerResources()
@@ -261,7 +407,7 @@ void AARHUD::DrawOwnerResources()
 
 	//Draw Health
 	DrawResourceBar(OwnerChar->Attributes->Health, OwnerChar->Attributes->MaxHealth, ResourceBars.HealthSize,
-		ResourceBars.Position.X, ResourceBars.Position.Y, FVector2D(0, 0), 
+		ResourceBars.Position.X, ResourceBars.Position.Y, FVector2D(0, 0),
 		ResourceBars.HealthColor, ResourceBars.BackgroundColor);
 
 	DrawResourceBar(OwnerChar->Attributes->Energy, OwnerChar->Attributes->MaxEnergy, ResourceBars.EnergySize,
@@ -289,12 +435,12 @@ void AARHUD::DrawCastingBar()
 
 TWeakObjectPtr<class UARAttributeComponent> AARHUD::GetTargetAttributes() const
 {
-	FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
-	AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
+	//FHitResult HitResult = UARTraceStatics::GetHitResult(10000, NAME_None, GetOwningPawn(), false, false, EARTraceType::Trace_Weapon, EWeaponHand::NoWeapon);
+	//AARCharacter* TargetChar = Cast<AARCharacter>(HitResult.GetActor());
 
-	if (TargetChar)
-	{
-		return TargetChar->Attributes.Get();
-	}
+	//if (TargetChar)
+	//{
+	//	return TargetChar->Attributes.Get();
+	//}
 	return nullptr;
 }

@@ -9,8 +9,8 @@
 
 #include "ARInventoryComponent.h"
 
-UARInventoryComponent::UARInventoryComponent(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARInventoryComponent::UARInventoryComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bWantsInitializeComponent = true;
 	bReplicates = true;

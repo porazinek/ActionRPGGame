@@ -23,26 +23,27 @@
 
 #include "ARPlayerController.h"
 
-AARPlayerController::AARPlayerController(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARPlayerController::AARPlayerController(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 	InventoryVisibility = EVisibility::Collapsed;
 	CharacterSheetVisibility = EVisibility::Collapsed;
 	AbilityInventoryVisibility = EVisibility::Collapsed;
 
-	Abilities = PCIP.CreateDefaultSubobject<UARAbilityComponent>(this, TEXT("Abilities"));
+	Abilities = ObjectInitializer.CreateDefaultSubobject<UARAbilityComponent>(this, TEXT("Abilities"));
 	Abilities->SetIsReplicated(true);
 	Abilities->SetNetAddressable();
 
-	Attributes = PCIP.CreateDefaultSubobject<UARAttributeBaseComponent>(this, TEXT("Attributes"));
+	Attributes = ObjectInitializer.CreateDefaultSubobject<UARAttributeBaseComponent>(this, TEXT("Attributes"));
 	Attributes->SetIsReplicated(true);
 	Attributes->SetNetAddressable();
 
-	Inventory = PCIP.CreateDefaultSubobject<UARInventoryComponent>(this, TEXT("Inventory"));
+	Inventory = ObjectInitializer.CreateDefaultSubobject<UARInventoryComponent>(this, TEXT("Inventory"));
 	Inventory->SetIsReplicated(true);
 	Inventory->SetNetAddressable();
-
+	AimMode = true;
+	FreeTargetMode = false;
 	//bReplicates = true;
 	//bOnlyRelevantToOwner = false;
 	UpdateActionBarOne = false;
@@ -68,6 +69,22 @@ AARPlayerController::AARPlayerController(const class FPostConstructInitializePro
 void AARPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+	//if (LocalPlayer)
+	//{
+	//	FViewport* Viewport = LocalPlayer->ViewportClient->Viewport;
+	//	
+	//	FIntPoint ViewportSize = Viewport->GetSizeXY();
+	//	//FVector2D ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+	//	FVector2D MousePosition;
+	//	//just testing probabaly need less hardcoded math, for the subtraction part.
+	//	MousePosition.X = (ViewportSize.X * 0.5);
+	//	MousePosition.Y = (ViewportSize.Y * 0.5);
+	//	Viewport->SetMouse(600, 360);
+	//	GEngine->AddOnScreenDebugMessage(1, 10, FColor::Red, FString::FormatAsNumber(MousePosition.X));
+	//	//GEngine->AddOnScreenDebugMessage(0, 2, FColor::Blue, FString::FormatAsNumber(MousePosition.Y));
+	//}
 	/*
 		For whatever reason, telling it to replicate in constructor is not enough.
 		We must do so also in BeginPlay().
@@ -113,6 +130,9 @@ void AARPlayerController::SetupInputComponent()
 	InputComponent->BindAction("PickupItem", IE_Pressed, this, &AARPlayerController::InputPickupItem);
 
 	InputComponent->BindAction("AddWeapons", IE_Pressed, this, &AARPlayerController::InputTempAddWeapons);
+
+	InputComponent->BindAction("ToggleMouseMode", IE_Pressed, this, &AARPlayerController::InputToggleMouseMode);
+	InputComponent->BindAction("ToggleMouseTargeting", IE_Pressed, this, &AARPlayerController::InputToggleMouseTargeting);
 }
 
 void AARPlayerController::PostInitializeComponents()
@@ -120,6 +140,88 @@ void AARPlayerController::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
+void AARPlayerController::InputToggleMouseMode()
+{
+	if (AimMode)
+	{
+		bEnableClickEvents = true;
+		bEnableMouseOverEvents = true;
+		bShowMouseCursor = true;
+		SetIgnoreLookInput(true);
+		SetIgnoreMoveInput(true);
+		AimMode = false;
+	}
+	else
+	{
+		bEnableClickEvents = false;
+		bEnableMouseOverEvents = false;
+		bShowMouseCursor = false;
+		SetIgnoreLookInput(false);
+		SetIgnoreMoveInput(false);
+		AimMode = true;
+		ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+		FViewport* Viewport = LocalPlayer->ViewportClient->Viewport;
+		FIntPoint ViewSize = Viewport->GetSizeXY();
+		//FVector2D ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+		FVector2D MousePosition;
+		//just testing probabaly need less hardcoded math, for the subtraction part.
+		MousePosition.X = ViewSize.X * 0.5f - 40.0f;
+		MousePosition.Y = ViewSize.Y * 0.5f + 56.0f;
+
+		Viewport->SetMouse(MousePosition.X, MousePosition.Y);
+	}
+}
+void AARPlayerController::InputToggleMouseTargeting()
+{
+	if (FreeTargetMode == true)
+	{
+
+		AARHUD* MyHUD = Cast<AARHUD>(GetHUD());
+		SetIgnoreLookInput(true);
+		
+		ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+		FViewport* Viewport = LocalPlayer->ViewportClient->Viewport;
+		FIntPoint ViewSize = Viewport->GetSizeXY();
+		//FVector2D ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+		FVector2D MousePosition;
+		//just testing probabaly need less hardcoded math, for the subtraction part.
+		MousePosition.X = ViewSize.X * 0.5f - 50.0f;
+		MousePosition.Y = ViewSize.Y * 0.5f + 56.0f;
+
+		Viewport->SetMouse(MousePosition.X, MousePosition.Y);
+
+		
+		if (MyHUD)
+		{
+			MyHUD->TargetModeSwaped = true;
+		}
+		FreeTargetMode = false;
+		return;
+	}
+	if (FreeTargetMode == false)
+	{
+		SetIgnoreLookInput(true);
+		AARHUD* MyHUD = Cast<AARHUD>(GetHUD());
+		
+		ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+		FViewport* Viewport = LocalPlayer->ViewportClient->Viewport;
+		FIntPoint ViewSize = Viewport->GetSizeXY();
+		
+		//FVector2D ViewportSize = GEngine->GameViewport->Viewport->GetSizeXY();
+		FVector2D MousePosition;
+		//just testing probabaly need less hardcoded math, for the subtraction part.
+		MousePosition.X = ViewSize.X * 0.5f - 50.0f;
+		MousePosition.Y = ViewSize.Y * 0.5f + 56.0f;
+
+		Viewport->SetMouse(MousePosition.X, MousePosition.Y);
+		if (MyHUD)
+		{
+			MyHUD->TargetModeSwaped = true;
+		}
+		FreeTargetMode = true;
+		return;
+	}
+}
 void AARPlayerController::InputTempAddWeapons()
 {
 	FARDragDropInfo wep1;
@@ -145,7 +247,7 @@ void AARPlayerController::InputActivateAbility()
 {
 	if (Abilities->ActiveAbility)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Abilities->ActiveAbility);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Abilities->ActiveAbility);
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();

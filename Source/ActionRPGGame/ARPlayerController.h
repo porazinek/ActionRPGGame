@@ -4,7 +4,7 @@
 
 #include "Types/ARInvItem.h"
 
-#include "Slate.h"
+#include "SlateBasics.h"
 #include "Componenets/ARAttributeComponent.h"
 #include "ARCharacter.h"
 
@@ -26,10 +26,10 @@ public:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-		TSubobjectPtr<class UARInventoryComponent> Inventory;
+		class UARInventoryComponent* Inventory;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
-		TSubobjectPtr<class UARAbilityComponent> Abilities;
+		class UARAbilityComponent* Abilities;
 
 	UPROPERTY(ReplicatedUsing=OnRep_UIDamage)
 	FARUIDamage UIDamage;
@@ -44,7 +44,7 @@ public:
 	I'm not sure if I'm going to keep it here. It's way to confusing.
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
-		TSubobjectPtr<class UARAttributeBaseComponent> Attributes;
+		class UARAttributeBaseComponent* Attributes;
 	virtual void SetPawn(APawn* InPawn) override;
 
 	virtual void PostInitializeComponents() override;
@@ -66,7 +66,12 @@ public:
 			}
 		}
 	}
-
+	UPROPERTY(BlueprintReadOnly, Category = "Mouse Look")
+	bool AimMode;
+	void InputToggleMouseMode();
+	UPROPERTY(BlueprintReadOnly, Category = "Mouse Look")
+	bool FreeTargetMode;
+	void InputToggleMouseTargeting();
 	void InputActivateAbility();
 	/* 
 		Route weapon fire trough Controller

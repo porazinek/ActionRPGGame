@@ -1,0 +1,7 @@
+This is going to be replacment for GameplayTags from Engine.
+
+It will mirror all funcionality. The main differences:
+1. Different data store. All Tags will be stored in TArray.
+2. Access to tags will be by index. There is no search involved, tags are read from array directly by
+their index.
+3. Tag Editor, inside UE4Editor. Importing CSV files will be no longer needed!

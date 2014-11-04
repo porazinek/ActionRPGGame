@@ -12,9 +12,9 @@ public:
 	TArray<AActor*> ActorToIgnore;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
-		TSubobjectPtr<class USphereComponent> Collision;
+		class USphereComponent* Collision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-		TSubobjectPtr<class UProjectileMovementComponent> Movement;
+		class UProjectileMovementComponent* Movement;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Ownership")
 		AController* InstigatorController;

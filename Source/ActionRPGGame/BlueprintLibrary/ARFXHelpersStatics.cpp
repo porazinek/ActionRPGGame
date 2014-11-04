@@ -7,8 +7,8 @@
 #include "ARTraceStatics.h"
 #include "ARFXHelpersStatics.h"
 
-UARFXHelpersStatics::UARFXHelpersStatics(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARFXHelpersStatics::UARFXHelpersStatics(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

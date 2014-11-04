@@ -1,7 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "AREnumTypes.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 #include "ARAttributeTypes.generated.h"
 
 UENUM()
@@ -191,4 +191,7 @@ public:
 		FVector Location;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitInfo")
 		FName StartSocket;
+	//Replication Helper, so we can force OnRep notify.
+	UPROPERTY()
+		int8 HitCounter;
 };

@@ -33,7 +33,7 @@
 //#include "AssetEditorToolkit.h"
 
 #include "Editor/UnrealEd/Classes/Settings/EditorLoadingSavingSettings.h"
-#include "Settings.h"
+//#include "Settings.h"
 
 
 #include "../ItemEditor/ARItemAssetTypeActions.h"

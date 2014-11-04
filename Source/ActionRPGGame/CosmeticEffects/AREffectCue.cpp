@@ -14,8 +14,8 @@
 
 #include "AREffectCue.h"
 
-UAREffectCue::UAREffectCue(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREffectCue::UAREffectCue(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SetIsReplicated(true);
 }

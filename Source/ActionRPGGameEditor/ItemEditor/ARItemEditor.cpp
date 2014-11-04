@@ -7,6 +7,8 @@
 #include "Editor/PropertyEditor/Private/PropertyChangeListener.h"
 #include "Editor/PropertyEditor/Public/IPropertyChangeListener.h"
 
+#include "Runtime/Slate/Public/Widgets/Docking/SDockTab.h"
+
 #include "ARItemEditor.h"
 
 const FName FARItemEditor::ItemEditorTabId(TEXT("ItemEditor_Item"));
@@ -292,10 +294,10 @@ void FARItemEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& Tab
 
 	TabManager->RegisterTabSpawner(ItemEditorTabId, FOnSpawnTab::CreateSP(this, &FARItemEditor::SpawnTab_Item))
 		.SetDisplayName(FText::FromString("Item Editor"))
-		.SetGroup(MenuStructure.GetAssetEditorCategory());
+		.SetGroup(MenuStructure.GetToolsCategory());
 	TabManager->RegisterTabSpawner(ItemEditorTabDetails, FOnSpawnTab::CreateSP(this, &FARItemEditor::SpawnTab_Details))
 		.SetDisplayName(FText::FromString("Item Details"))
-		.SetGroup(MenuStructure.GetAssetEditorCategory());
+		.SetGroup(MenuStructure.GetToolsCategory());
 }
 void FARItemEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager)
 {

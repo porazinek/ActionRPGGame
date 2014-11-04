@@ -18,8 +18,8 @@
 
 #include "ARAbility.h"
 
-AARAbility::AARAbility(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARAbility::AARAbility(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	MustHaveTwoWeaponActive = false;
 	bReplicates = true;
@@ -32,7 +32,7 @@ AARAbility::AARAbility(const class FPostConstructInitializeProperties& PCIP)
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bAllowTickOnDedicatedServer = true;
 
-	ActionState = PCIP.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
+	ActionState = ObjectInitializer.CreateDefaultSubobject<UARActionStateComponent>(this, TEXT("ActionState"));
 	ActionState->SetMaxCastTime(MaxCastTime);
 	ActionState->SetCooldownTime(RechargeTime);
 
@@ -96,8 +96,8 @@ void AARAbility::Tick(float DeltaSeconds)
 void AARAbility::Initialize()
 {
 	Execute_OnActionPrepared(this);
-	OwnerEquipment = OwningCharacter->Equipment.Get();
-	OwnerAttributes = OwningCharacter->Attributes.Get();
+	OwnerEquipment = OwningCharacter->Equipment;
+	OwnerAttributes = OwningCharacter->Attributes;
 
 	OwnerEquipment->OnLeftWeaponActive.AddDynamic(this, &AARAbility::OnLeftHandWeapon);
 	OwnerEquipment->OnRightWeaponActive.AddDynamic(this, &AARAbility::OnRightHandWeapon);

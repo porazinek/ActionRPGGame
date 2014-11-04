@@ -27,9 +27,9 @@ class UAREquipmentComponent : public UActorComponent
 public:
 
 	UPROPERTY(Replicated)
-	class AARCharacter* TargetCharacter;
+	class AARCharacter* ARCharacterOwner;
 	UPROPERTY(Replicated)
-	class AARPlayerController* TargetController;
+	class AARPlayerController* ARPCOwner;
 	UPROPERTY(Replicated)
 	class UARInventoryComponent* Inventory;
 

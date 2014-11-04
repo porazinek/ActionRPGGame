@@ -3,8 +3,8 @@
 #include "ActionRPGGame.h"
 #include "IARCosmeticEffects.h"
 
-UIARCosmeticEffects::UIARCosmeticEffects(const class FPostConstructInitializeProperties& PCIP)
-: Super(PCIP)
+UIARCosmeticEffects::UIARCosmeticEffects(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
 {
 
 }

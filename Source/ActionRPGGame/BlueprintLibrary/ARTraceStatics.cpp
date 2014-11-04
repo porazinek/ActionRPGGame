@@ -9,11 +9,12 @@
 #include "../Items/ARItem.h"
 
 #include "../ARCharacter.h"
+#include "../ARPlayerController.h"
 
 #include "ARTraceStatics.h"
 
-UARTraceStatics::UARTraceStatics(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARTraceStatics::UARTraceStatics(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
@@ -84,13 +85,13 @@ FVector UARTraceStatics::GetStartLocation(FName SocketName, APawn* InitiatedBy, 
 			case EWeaponHand::WeaponLeft:
 				if (eqComp->ActiveLeftHandWeapon)
 				{
-					OriginMesh = eqComp->ActiveLeftHandWeapon->WeaponMesh.Get();
+					OriginMesh = eqComp->ActiveLeftHandWeapon->WeaponMesh;
 					return OriginMesh->GetSocketLocation(SocketName);
 				}
 			case EWeaponHand::WeaponRight:
 				if (eqComp->ActiveRightHandWeapon)
 				{
-					OriginMesh = eqComp->ActiveRightHandWeapon->WeaponMesh.Get();
+					OriginMesh = eqComp->ActiveRightHandWeapon->WeaponMesh;
 					return OriginMesh->GetSocketLocation(SocketName);
 				}
 			default:
@@ -124,7 +125,7 @@ FVector UARTraceStatics::GetStartLocationFromCharacter(FName SocketName, class A
 				return InitiatedBy->Equipment->ActiveRightHandWeapon->WeaponMesh->GetSocketLocation(SocketName);
 			}
 		default:
-			return InitiatedBy->Mesh->GetSocketLocation(SocketName);
+			return InitiatedBy->GetMesh()->GetSocketLocation(SocketName);
 		}
 	}
 	return Origin;
@@ -162,16 +163,125 @@ FHitResult UARTraceStatics::RangedTrace(const FVector& StartTrace, const FVector
 	return Hit;
 }
 
+FHitResult UARTraceStatics::TraceAtMouse(float Range, FName StartSocket, APlayerController* PC, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand)
+{
+	FHitResult HitResult;
+	AARPlayerController* ARPC = Cast<AARPlayerController>(PC);
+	if (ARPC)
+	{
+		if (ARPC->FreeTargetMode)
+		{
+			FVector2D MouseLocation;
+			PC->GetMousePosition(MouseLocation.X, MouseLocation.Y);
+			FVector WorldLocation;
+			FVector WorldDirection;
+			PC->DeprojectScreenPositionToWorld(MouseLocation.X, MouseLocation.Y, WorldLocation, WorldDirection);
+
+			FVector StartTrace, EndTrace;
+			StartTrace = WorldLocation;
+			EndTrace = WorldLocation + (WorldDirection * Range);
+
+			HitResult = RangedTrace(StartTrace, EndTrace, PC->GetPawn(), TraceType);
+			if (DrawDebug)
+			{
+				DrawDebugLine(PC->GetWorld(), StartTrace, EndTrace, FColor::Black, true, 10.0f, 0.0f, 1.0f);
+			}
+			if (HitResult.GetActor())
+			{
+				if (UseStartSocket)
+				{
+					FVector Origin = GetStartLocation(StartSocket, PC->GetPawn(), Hand);
+					FHitResult hitResult = RangedTrace(Origin, HitResult.ImpactPoint, PC->GetPawn(), TraceType); //Origin + impactDir*range);
+					if (DrawDebug)
+					{
+						DrawDebugLine(PC->GetWorld(), Origin, HitResult.ImpactPoint, FColor::Blue, true, 10.0f, 0.0f, 1.0f);
+					}
+					if (hitResult.GetActor())
+					{
+						DrawDebugLine(PC->GetWorld(), Origin, HitResult.ImpactPoint, FColor::Red, true, 10.0f, 0.0f, 1.0f);
+						return hitResult;
+					}
+					return HitResult;
+				}
+				//SetTargetAttributes(Impact.GetActor());
+			}
+			return HitResult;
+		}
+		else
+		{
+			FVector WorldLocation;
+			FVector WorldDirection;
+			FVector2D s = FVector2D(1280,720);
+			if (GEngine)
+			//s = GEngine->GameViewport->Viewport->GetSizeXY();
+
+			ARPC->DeprojectScreenPositionToWorld((s.X*0.5) - 50.0f, (s.Y*0.5) + 56.0f, WorldLocation, WorldDirection);
+			FVector StartTrace, EndTrace;
+			StartTrace = WorldLocation;
+			EndTrace = WorldLocation + (WorldDirection * Range);
+			HitResult = RangedTrace(StartTrace, EndTrace, PC->GetPawn(), TraceType);
+			if (DrawDebug)
+			{
+				DrawDebugLine(PC->GetWorld(), StartTrace, EndTrace, FColor::Black, true, 10.0f, 0.0f, 1.0f);
+			}
+			if (HitResult.GetActor())
+			{
+				if (UseStartSocket)
+				{
+					FVector Origin = GetStartLocation(StartSocket, PC->GetPawn(), Hand);
+					FHitResult hitResult = RangedTrace(Origin, HitResult.ImpactPoint, PC->GetPawn(), TraceType); //Origin + impactDir*range);
+					if (DrawDebug)
+					{
+						DrawDebugLine(PC->GetWorld(), Origin, HitResult.ImpactPoint, FColor::Blue, true, 10.0f, 0.0f, 1.0f);
+					}
+					if (hitResult.GetActor())
+					{
+						DrawDebugLine(PC->GetWorld(), Origin, HitResult.ImpactPoint, FColor::Red, true, 10.0f, 0.0f, 1.0f);
+						return hitResult;
+					}
+					return HitResult;
+				}
+				//SetTargetAttributes(Impact.GetActor());
+			}
+			return HitResult;
+		}
+	}
+	return HitResult;
+	//add correction stuff for weapons etc.
+}
+
 /*
 	Add some small hit location randomization (for replication), or
 	*/
 FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand)
 {
+	FHitResult Impact;
+	if (!InitiatedBy)
+		return Impact;
 	const FVector ShootDir = GetCameraAim(InitiatedBy);
+	APlayerController* con = Cast<APlayerController>(InitiatedBy->GetController());
+	if (!con)
+		return Impact;
+	FVector WorldPosition;
+	FVector WorldDirection;
+	FVector2D s;
+	int32 x, y;
+	
+	con->GetViewportSize(x, y);
+	//s = GEngine->GameViewport->Viewport->GetSizeXY();
+	s.X = x;
+	s.Y = y;
 
-	FVector StartTrace = GetCameraDamageStartLocation(ShootDir, InitiatedBy);
-	const FVector EndTrace = (StartTrace + ShootDir * Range);
-	FHitResult Impact = RangedTrace(StartTrace, EndTrace, InitiatedBy, TraceType);
+	con->DeprojectScreenPositionToWorld((s.X*0.5)-40.0f, (s.Y*0.5)+56.0f, WorldPosition, WorldDirection);
+
+	//AARHUD* hud = Cast<AARHUD>(con->GetHUD());
+	
+	
+
+	FVector StartTrace = WorldPosition; // GetCameraDamageStartLocation(ShootDir, InitiatedBy);
+	//const FVector EndTrace = (StartTrace + ShootDir * Range);
+	const FVector EndTrace = (WorldPosition + (WorldDirection * Range));
+	Impact = RangedTrace(StartTrace, EndTrace, InitiatedBy, TraceType);
 	if (DrawDebug)
 	{
 		DrawDebugLine(InitiatedBy->GetWorld(), StartTrace, EndTrace, FColor::Black, true, 10.0f, 0.0f, 1.0f);
@@ -182,6 +292,7 @@ FHitResult UARTraceStatics::GetHitResult(float Range, FName StartSocket, APawn* 
 		{
 			FVector Origin = GetStartLocation(StartSocket, InitiatedBy, Hand);
 			FHitResult hitResult = RangedTrace(Origin, Impact.ImpactPoint, InitiatedBy, TraceType); //Origin + impactDir*range);
+			
 			if (DrawDebug)
 			{
 				DrawDebugLine(InitiatedBy->GetWorld(), Origin, Impact.ImpactPoint, FColor::Blue, true, 10.0f, 0.0f, 1.0f);
@@ -203,8 +314,8 @@ FHitResult UARTraceStatics::GetHitResultCorrected(float Range, FName StartSocket
 	const FVector ShootDir = GetCameraAim(InitiatedBy);
 
 	//FVector StartTrace = GetCameraDamageStartLocation(ShootDir, InitiatedBy);
-	FVector StartTrace = InitiatedBy->Mesh->GetSocketLocation(CorrectionSocket);
-
+	//FVector StartTrace = InitiatedBy->Mesh->GetSocketLocation(CorrectionSocket);
+	FVector StartTrace = GetStartLocationFromCharacter(CorrectionSocket, InitiatedBy, Hand);
 	//const FVector EndTrace = (StartTrace + ShootDir * Range);
 	const FVector EndTrace = (GetCameraDamageStartLocation(ShootDir, InitiatedBy) + ShootDir * Range);
 

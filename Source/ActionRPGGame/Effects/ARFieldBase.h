@@ -206,10 +206,10 @@ public:
 		virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer, bool bCountEmptyAsMatch = true) const override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Componenets")
-		TSubobjectPtr<class USphereComponent> Collision;
+		class USphereComponent* Collision;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Componenets")
-		TSubobjectPtr<class UARFieldAttributes> Attributes;
+		class UARFieldAttributes* Attributes;
 
 	//How much time must pass between ticks.
 	//Usefull for applying damage or area search (SweepMulti) to check

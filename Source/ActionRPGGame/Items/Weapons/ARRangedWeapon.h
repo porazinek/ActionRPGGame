@@ -9,7 +9,11 @@
 #include "../Types/ARAttributeTypes.h"
 #include "../Types/AREnumTypes.h"
 
+#include "../../TraceComponent/IARTracing.h"
+
 #include "ARRangedWeapon.generated.h"
+
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDMDOnInterfaceTest, const AActor*, InterfaceIn);
 
 UENUM(BlueprintType)
 namespace EWeaponReloadType
@@ -28,14 +32,18 @@ namespace EWeaponReloadType
 	throwing stones ;).
 */
 UCLASS(minimalapi)
-class AARRangedWeapon : public AARWeapon, public IIARCosmeticEffects
+class AARRangedWeapon : public AARWeapon, public IIARCosmeticEffects, public IIARTracing
 {
 	GENERATED_UCLASS_BODY()
 public:
 	virtual void BeginPlay() override;
 
-	/** IIARActionState Interface - Begin */
+	/** IIARTracing override begin */
+	virtual AARCharacter* GetCharacter() override;
+	virtual AARPlayerController* GetController() override;
+	/* IIARTracing override begin **/
 
+	/** IIARActionState Interface - Begin */
 	virtual void InputPressed() override;
 
 	virtual void InputReleased() override;
@@ -43,7 +51,18 @@ public:
 	virtual void ActionReload() override;
 	/** IIARActionState Interface - End */
 
-
+	/* These should be in Interface */
+	/*
+		In any case override them in blueprint to apply modifications to damage.
+	*/
+	UFUNCTION(BlueprintImplementableEvent, Category = "Damage")
+		float ModifyDamageByAttribute(float DamageIn);
+	/*
+		this function could probabaly be not exposed to blueprint.
+		we can assume that we always want to check against effects
+	*/
+	UFUNCTION(BlueprintNativeEvent, Category = "Damage")
+		void ModifyDamageByEffects(float DamageIn);
 
 	/** IIARCosmeticEffects - Begin */
 
@@ -51,6 +70,12 @@ public:
 
 	/** IIARCosmeticEffects - End */
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+		float Damage;
+
+	//or that I won't keep two around it's just for testing!
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+		FAttribute AttributeDamage;
 
 	UPROPERTY(EditAnywhere, Category = "Cosmetics")
 		FName MuzzleSocket;

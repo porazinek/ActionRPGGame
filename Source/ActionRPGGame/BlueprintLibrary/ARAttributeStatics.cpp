@@ -7,8 +7,8 @@
 #include "ARTraceStatics.h"
 #include "ARAttributeStatics.h"
 
-UARAttributeStatics::UARAttributeStatics(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARAttributeStatics::UARAttributeStatics(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

@@ -6,8 +6,8 @@
 #include "Types/ARStructTypes.h"
 #include "ARPGameMode.h"
 
-AARPGameMode::AARPGameMode(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARPGameMode::AARPGameMode(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	FString table = "DataTable'/Game/Blueprints/Data/ChestItemData.ChestItemData'";
 	ChestItemDataTable = LoadObject<UDataTable>(NULL, *table, NULL, LOAD_None, NULL);

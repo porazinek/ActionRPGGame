@@ -13,8 +13,8 @@
 
 #include "ARItemPickup.h"
 
-AARItemPickup::AARItemPickup(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARItemPickup::AARItemPickup(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bReplicates = true;
 	bNetUseOwnerRelevancy = false;

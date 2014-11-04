@@ -3,8 +3,8 @@
 #include "ActionRPGGame.h"
 #include "ARSingleton.h"
 
-UARSingleton::UARSingleton(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARSingleton::UARSingleton(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

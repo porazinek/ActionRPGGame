@@ -4,7 +4,7 @@
 
 #include "../../Types/ARStructTypes.h"
 #include "../../Types/AREnumTypes.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 
 //this class begs for refactor.
 //move some of drag and drop functionality higher in hierarchy

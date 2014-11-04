@@ -10,8 +10,8 @@
 
 #include "ARAbilityComponent.h"
 
-UARAbilityComponent::UARAbilityComponent(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARAbilityComponent::UARAbilityComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
@@ -155,7 +155,7 @@ void UARAbilityComponent::FireAbility()
 		if (ActiveAction.Ability.IsValid())
 		{//	ActiveAction.Ability->StartAction();
 
-			IIARActionState* actionInterface = InterfaceCast<IIARActionState>(ActiveAction.Ability.Get());
+			IIARActionState* actionInterface = Cast<IIARActionState>(ActiveAction.Ability.Get());
 			if (actionInterface)
 			{
 				actionInterface->InputPressed();

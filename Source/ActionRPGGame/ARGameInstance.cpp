@@ -6,8 +6,8 @@
 #include "Types/ARStructTypes.h"
 #include "ARGameInstance.h"
 
-UARGameInstance::UARGameInstance(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARGameInstance::UARGameInstance(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

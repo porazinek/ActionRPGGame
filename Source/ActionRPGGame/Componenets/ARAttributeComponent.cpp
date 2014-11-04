@@ -12,8 +12,8 @@
 
 #include "ARAttributeComponent.h"
 
-UARAttributeComponent::UARAttributeComponent(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARAttributeComponent::UARAttributeComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;

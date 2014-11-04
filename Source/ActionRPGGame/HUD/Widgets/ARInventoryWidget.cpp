@@ -54,7 +54,7 @@ TSharedRef<ITableRow> SARInventoryWidget::MakeTileViewWidget(TSharedPtr<FARDragD
 				//.EquipmentSlot(EEquipmentSlot::Item_Inventory)
 				.SlotName(FText::FromName("Inv"))
 				.Inventory(Inventory)
-				.Equipment(Character->Equipment.Get())
+				.Equipment(Character->Equipment)
 			];
 		return ReturnRow;
 	}

@@ -2,7 +2,7 @@
 #pragma once
 #include "ActionRPGGameEditor.h"
 #include "SlateCore.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 
 DECLARE_DELEGATE_OneParam(FOnItemDataSelected, FARItemPickupCont*)
 DECLARE_DELEGATE(FOnContainerSelected)

@@ -5,7 +5,7 @@
 #include "../Types/AREnumTypes.h"
 #include "../Types/ARAttributeTypes.h"
 
-#include "Slate.h"
+#include "SlateBasics.h"
 #include "SlateCore.h"
 
 #include "ARAttributeBaseComponent.generated.h"
@@ -182,6 +182,12 @@ public:
 	*/
 	UPROPERTY(BlueprintReadWrite, Category = "Damage")
 		FAttribute DamageValueCached;
+
+
+	UPROPERTY()
+		float LastDamageDealt;
+	UPROPERTY()
+		float LastDamageTaken;
 
 private:
 	void SetDamageReplication(UARAttributeBaseComponent* Comp);

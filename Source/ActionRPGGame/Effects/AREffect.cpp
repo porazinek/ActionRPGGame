@@ -3,15 +3,15 @@
 #include "ActionRPGGame.h"
 #include "AREffect.h"
 
-UAREffect::UAREffect(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREffect::UAREffect(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
 
 void UAREffect::InitializeEffect()
 {
-	OnEffectInitialized();
+	OnEffectInitialized(EffectInstigator.Get());
 //	OnEffectInit.Broadcast();
 }
 

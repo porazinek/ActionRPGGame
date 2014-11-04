@@ -5,6 +5,8 @@
 #include "../Types/ARAttributeTypes.h"
 #include "../Types/AREnumTypes.h"
 
+
+
 #include "ARWeapon.generated.h"
 
 /*
@@ -32,36 +34,20 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void Initialize();
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Owner")
-	class AARCharacter* WeaponOwner;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Owner")
-	class AARPlayerController* OwningController;
+	/*
+		Counter increased in functions which should trigger OnRep_, regardless of their state.
+		It won't be used but I needed it to make this class compile!
+	*/
+	UPROPERTY(Replicated)
+		int8 ReplicationHelper;
 
 	UPROPERTY(EditAnywhere, Category = "Tags")
 		FGameplayTagContainer OwnedTags;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
-		TArray<FAttribute> Attributes;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
-		TArray<FAttribute> DamageToApply;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
-		float Damage;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Properties")
 		TEnumAsByte<EWeaponHand> WeaponHand;
 
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Weapon")
-		FDMDOnWeaponFired OnWeaponFired;
-
-	/*
-		If weapon is two handed, there can only one equiped at time.
-	*/
-	UPROPERTY(EditAnywhere, Category = "Properties")
-		bool IsTwoHanded;
 
 	/*
 		Cosmetic Properties
@@ -70,7 +56,7 @@ public:
 		Weapon Mesh
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Cosmetics")
-		TSubobjectPtr<USkeletalMeshComponent> WeaponMesh;
+		USkeletalMeshComponent* WeaponMesh;
 	/*
 		Slot to which weapon will try to attach itself when sheathed (not active but, equiped).
 	*/
@@ -92,7 +78,7 @@ public:
 		UAnimMontage* MovementMontage;
 
 
-	TSubobjectPtr<UArrowComponent> ArrowComp;
+	UArrowComponent* ArrowComp;
 	void AttachWeapon();
 	/* Weapon State (fire) - ActionState interface and component implementation **/
 
@@ -121,7 +107,7 @@ public:
 		void OnWeaponDeactive();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-		TSubobjectPtr<class UARActionStateComponent> WeaponState;
+		class UARActionStateComponent* WeaponState;
 };
 
 

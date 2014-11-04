@@ -4,8 +4,8 @@
 #include "../Types/ARStructTypes.h"
 #include "ARArmor.h"
 
-AARArmor::AARArmor(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARArmor::AARArmor(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bReplicates = false;
 	bNetUseOwnerRelevancy = true;

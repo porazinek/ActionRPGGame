@@ -6,8 +6,8 @@
 
 #include "ARActionStateFiring.h"
 
-UARActionStateFiring::UARActionStateFiring(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionStateFiring::UARActionStateFiring(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	FireStarted = false;
 	IsFirstFire = true;

@@ -2,7 +2,7 @@
 #pragma once
 #include "../Types/ARAttributeTypes.h"
 #include "../Types/ARItemTypes.h"
-#include "Serialization/Json/Json.h"
+
 #include "Runtime/JsonUtilities/Public/JsonUtilities.h"
 #include "ARItemsData.generated.h"
 
@@ -19,7 +19,7 @@ public:
 		FARItemInfo ItemDataInfo;
 };
 
-UCLASS(meta = (DisplayName = "Items Data"))
+UCLASS(meta = (DisplayName = "Items Data"), BlueprintType, Blueprintable)
 class ACTIONRPGGAME_API UARItemsData : public UObject
 {
 	GENERATED_UCLASS_BODY()
@@ -47,7 +47,7 @@ public:
 
 	virtual void PostLoad() override;
 
-#if WITH_EDITOR
+//#if WITH_EDITOR
 	/*
 		Helper array to make editing TMap in editor easier.
 
@@ -86,8 +86,8 @@ public:
 
 	void RebuildEditEntries();
 
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
+	//virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+//#endif
 };
 
 

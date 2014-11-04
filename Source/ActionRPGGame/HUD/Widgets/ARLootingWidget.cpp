@@ -73,7 +73,7 @@ TSharedRef<ITableRow> SARLootingWidget::MakeTileViewWidget(TSharedPtr<FARDragDro
 				//.EquipmentSlot(EEquipmentSlot::Item_LootWindow)
 				.SlotName(FText::FromName("Loot"))
 				.Inventory(Inventory)
-				.Equipment(Character->Equipment.Get())
+				.Equipment(Character->Equipment)
 				.LootedObject(LootedObject)
 			];
 		return ReturnRow;

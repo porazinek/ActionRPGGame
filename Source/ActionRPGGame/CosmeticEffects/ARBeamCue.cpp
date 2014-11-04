@@ -9,6 +9,8 @@
 
 #include "../Items/ARWeapon.h"
 
+#include "IARCosmeticEffects.h"
+
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -17,8 +19,8 @@
 
 #include "ARBeamCue.h"
 
-UARBeamCue::UARBeamCue(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARBeamCue::UARBeamCue(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SetIsReplicated(true);
 
@@ -63,7 +65,7 @@ void UARBeamCue::TickComponent(float DeltaTime, enum ELevelTick TickType, FActor
 			AARWeapon* weap = Cast<AARWeapon>(GetOwner());
 			if (weap)
 			{
-				FHitResult hit = UARTraceStatics::GetHitResult(10000, NAME_None, weap->WeaponOwner, false, false, EARTraceType::Trace_Weapon, EWeaponHand::WeaponRight);
+				FHitResult hit = UARTraceStatics::GetHitResult(10000, NAME_None, weap->ARCharacterOwner, false, false, EARTraceType::Trace_Weapon, EWeaponHand::WeaponRight);
 				HitInfo.Location = hit.Location;
 			}
 		}
@@ -89,10 +91,10 @@ void UARBeamCue::SimulateHitOnClients(FVector Origin, FVector Location, FName St
 {
 		if (TrailFX)
 		{
-			AARWeapon* weap = Cast<AARWeapon>(GetOwner());
-			if (weap)
+			IIARCosmeticEffects* cosInt = Cast<IIARCosmeticEffects>(GetOwner());
+			if (cosInt)
 			{
-				FVector locOrigin = UARTraceStatics::GetStartLocation(StartSocket, weap->WeaponOwner, weap->WeaponHand);
+				FVector locOrigin = cosInt->GetOriginLocation();
 				if (!BeamPSC.IsValid())
 					BeamPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, locOrigin);
 				if (BeamPSC.IsValid())
@@ -102,6 +104,20 @@ void UARBeamCue::SimulateHitOnClients(FVector Origin, FVector Location, FName St
 				}
 				return;
 			}
+			
+			//AARWeapon* weap = Cast<AARWeapon>(GetOwner());
+			//if (weap)
+			//{
+			//	FVector locOrigin = UARTraceStatics::GetStartLocation(StartSocket, weap->ARCharacterOwner, weap->WeaponHand);
+			//	if (!BeamPSC.IsValid())
+			//		BeamPSC = UGameplayStatics::SpawnEmitterAtLocation(GetOwner(), TrailFX, locOrigin);
+			//	if (BeamPSC.IsValid())
+			//	{
+			//		BeamPSC->SetVectorParameter(OriginParam, locOrigin);
+			//		BeamPSC->SetVectorParameter(ImpactParam, Location);
+			//	}
+			//	return;
+			//}
 
 		}
 }

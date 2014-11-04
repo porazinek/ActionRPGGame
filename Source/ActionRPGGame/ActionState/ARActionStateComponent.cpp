@@ -16,8 +16,8 @@
 
 #include "ARActionStateComponent.h"
 
-UARActionStateComponent::UARActionStateComponent(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionStateComponent::UARActionStateComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SetIsReplicated(true);
 	bReplicates = true;
@@ -25,9 +25,9 @@ UARActionStateComponent::UARActionStateComponent(const class FPostConstructIniti
 	PlayRechargeAnimation = false;
 	IsCasting = false;
 	IsRecharing = false;
-	ActiveState = PCIP.CreateDefaultSubobject<UARActionStateActive>(this, TEXT("StateActive"));
-	CooldownState = PCIP.CreateDefaultSubobject<UARActionStateCooldown>(this, TEXT("StateCooldown"));
-	RefireState = PCIP.CreateDefaultSubobject<UARActionStateRefire>(this, TEXT("StateRefire"));
+	ActiveState = ObjectInitializer.CreateDefaultSubobject<UARActionStateActive>(this, TEXT("StateActive"));
+	CooldownState = ObjectInitializer.CreateDefaultSubobject<UARActionStateCooldown>(this, TEXT("StateCooldown"));
+	RefireState = ObjectInitializer.CreateDefaultSubobject<UARActionStateRefire>(this, TEXT("StateRefire"));
 }
 
 void UARActionStateComponent::InitializeComponent()
@@ -48,6 +48,8 @@ void UARActionStateComponent::GetLifetimeReplicatedProps(TArray< class FLifetime
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(UARActionStateComponent, CastingLoop);
+	DOREPLIFETIME(UARActionStateComponent, StopCastingLoop);
 	DOREPLIFETIME(UARActionStateComponent, IsCasting);
 	DOREPLIFETIME(UARActionStateComponent, IsRecharing);
 	DOREPLIFETIME(UARActionStateComponent, Owner);
@@ -62,13 +64,11 @@ void UARActionStateComponent::TickMe(float DeltaTime)
 }
 void UARActionStateComponent::PostNetReceive()
 {
-	//if (IsCasting)
-	//	ServerSetCastingState(false);
+
 }
 void UARActionStateComponent::PreNetReceive()
 {
-	//if (!IsCasting)
-	//	ServerSetCastingState(true);
+
 }
 void UARActionStateComponent::GotoState(class UARActionState* NextState)
 {
@@ -144,6 +144,7 @@ void UARActionStateComponent::StopAction()
 	}
 	else
 	{
+		StopCastingLoop++;
 		EndActionSequence();
 	}
 }
@@ -159,7 +160,7 @@ bool UARActionStateComponent::ServerStopAction_Validate()
 void UARActionStateComponent::CooldownBegin()
 {
 	IsRecharing = true;
-	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	IIARActionState* interval = Cast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnCooldownBegin(GetOwner());
@@ -169,7 +170,7 @@ void UARActionStateComponent::CooldownBegin()
 void UARActionStateComponent::CooldownEnded()
 {
 	IsRecharing = false;
-	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	IIARActionState* interval = Cast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnCooldownEnd(GetOwner());
@@ -179,31 +180,32 @@ void UARActionStateComponent::CooldownEnded()
 
 void UARActionStateComponent::CastBegin()
 {
-	//IsCasting = true;
-	//MulticastPlayAnimation();
+	IsCasting = true;
+	CastingLoop++;
 
-	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	IIARActionState* interval = Cast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnCastStart(GetOwner());
 	}
-	MulticastPlayAnimation2();
-	//if (GetNetMode() == ENetMode::NM_Standalone)
-	//	PlayCastingAnimation();
+	if (GetNetMode() == ENetMode::NM_Standalone)
+		PlayCastingAnimation();
 
 	OnActionCastBegin.Broadcast(OwnedTags);
 }
 void UARActionStateComponent::CastEnd()
 {
 	//IsCasting = false;
-	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	//CastingLoop++;
+	StopCastingLoop++;
+	IIARActionState* interval = Cast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnCastEnd(GetOwner());
 	}
-	MulticastStopAnimation();
-	//if (GetNetMode() == ENetMode::NM_Standalone)
-	//	StopCastingAnimation();
+	
+	if (GetNetMode() == ENetMode::NM_Standalone)
+		StopCastingAnimation();
 
 	OnActionCastEnd.Broadcast();
 }
@@ -211,60 +213,44 @@ void UARActionStateComponent::CastEnd()
 void UARActionStateComponent::ActionInterval()
 {
 	OnActionInterval.Broadcast();
-	//IsCasting = true;
-
-	IIARActionState* interval = InterfaceCast<IIARActionState>(GetOwner());
+	IsCasting = true;
+	CastingLoop++;
+	IIARActionState* interval = Cast<IIARActionState>(GetOwner());
 	if (interval)
 	{
 		interval->Execute_OnActionInterval(GetOwner());
 	}
 
-	//if (GetNetMode() == ENetMode::NM_Standalone)
-	//	PlayLoop();
+	if (GetNetMode() == ENetMode::NM_Standalone)
+		PlayCastingAnimation();// PlayLoop();
 	//OnRep_Casting();
-	//ServerSetCastingState(true);
 
-	MulticastPlayAnimation();
 }
 
-void UARActionStateComponent::MulticastPlayAnimation_Implementation()
-{
-	if (Owner)
-	{
-		Owner->Mesh->GetAnimInstance()->Montage_JumpToSection("CastLoop");
-	}
-}
-void UARActionStateComponent::MulticastPlayAnimation2_Implementation()
-{
-	if (Owner)
-	{
-		Owner->PlayAnimMontage(CastingMontage);
-	}
-}
-
-void UARActionStateComponent::MulticastStopAnimation_Implementation()
-{
-	if (Owner)
-	{
-		Owner->StopAnimMontage(CastingMontage);
-	}
-}
 
 void UARActionStateComponent::OnRep_Casting()
 {
-	if (IsCasting)
-	{
+	//if (IsCasting)
+//	{
 		PlayCastingAnimation();
-		//ServerSetCastingState(false);
+		//PlayLoop();
+		//if (Owner)
+//		{
+//			Owner->PlayAnimMontage(CastingMontage);
+//		}
 		//IsCasting = false;
-	}
-	else
-	{
-		StopCastingAnimation();
+		//CastingLoop++;
+//	}
+	//else
+	//{
+//		StopCastingAnimation();
 		//IsCasting = false;
-	}
+	//}
 }
-
+void UARActionStateComponent::OnRep_StopCasting()
+{
+	StopCastingAnimation();
+}
 void UARActionStateComponent::PlayCastingAnimation()
 {
 	if (Owner)
@@ -277,7 +263,7 @@ void UARActionStateComponent::PlayLoop()
 {
 	if (Owner)
 	{
-		Owner->Mesh->GetAnimInstance()->Montage_JumpToSection("CastLoop");
+		Owner->GetMesh()->GetAnimInstance()->Montage_JumpToSection("CastLoop");
 	}
 }
 
@@ -287,12 +273,4 @@ void UARActionStateComponent::StopCastingAnimation()
 	{
 		Owner->StopAnimMontage(CastingMontage);
 	}
-}
-void UARActionStateComponent::ServerSetCastingState_Implementation(bool State)
-{
-	IsCasting = State;
-}
-bool UARActionStateComponent::ServerSetCastingState_Validate(bool State)
-{
-	return true;
 }

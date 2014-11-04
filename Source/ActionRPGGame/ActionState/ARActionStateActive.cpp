@@ -6,8 +6,8 @@
 
 #include "ARActionStateActive.h"
 
-UARActionStateActive::UARActionStateActive(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARActionStateActive::UARActionStateActive(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 }
 

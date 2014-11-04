@@ -130,7 +130,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeLeftHandWeaponWidget(TSharedP
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
 				//		.EquipmentSlot(EEquipmentSlot::Item_LeftHandOne)
 				.SlotName(FText::FromName("LHand"))
-				.Inventory(MyPC->Inventory.Get())
+				.Inventory(MyPC->Inventory)
 				.Equipment(Equipment)
 			];
 		return ReturnRow;
@@ -164,7 +164,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeRightHandWeaponWidget(TShared
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
 				//	.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
 				.SlotName(FText::FromName("RHand"))
-				.Inventory(MyPC->Inventory.Get())
+				.Inventory(MyPC->Inventory)
 				.Equipment(Equipment)
 			];
 		return ReturnRow;
@@ -197,7 +197,7 @@ TSharedRef<ITableRow> SARCharacterSheetWidget::MakeEquipmentSlotsWeaponWidget(TS
 				.SlotType(EItemSlot::Item_Weapon)//set inventory slot type to well inventory.
 				//	.EquipmentSlot(EEquipmentSlot::Item_RightHandOne)
 				.SlotName(FText::FromName(AssetItem->SlotName))
-				.Inventory(MyPC->Inventory.Get())
+				.Inventory(MyPC->Inventory)
 				.Equipment(Equipment)
 			];
 		return ReturnRow;

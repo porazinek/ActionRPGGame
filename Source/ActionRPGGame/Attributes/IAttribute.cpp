@@ -4,8 +4,8 @@
 #include "../BlueprintLibrary/ARTraceStatics.h"
 #include "IAttribute.h"
 
-UIAttribute::UIAttribute(const class FPostConstructInitializeProperties& PCIP)
-: Super(PCIP)
+UIAttribute::UIAttribute(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
 {
 
 }

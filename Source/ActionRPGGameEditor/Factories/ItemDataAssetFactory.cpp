@@ -14,7 +14,6 @@
 #include "EnumEditorUtils.h"
 #include "StructureEditorUtils.h"
 
-#include "Serialization/Json/Json.h"
 
 #include "Editor/MainFrame/Public/MainFrame.h"
 
@@ -22,8 +21,8 @@
 
 #include "ItemDataAssetFactory.h"
 
-UItemDataAssetFactory::UItemDataAssetFactory(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UItemDataAssetFactory::UItemDataAssetFactory(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bCreateNew = true;
 	bEditAfterNew = true;

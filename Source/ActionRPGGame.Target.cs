@@ -23,7 +23,7 @@ public class ActionRPGGameTarget : TargetRules
 		OutExtraModuleNames.Add("ActionRPGGame");
        // if (UEBuildConfiguration.bBuildEditor)
        // {
-            OutExtraModuleNames.Add("ActionRPGGameEditor");
+       //     OutExtraModuleNames.Add("ActionRPGGameEditor");
        // }
 	}
 }

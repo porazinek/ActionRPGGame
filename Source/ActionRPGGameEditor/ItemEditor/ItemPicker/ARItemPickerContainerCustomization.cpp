@@ -367,10 +367,10 @@ FReply FARItemPickerContainerCustomization::OnAddItemClicked()
 							SNew(STextBlock)
 							.Text(FText::FromString("Pick Items Data"))
 						]
-						.MenuContent()
-						[
-							PropertyCustomizationHelpers::MakeAssetPickerWithMenu(InitialObject, true, &classes, OnShouldFilterAsset, OnAssetSlect, OnClose)
-						]
+						//.MenuContent()
+						//[
+							//PropertyCustomizationHelpers::MakeAssetPickerWithMenu(InitialObject, true, &classes, OnShouldFilterAsset, OnAssetSlect, OnClose)
+						//]
 					]
 				]
 				+ SHorizontalBox::Slot()

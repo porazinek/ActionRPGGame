@@ -10,11 +10,11 @@
 
 #include "ARActorCue.h"
 
-AARActorCue::AARActorCue(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARActorCue::AARActorCue(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	//AttachRootComponentToActor(AttachTo.Get(), AttachName, EAttachLocation::SnapToTarget);
-	ArrowRoot = PCIP.CreateDefaultSubobject<UArrowComponent>(this, TEXT("ArrowRoot"));
+	ArrowRoot = ObjectInitializer.CreateDefaultSubobject<UArrowComponent>(this, TEXT("ArrowRoot"));
 	SetRootComponent(ArrowRoot);
 
 }

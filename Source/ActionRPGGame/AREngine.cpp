@@ -5,8 +5,8 @@
 #include "GameplayTagsModule.h"
 #include "AREngine.h"
 
-UAREngine::UAREngine(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREngine::UAREngine(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

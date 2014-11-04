@@ -3,8 +3,8 @@
 #include "ActionRPGGame.h"
 #include "ARInvItem.h"
 
-UARInvItem::UARInvItem(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARInvItem::UARInvItem(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

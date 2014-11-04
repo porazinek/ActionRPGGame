@@ -4,8 +4,8 @@
 
 #include "ARPlayerCameraManager.h"
 
-AARPlayerCameraManager::AARPlayerCameraManager(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARPlayerCameraManager::AARPlayerCameraManager(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	ViewPitchMin = -70.0f;
 	ViewPitchMax = 70.0f;

@@ -7,6 +7,9 @@
 #include "../ActionState/ARActionStateComponent.h"
 
 #include "../BlueprintLibrary/ARTraceStatics.h"
+#include "../../TraceComponent/ARTraceComponent.h"
+
+#include "../../Effects/ARFeatComponent.h"
 
 #include "ParticleHelper.h"
 #include "Particles/ParticleSystem.h"
@@ -14,8 +17,8 @@
 
 #include "ARRangedWeapon.h"
 
-AARRangedWeapon::AARRangedWeapon(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARRangedWeapon::AARRangedWeapon(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;
@@ -24,6 +27,7 @@ AARRangedWeapon::AARRangedWeapon(const class FPostConstructInitializeProperties&
 	WeaponState->SetRefireTime(RefireCooldown);
 	WeaponState->SetIntervalTime(RefireSpeed);
 	WeaponState->SetCooldownTime(ReloadTime);
+
 }
 void AARRangedWeapon::BeginPlay()
 {
@@ -34,26 +38,35 @@ void AARRangedWeapon::BeginPlay()
 		In that case cooldown time is "Ammount of bullets" * "Time to Load Single Bullet"
 		Since there might be different amount of bullets to load, reload time will vary.
 	*/
-	if (WeaponState->CooldownMontage)
-	{
-		if (WeaponState->CooldownMontage->SequenceLength > RefireCooldown)
-			WeaponState->SetRefireTime(WeaponState->CooldownMontage->SequenceLength);
-		else
-			WeaponState->SetRefireTime(RefireCooldown);
-	}
-	else
-		WeaponState->SetRefireTime(RefireCooldown);
+	//if (WeaponState->CooldownMontage)
+	//{
+	//	if (WeaponState->CooldownMontage->SequenceLength > RefireCooldown)
+	//		WeaponState->SetRefireTime(WeaponState->CooldownMontage->SequenceLength);
+	//	else
+	//		WeaponState->SetRefireTime(RefireCooldown);
+	//}
+	//else
+	//	WeaponState->SetRefireTime(RefireCooldown);
 
-	WeaponState->SetIntervalTime(RefireSpeed);
-	WeaponState->SetCooldownTime(ReloadTime);
-	if (Role >= ROLE_Authority)
-	{
-		WeaponState->OnActionInterval.AddDynamic(this, &AARRangedWeapon::OnFiring);
-		CurrentAmmo = MaxAmmo;
-		CurrentMagazineSize = MaxMagazineSize;
-	}
+	//WeaponState->SetIntervalTime(RefireSpeed);
+	//WeaponState->SetCooldownTime(ReloadTime);
+	//if (Role >= ROLE_Authority)
+	//{
+	//	WeaponState->OnActionInterval.AddDynamic(this, &AARRangedWeapon::OnFiring);
+	//	CurrentAmmo = MaxAmmo;
+	//	CurrentMagazineSize = MaxMagazineSize;
+	//}
 }
-
+/** IIARTracing override begin */
+AARCharacter* AARRangedWeapon::GetCharacter()
+{
+	return ARCharacterOwner;
+}
+AARPlayerController* AARRangedWeapon::GetController()
+{
+	return ARPCOwner;
+}
+/* IIARTracing override begin **/
 
 void AARRangedWeapon::InputPressed()
 {
@@ -74,7 +87,7 @@ void AARRangedWeapon::ActionReload()
 
 FVector AARRangedWeapon::GetOriginLocation()
 {
-	return UARTraceStatics::GetStartLocation(MuzzleSocket, WeaponOwner, WeaponHand);
+	return UARTraceStatics::GetStartLocation(MuzzleSocket, ARCharacterOwner, WeaponHand);
 }
 
 void AARRangedWeapon::StartFire()
@@ -85,6 +98,18 @@ void AARRangedWeapon::StartFire()
 	}
 	else
 	{
+		Execute_ServerOnActionStart(this);
+		WeaponState->StartAction();
+		//exectute overrided blueprint functions,
+		//to determine damage.
+	//	DamageDeal->FinalDamage = ModifyDamageByAttribute(Damage);
+		ModifyDamageByEffects(Damage);
+
+		//DamageDeal->CheckEffects.Broadcast(DamageDeal);
+		//Effect->CheckEffects.Broadcast(Damage);
+
+	//	GEngine->AddOnScreenDebugMessage(0, 5, FColor::Red, FString::FormatAsNumber(damgeTest));
+
 		if (!WeaponState->IsRecharing)
 		{
 			SubtractAmmo();
@@ -95,7 +120,18 @@ void AARRangedWeapon::StartFire()
 		}
 	}
 }
-
+void AARRangedWeapon::ModifyDamageByEffects_Implementation(float DamageIn)
+{
+	FAttribute Attr;
+	//ARCharacterOwner->Feats->CachedDamage = DamageIn;
+	Attr.ModValue = DamageIn;
+	//float TestDamage;
+	if (ARCharacterOwner->Feats->OnOutgoingDamage.IsBound())
+	{
+		ARCharacterOwner->Feats->OnOutgoingDamage.Broadcast(DamageIn, this);
+	}
+	GEngine->AddOnScreenDebugMessage(0, 4, FColor::Red, FString::FormatAsNumber(Damage));
+}
 void AARRangedWeapon::ServerStartFire_Implementation()
 {
 	StartFire();

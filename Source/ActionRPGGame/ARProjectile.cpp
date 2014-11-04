@@ -10,15 +10,15 @@
 
 #include "ARProjectile.h"
 
-AARProjectile::AARProjectile(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARProjectile::AARProjectile(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	Collision = PCIP.CreateDefaultSubobject<USphereComponent>(this, TEXT("Collision"));
+	Collision = ObjectInitializer.CreateDefaultSubobject<USphereComponent>(this, TEXT("Collision"));
 	Collision->InitSphereRadius(10.0f);
 	Collision->bTraceComplexOnMove = true;
 	Collision->IgnoreActorWhenMoving(GetOwner(), true);
 	RootComponent = Collision;
-	Movement = PCIP.CreateDefaultSubobject<UProjectileMovementComponent>(this, TEXT("Movement"));
+	Movement = ObjectInitializer.CreateDefaultSubobject<UProjectileMovementComponent>(this, TEXT("Movement"));
 	Movement->UpdatedComponent = Collision;
 	Movement->bRotationFollowsVelocity = true;
 	Movement->OnProjectileStop.AddDynamic(this, &AARProjectile::OnStop);

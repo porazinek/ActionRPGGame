@@ -4,7 +4,7 @@
 #include "../Types/ARStructTypes.h"
 #include "ARItemDataAsset.h"
 
-UARItemDataAsset::UARItemDataAsset(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARItemDataAsset::UARItemDataAsset(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 }

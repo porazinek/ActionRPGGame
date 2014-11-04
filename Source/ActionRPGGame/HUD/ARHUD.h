@@ -1,4 +1,4 @@
-// Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
+﻿// Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 #pragma once
 
 #include "../Types/ARStructTypes.h"
@@ -161,6 +161,16 @@ class AARHUD : public AHUD
 
 public:
 	virtual void DrawHUD() override;
+	virtual void PostRender() override;
+
+	UPROPERTY(EditAnywhere, Category = "Mouse Look")
+		float LookSpeed;
+
+	bool TargetModeSwaped;
+	int8 TargetModeDirtyFrames;
+	FVector DeprojectWorldPosition;
+
+	FVector DeprojectWorldDirection;
 
 	TSharedPtr<class SARHUDWidget> HUDWidget;
 
@@ -201,6 +211,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Target Info")
 		FARHUDTargetInfo HUDTargetInfo;
 protected:
+
+	bool CursorDirty;
+	int32 DirtyFrameCount;
+
+	UPROPERTY()
+		ULocalPlayer* HUDLocalPlayer;
+
 	UPROPERTY(EditAnywhere, Category = "UI|Castbar")
 		float CastbarHeight;
 	UPROPERTY(EditAnywhere, Category = "UI|Castbar")

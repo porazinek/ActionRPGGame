@@ -12,8 +12,8 @@
 
 #include "ARMeleWeapon.h"
 
-AARMeleWeapon::AARMeleWeapon(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARMeleWeapon::AARMeleWeapon(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bNetUseOwnerRelevancy = true;
 	bReplicateInstigator = true;

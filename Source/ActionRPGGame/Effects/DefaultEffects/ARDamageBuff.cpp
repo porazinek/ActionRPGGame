@@ -7,10 +7,12 @@
 #include "../../Componenets/ARAttributeComponent.h"
 #include "../../Items//ARWeapon.h"
 
+#include "../../Types/ARStructTypes.h"
+
 #include "ARDamageBuff.h"
 
-UARDamageBuff::UARDamageBuff(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARDamageBuff::UARDamageBuff(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
@@ -18,7 +20,7 @@ UARDamageBuff::UARDamageBuff(const class FPostConstructInitializeProperties& PCI
 void UARDamageBuff::Initialize()
 {
 	Super::Initialize();
-
+	
 	if (EffectInstigator.IsValid())
 	{
 		//UAREquipmentComponent* comp = EffectInstigator->FindComponentByClass<UAREquipmentComponent>();
@@ -35,12 +37,12 @@ void UARDamageBuff::Initialize()
 		//	//}
 		//}
 
-		UARAttributeComponent* attrComp = EffectInstigator->FindComponentByClass<UARAttributeComponent>();
+	//	UARAttributeComponent* attrComp = EffectInstigator->FindComponentByClass<UARAttributeComponent>();
 
-		attrComp->OnOutgoingDamage.AddDynamic(this, &UARDamageBuff::ModifyDamage);
-		attrComp->OnIncomingDamage.AddDynamic(this, &UARDamageBuff::ReduceDamage);
-		float objectSize = sizeof(*this);
-		GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Black, FString::FormatAsNumber(objectSize));
+	//	attrComp->OnOutgoingDamage.AddDynamic(this, &UARDamageBuff::ModifyDamage);
+	//	attrComp->OnIncomingDamage.AddDynamic(this, &UARDamageBuff::ReduceDamage);
+	//	float objectSize = sizeof(*this);
+	//	GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Black, FString::FormatAsNumber(objectSize));
 	}
 }
 
@@ -56,11 +58,11 @@ void UARDamageBuff::ReduceDamage_Implementation(const FGameplayTagContainer& Dam
 
 void UARDamageBuff::OnRightWeaponEquiped(class AARWeapon* WeaponIn)
 {
-	if (WeaponIn)
-	{
-		for (FAttribute& attr : WeaponIn->DamageToApply)
-		{
-			attr.ModValue += 5;
-		}
-	}
+	//if (WeaponIn)
+	//{
+	//	for (FAttribute& attr : WeaponIn->DamageToApply)
+	//	{
+	//		attr.ModValue += 5;
+	//	}
+	//}
 }

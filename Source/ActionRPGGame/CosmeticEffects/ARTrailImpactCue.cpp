@@ -22,8 +22,8 @@
 
 #include "ARTrailImpactCue.h"
 
-UARTrailImpactCue::UARTrailImpactCue(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARTrailImpactCue::UARTrailImpactCue(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SetIsReplicated(true);
 
@@ -43,14 +43,14 @@ void UARTrailImpactCue::GetLifetimeReplicatedProps(TArray< class FLifetimeProper
 
 void UARTrailImpactCue::OnRep_Hit()
 {
-	HitInfo.Origin += FVector(FMath::FRandRange(-1, 1), FMath::FRandRange(-1, 1), FMath::FRandRange(-1, 1));
+	//HitInfo.Origin += FVector(FMath::FRandRange(-1, 1), FMath::FRandRange(-1, 1), FMath::FRandRange(-1, 1));
 	SimulateHitOnClients(HitInfo.Origin, HitInfo.Location, HitInfo.StartSocket);
 }
 void UARTrailImpactCue::SimulateHitOnClients(FVector Origin, FVector Location, FName StartSocketIn)
 {
 	if (TrailFX)
 	{
-		IIARCosmeticEffects* cosInt = InterfaceCast<IIARCosmeticEffects>(GetOwner());
+		IIARCosmeticEffects* cosInt = Cast<IIARCosmeticEffects>(GetOwner());
 		if (cosInt)
 		{
 			FVector locOrigin = cosInt->GetOriginLocation();
@@ -67,6 +67,7 @@ void UARTrailImpactCue::SimulateHitOnClients(FVector Origin, FVector Location, F
 			return;
 		}
 	}
+	HitInfo.HitCounter++;
 }
 
 void UARTrailImpactCue::SpawnEffectOnOwner()

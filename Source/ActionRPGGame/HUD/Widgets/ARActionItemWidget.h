@@ -4,7 +4,7 @@
 
 #include "../../Types/ARStructTypes.h"
 #include "../../Types/AREnumTypes.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 
 class SARActionItemWidget : public SCompoundWidget
 {

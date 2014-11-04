@@ -2,7 +2,7 @@
 #pragma once
 #include "AREnumTypes.h"
 #include "ARAttributeTypes.h"
-#include "Slate.h"
+#include "SlateBasics.h"
 #include "ARItemTypes.generated.h"
 
 USTRUCT(BlueprintType)

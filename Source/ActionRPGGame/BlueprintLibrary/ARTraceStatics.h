@@ -32,6 +32,9 @@ class UARTraceStatics : public UBlueprintFunctionLibrary
 		static FHitResult RangedTrace(const FVector& StartTrace, const FVector& EndTrace, APawn* InitiatedBy, TEnumAsByte<EARTraceType> TraceType);
 
 	UFUNCTION(BlueprintCallable, Category = "AR|Trace")
+		static FHitResult TraceAtMouse(float Range, FName StartSocket, APlayerController* PC, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand);
+
+	UFUNCTION(BlueprintCallable, Category = "AR|Trace")
 		static FHitResult GetHitResult(float Range, FName StartSocket, APawn* InitiatedBy, bool DrawDebug, bool UseStartSocket, TEnumAsByte<EARTraceType> TraceType, TEnumAsByte<EWeaponHand> Hand);
 
 	UFUNCTION(BlueprintCallable, Category = "AR|Trace")

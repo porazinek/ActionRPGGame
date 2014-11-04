@@ -6,8 +6,8 @@
 
 #include "ARProjectileSpawner.h"
 
-AARProjectileSpawner::AARProjectileSpawner(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARProjectileSpawner::AARProjectileSpawner(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	SetReplicates(true);
 }

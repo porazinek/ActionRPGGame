@@ -19,7 +19,6 @@ void FARItemAssetDetails::CustomizeDetails(IDetailLayoutBuilder& DetailLayout)
 	DetailLayout.HideProperty(TEXT("EditEntries"));
 	DetailLayout.HideProperty(TEXT("CurrentEntry"));
 
-
 	//// Now show only the currently selected key
 	int32 CurrentSelection = INDEX_NONE;
 	if (OnGetCurrentItemIndex.IsBound())

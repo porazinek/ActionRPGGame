@@ -5,8 +5,8 @@
 #include "GameplayTagsModule.h"
 #include "ARUnrealEdEngine.h"
 
-UARUnrealEdEngine::UARUnrealEdEngine(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UARUnrealEdEngine::UARUnrealEdEngine(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

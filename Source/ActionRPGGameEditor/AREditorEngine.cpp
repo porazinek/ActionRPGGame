@@ -5,8 +5,8 @@
 #include "GameplayTagsModule.h"
 #include "AREditorEngine.h"
 
-UAREditorEngine::UAREditorEngine(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREditorEngine::UAREditorEngine(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }

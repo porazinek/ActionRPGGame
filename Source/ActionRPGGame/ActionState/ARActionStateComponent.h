@@ -29,15 +29,15 @@ public:
 		TSubclassOf<class UARActionState> ActionStateClass;
 
 	UPROPERTY(Instanced, BlueprintReadOnly, Category = "State")
-		TSubobjectPtr<class UARActionState> ActiveState;
+		class UARActionState* ActiveState;
 	UPROPERTY(Instanced, BlueprintReadOnly, Category = "State")
-		TSubobjectPtr<class UARActionState> CooldownState;
+		class UARActionState* CooldownState;
 	/*
 		Same shit as CooldownState, but used in different context.
 		To prevent player from spamming attacks by mashing buttons ;).
 	*/
 	UPROPERTY(Instanced, BlueprintReadOnly, Category = "State")
-		TSubobjectPtr<class UARActionState> RefireState;
+		class UARActionState* RefireState;
 
 	/*
 		Tags Owned by this action (weapon, ability, other).
@@ -77,6 +77,10 @@ public:
 		bool PlayRechargeAnimation;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Casting)
+		int8 CastingLoop;
+	UPROPERTY(ReplicatedUsing = OnRep_StopCasting)
+		int8 StopCastingLoop;
+	UPROPERTY(Replicated)
 		bool IsCasting;
 	UPROPERTY(Replicated)
 		bool IsRecharing;
@@ -90,17 +94,8 @@ public:
 
 	UFUNCTION()
 		void OnRep_Casting();
-
-	UFUNCTION(Server, Unreliable, WithValidation)
-		void ServerSetCastingState(bool State);
-	UFUNCTION(NetMulticast, Unreliable)
-		void MulticastPlayAnimation();
-
-	UFUNCTION(NetMulticast, Reliable)
-		void MulticastPlayAnimation2();
-
-	UFUNCTION(NetMulticast, Reliable)
-		void MulticastStopAnimation();
+	UFUNCTION()
+		void OnRep_StopCasting();
 
 	UFUNCTION()
 		void PlayCastingAnimation();

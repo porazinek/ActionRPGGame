@@ -10,17 +10,17 @@
 
 #include "ARFieldBase.h"
 
-AARFieldBase::AARFieldBase(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARFieldBase::AARFieldBase(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	//it might be better to use TimerManager instead. We will see.
 
 
-	Collision = PCIP.CreateDefaultSubobject<USphereComponent>(this, TEXT("Collision"));
+	Collision = ObjectInitializer.CreateDefaultSubobject<USphereComponent>(this, TEXT("Collision"));
 	RootComponent = Collision;
 	Collision->OnComponentBeginOverlap.AddDynamic(this, &AARFieldBase::SetOnBeginOverlap);
 	//Collision->OnComponentHit
-	Attributes = PCIP.CreateDefaultSubobject<UARFieldAttributes>(this, TEXT("Attributes"));
+	Attributes = ObjectInitializer.CreateDefaultSubobject<UARFieldAttributes>(this, TEXT("Attributes"));
 	//OnFieldsOverlap.AddDynamic(this, &AARFieldBase::SetOnFieldsOverlap);
 
 	bReplicates = true;

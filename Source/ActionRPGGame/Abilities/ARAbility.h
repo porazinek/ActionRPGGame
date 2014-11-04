@@ -162,7 +162,7 @@ public:
 	*/
 	/*[Replicated]*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-		TSubobjectPtr<class UARActionStateComponent> ActionState;
+		class UARActionStateComponent* ActionState;
 
 	/* Cosmetics */
 	UPROPERTY(EditAnywhere, Category = "Cosmetics")

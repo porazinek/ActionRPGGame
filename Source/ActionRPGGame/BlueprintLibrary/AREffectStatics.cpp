@@ -18,27 +18,34 @@
 
 #include "AREffectStatics.h"
 
-UAREffectStatics::UAREffectStatics(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREffectStatics::UAREffectStatics(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
 
-void UAREffectStatics::ApplyEffect(TSubclassOf<class UAREffect> EffectIn, AActor* EffectCauser, AActor* EffectTarget)
+UAREffect* UAREffectStatics::CreateEffect(TSubclassOf<class UAREffect> EffectIn, AActor* EffectCauser, AActor* EffectTarget)
 {
+	UAREffect* effectOut = nullptr;
 	if (!EffectIn || !EffectCauser || !EffectTarget)
-		return;
+		return effectOut;
 
-	UAREffect* tempEff = ConstructObject<UAREffect>(EffectIn);
+	effectOut = ConstructObject<UAREffect>(EffectIn);
 
-	if (tempEff)
+	if (effectOut)
 	{
-		tempEff->EffectTarget = EffectTarget;
-		tempEff->EffectCausedBy = EffectCauser;
-		tempEff->InitializeEffect();
+		effectOut->EffectTarget = EffectTarget;
+		effectOut->EffectCausedBy = EffectCauser;
+		effectOut->OnPreInitializeEffect();
+		//effectOut->InitializeEffect();
+		return effectOut;
 	}
+	return effectOut;
 }
-
+void UAREffectStatics::ApplyEffect(UAREffect* EffectIn)
+{
+	EffectIn->InitializeEffect();
+}
 void UAREffectStatics::ApplyInstantEffect(TSubclassOf<class UAREffectType> EffectIn)
 {
 
@@ -359,23 +366,6 @@ void UAREffectStatics::SpawnProjectileInArea(TSubclassOf<class AARProjectile> Pr
 	}
 }
 
-void UAREffectStatics::SpawnProjectileInAreaInterval(TSubclassOf<class AARProjectile> Projectile, AActor* Causer, APawn* Instigator, const FHitResult& HitResult, const FARProjectileInfo& ProjectileInfo, int32 Amount, float MinTime, float MaxTime)
-{
-	if (HitResult.bBlockingHit)
-	{
-		FTimerManager& TimerManager = Causer->GetWorld()->GetTimerManager();
-		FTimerManager& DurationTimer = Causer->GetWorld()->GetTimerManager();
-		FTimerHandle IntervalHandle;
-		FTimerHandle DurationHandle;
-		FTimerDelegate del = FTimerDelegate::CreateStatic(&UAREffectStatics::SpawnProjectile, Projectile, Causer, HitResult, ProjectileInfo);
-		TimerManager.SetTimer(IntervalHandle, del, MinTime, true, 0);
-		float duration = Amount * MaxTime + KINDA_SMALL_NUMBER;
-		//FTimerDelegate durDel = FTimerDelegate::CreateStatic(&UAREffectStatics::StopTimer, Causer, IntervalHandle.GetHandle());
-		//DurationTimer.SetTimer(DurationHandle, durDel, duration, false);
-		float CurrentTime = 0;
-		int32 counter = 0;
-	}
-}
 void UAREffectStatics::StopTimer(AActor* Causer, int32 HandleIn)
 {
 	//FTimerHandle Handle = FTimerHandle(HandleIn);

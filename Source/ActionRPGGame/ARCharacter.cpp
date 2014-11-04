@@ -9,6 +9,8 @@
 #include "Componenets/AREquipmentComponent.h"
 #include "Abilities/ARAbilityComponent.h"
 
+#include "Effects/ARFeatComponent.h"
+
 #include "Types/ARAttributeTypes.h"
 #include "Effects/AREffectType.h"
 #include "Items/ARWeapon.h"
@@ -23,23 +25,23 @@
 //////////////////////////////////////////////////////////////////////////
 // AActionRPGGameCharacter
 
-AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+AARCharacter::AARCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Set size for collision capsule
-	CapsuleComponent->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	IsCharacterTurningYaw = false;
 	//LowOffset = FVector(-380.0f, 35.0f, 15.0f);
 	//MidOffset = FVector(-380.0f, 35.0f, 60.0f);
 	//HighOffset = FVector(-380.0f, 35.0f, 150.0f); //x,y,z
 
-	CameraBoom = PCIP.CreateDefaultSubobject<USpringArmComponent>(this, TEXT("CameraBoom"));
-	CameraBoom->AttachTo(CapsuleComponent);
+	CameraBoom = ObjectInitializer.CreateDefaultSubobject<USpringArmComponent>(this, TEXT("CameraBoom"));
+	CameraBoom->AttachTo(GetCapsuleComponent());
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character
 	//CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
 	CameraBoom->SocketOffset = FVector(0.0f, 50.0f, 100.0f);
 	// Create a follow camera
-	FollowCamera = PCIP.CreateDefaultSubobject<UCameraComponent>(this, TEXT("FollowCamera"));
+	FollowCamera = ObjectInitializer.CreateDefaultSubobject<UCameraComponent>(this, TEXT("FollowCamera"));
 	FollowCamera->AttachTo(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	//FollowCamera->bUseControllerViewRotation = false; // Camera does not rotate relative to arm
 
@@ -50,51 +52,57 @@ AARCharacter::AARCharacter(const class FPostConstructInitializeProperties& PCIP)
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	CharacterMovement->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	CharacterMovement->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
-	CharacterMovement->JumpZVelocity = 600.f;
-	CharacterMovement->AirControl = 0.2f;
-
-	Attributes = PCIP.CreateDefaultSubobject<UARAttributeComponent>(this, TEXT("Attributes"));
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->AirControl = 0.2f;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCharacterMovement()->NavAgentProps.bCanJump = true;
+	GetCharacterMovement()->NavAgentProps.bCanWalk = true;
+	
+	Attributes = ObjectInitializer.CreateDefaultSubobject<UARAttributeComponent>(this, TEXT("Attributes"));
 	Attributes->Activate();
 	Attributes->bAutoRegister = true;
 	Attributes->SetIsReplicated(true);
 
-	Equipment = PCIP.CreateDefaultSubobject<UAREquipmentComponent>(this, TEXT("Equipment"));
+	Equipment = ObjectInitializer.CreateDefaultSubobject<UAREquipmentComponent>(this, TEXT("Equipment"));
 	Equipment->Activate();
 	Equipment->bAutoRegister = true;
 	//Equipment->GetNetAddressable();
 	Equipment->SetIsReplicated(true);
 
-	Abilities = PCIP.CreateDefaultSubobject<UARAbilityComponent>(this, TEXT("Abilities"));
+	Abilities = ObjectInitializer.CreateDefaultSubobject<UARAbilityComponent>(this, TEXT("Abilities"));
 	Abilities->Activate();
 	Abilities->bAutoRegister = true;
 	//Equipment->GetNetAddressable();
 	Abilities->SetIsReplicated(true);
 
-	HeadMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HeadMesh"));
-	HeadMesh->AttachParent = Mesh;
-	HeadMesh->SetMasterPoseComponent(Mesh);
 
-	ShoulderMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("ShoulderMesh"));
-	ShoulderMesh->AttachParent = Mesh;
-	ShoulderMesh->SetMasterPoseComponent(Mesh);
+	Feats = ObjectInitializer.CreateDefaultSubobject<UARFeatComponent>(this, TEXT("Feats"));
 
-	ChestMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("ChestMesh"));
-	ChestMesh->AttachParent = Mesh;
-	ChestMesh->SetMasterPoseComponent(Mesh);
+	HeadMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HeadMesh"));
+	HeadMesh->AttachParent = GetMesh();
+	HeadMesh->SetMasterPoseComponent(GetMesh());
 
-	LegsMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("LegsMesh"));
-	LegsMesh->AttachParent = Mesh;
-	LegsMesh->SetMasterPoseComponent(Mesh);
+	ShoulderMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("ShoulderMesh"));
+	ShoulderMesh->AttachParent = GetMesh();
+	ShoulderMesh->SetMasterPoseComponent(GetMesh());
+
+	ChestMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("ChestMesh"));
+	ChestMesh->AttachParent = GetMesh();
+	ChestMesh->SetMasterPoseComponent(GetMesh());
+
+	LegsMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("LegsMesh"));
+	LegsMesh->AttachParent = GetMesh();
+	LegsMesh->SetMasterPoseComponent(GetMesh());
 	
-	HandsMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HandsMesh"));
-	HandsMesh->AttachParent = Mesh;
-	HandsMesh->SetMasterPoseComponent(Mesh);
+	HandsMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("HandsMesh"));
+	HandsMesh->AttachParent = GetMesh();
+	HandsMesh->SetMasterPoseComponent(GetMesh());
 
-	FootMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("FootMesh"));
-	FootMesh->AttachParent = Mesh;
-	FootMesh->SetMasterPoseComponent(Mesh);
+	FootMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("FootMesh"));
+	FootMesh->AttachParent = GetMesh();
+	FootMesh->SetMasterPoseComponent(GetMesh());
 	//SetRootComponent(Mesh);
 }
 
@@ -117,18 +125,18 @@ void AARCharacter::PostInitializeComponents()
 		OnCharacterInitialize();
 		SpawnDefaultAbility();
 		testNumber = 12;
-		for (TSubclassOf<UAREffectType> featClass : FeatClasses)
-		{
-			UAREffectType* effect = ConstructObject<UAREffectType>(featClass);
-			if (effect)
-			{
-				effect->EffectTarget = this;
-				effect->EffectCausedBy = this;
-				effect->EffectInstigator = Controller;
-				effect->Initialize();
-				Feats.Add(effect);
-			}
-		}
+		//for (TSubclassOf<UAREffectType> featClass : FeatClasses)
+		//{
+		//	UAREffectType* effect = ConstructObject<UAREffectType>(featClass);
+		//	if (effect)
+		//	{
+		//		effect->EffectTarget = this;
+		//		effect->EffectCausedBy = this;
+		//		effect->EffectInstigator = Controller;
+		//		effect->Initialize();
+		//		Feats.Add(effect);
+		//	}
+		//}
 	}
 }
 void AARCharacter::SpawnDefaultAbility()
@@ -154,14 +162,14 @@ void AARCharacter::SpawnDefaultAbility()
 void AARCharacter::OnRep_Controller()
 {
 	Super::OnRep_Controller();
-	Equipment->TargetCharacter = this;
-	Equipment->TargetController = Cast<AARPlayerController>(GetController());
+	Equipment->ARCharacterOwner = this;
+	Equipment->ARPCOwner = Cast<AARPlayerController>(GetController());
 	/*
 		It's very bad way of doing this!
 	*/
-	if (Equipment->TargetController)
+	if (Equipment->ARPCOwner)
 	{
-		Equipment->Inventory = Equipment->TargetController->Inventory;
+		Equipment->Inventory = Equipment->ARPCOwner->Inventory;
 	}
 	Abilities->OwningCharacter = this;
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
@@ -174,11 +182,11 @@ void AARCharacter::OnRep_Controller()
 void AARCharacter::PossessedBy(class AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	Equipment->TargetCharacter = this;
-	Equipment->TargetController = Cast<AARPlayerController>(GetController());
-	if (Equipment->TargetController)
+	Equipment->ARCharacterOwner = this;
+	Equipment->ARPCOwner = Cast<AARPlayerController>(GetController());
+	if (Equipment->ARPCOwner)
 	{
-		Equipment->Inventory = Equipment->TargetController->Inventory;
+		Equipment->Inventory = Equipment->ARPCOwner->Inventory;
 	}
 	Abilities->OwningCharacter = this;
 	Abilities->OwningController = Cast<AARPlayerController>(GetController());
@@ -241,7 +249,11 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 {
 	// Set up gameplay key bindings
 	check(InputComponent);
-	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	InputComponent->BindAction("Jump", IE_Pressed, this, &AARCharacter::InputStartJump);
+	InputComponent->BindAction("Jump", IE_Released, this, &AARCharacter::InputStopJump);
+
+	InputComponent->BindAction("Crouch", IE_Pressed, this, &AARCharacter::InputStartCrouch);
+	InputComponent->BindAction("Crouch", IE_Released, this, &AARCharacter::InputStopCrouch);
 
 	InputComponent->BindAxis("MoveForward", this, &AARCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AARCharacter::MoveRight);
@@ -256,7 +268,28 @@ void AARCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	//InputComponent->BindAction("SwapLeftWeapon", IE_Pressed, this, &AARCharacter::InputSwapLeftWeapon);
 	//InputComponent->BindAction("SwapRightWeapon", IE_Pressed, this, &AARCharacter::InputSwapRightWeapon);
 }
+void AARCharacter::InputStartCrouch()
+{
+	Crouch();
+	GetCharacterMovement()->bWantsToCrouch = true;
+}
+void AARCharacter::InputStopCrouch()
+{
+	UnCrouch();
+	GetCharacterMovement()->bWantsToCrouch = false;
+}
 
+void AARCharacter::InputStartJump()
+{
+	//Jump();
+	bPressedJump = CanJump();
+	bIsJumpButtonPressed = CanJump();
+}
+void AARCharacter::InputStopJump()
+{
+	bPressedJump = false;
+	bIsJumpButtonPressed = false;
+}
 void AARCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
@@ -312,6 +345,8 @@ void AARCharacter::MoveRight(float Value)
 void AARCharacter::AddControllerYawInput(float Val)
 {
 	Super::AddControllerYawInput(Val);
+
+	TurningDirection = Val;
 	if (Val != 0)
 		IsCharacterTurningYaw = true;
 	else
@@ -321,7 +356,7 @@ void AARCharacter::InputActionButtonOne()
 {
 	if (Abilities->ActionBarOne[1].Ability.IsValid())
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Abilities->ActionBarOne[1].Ability.Get());
+		IIARActionState* actionInterface = Cast<IIARActionState>(Abilities->ActionBarOne[1].Ability.Get());
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();
@@ -370,7 +405,7 @@ void AARCharacter::InputFireLeftWeapon()
 {
 	if (Equipment->ActiveLeftHandWeapon)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();
@@ -381,7 +416,7 @@ void AARCharacter::InputFireRightWeapon()
 {
 	if (Equipment->ActiveRightHandWeapon)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveRightHandWeapon);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Equipment->ActiveRightHandWeapon);
 		if (actionInterface)
 		{
 			actionInterface->InputPressed();
@@ -392,7 +427,7 @@ void AARCharacter::InputStopFireLeftWeapon()
 {
 	if (Equipment->ActiveLeftHandWeapon)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
 		if (actionInterface)
 		{
 			actionInterface->InputReleased();
@@ -403,7 +438,7 @@ void AARCharacter::InputStopFireRightWeapon()
 {
 	if (Equipment->ActiveRightHandWeapon)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveRightHandWeapon);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Equipment->ActiveRightHandWeapon);
 		if (actionInterface)
 		{
 			actionInterface->InputReleased();
@@ -415,7 +450,7 @@ void AARCharacter::InputReloadLeftWeapon()
 {
 	if (Equipment->ActiveLeftHandWeapon)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Equipment->ActiveLeftHandWeapon);
 		if (actionInterface)
 		{
 			actionInterface->ActionReload();
@@ -426,7 +461,7 @@ void AARCharacter::InputReloadRightWeapon()
 {
 	if (Equipment->ActiveRightHandWeapon)
 	{
-		IIARActionState* actionInterface = InterfaceCast<IIARActionState>(Equipment->ActiveRightHandWeapon);
+		IIARActionState* actionInterface = Cast<IIARActionState>(Equipment->ActiveRightHandWeapon);
 		if (actionInterface)
 		{
 			actionInterface->ActionReload();

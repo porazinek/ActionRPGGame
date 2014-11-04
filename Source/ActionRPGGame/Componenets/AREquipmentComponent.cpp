@@ -22,8 +22,8 @@
 
 
 
-UAREquipmentComponent::UAREquipmentComponent(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+UAREquipmentComponent::UAREquipmentComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	bReplicates = true;
 	bWantsInitializeComponent = true;
@@ -61,8 +61,8 @@ void UAREquipmentComponent::InitializeComponent()
 				//ActiveRightHandWeapon->ItemName = Weapon.ARItemID;
 				ActiveRightHandWeapon->SetOwner(MyChar);
 				ActiveRightHandWeapon->Instigator = MyChar;
-				ActiveRightHandWeapon->WeaponOwner = MyChar;
-				ActiveRightHandWeapon->OwningController = TargetController;
+				ActiveRightHandWeapon->ARCharacterOwner = MyChar;
+				ActiveRightHandWeapon->ARPCOwner = ARPCOwner;
 			}
 		}
 		for (int32 i = 0; i < 4; i++)
@@ -162,8 +162,8 @@ void UAREquipmentComponent::GetLifetimeReplicatedProps(TArray< class FLifetimePr
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UAREquipmentComponent, TargetCharacter);
-	DOREPLIFETIME(UAREquipmentComponent, TargetController);
+	DOREPLIFETIME(UAREquipmentComponent, ARCharacterOwner);
+	DOREPLIFETIME(UAREquipmentComponent, ARPCOwner);
 
 	DOREPLIFETIME_CONDITION(UAREquipmentComponent, Inventory, COND_OwnerOnly);
 
@@ -225,7 +225,7 @@ void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FARDra
 
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.bNoCollisionFail = true;
-		SpawnInfo.Owner = TargetCharacter;
+		SpawnInfo.Owner = ARCharacterOwner;
 		AARWeapon* weaponBase;
 		if (data->DefaultClass)
 			weaponBase = GetWorld()->SpawnActor<AARWeapon>(data->DefaultClass, SpawnInfo);
@@ -235,9 +235,9 @@ void UAREquipmentComponent::MulticastAttacheSheathedWeapon_Implementation(FARDra
 		weaponBase->ItemName = WeaponIn.ItemKey;
 		weaponBase->ARItemID = WeaponIn.ItemKey;
 		weaponBase->ItemIndex = WeaponIn.ItemIndex;
-		weaponBase->SetOwner(TargetCharacter);
-		weaponBase->Instigator = TargetCharacter;
-		weaponBase->WeaponOwner = TargetCharacter;
+		weaponBase->SetOwner(ARCharacterOwner);
+		weaponBase->Instigator = ARCharacterOwner;
+		weaponBase->ARCharacterOwner = ARCharacterOwner;
 		weaponBase->ItemInfo = data->ItemInfo;
 
 		if (HandIn == 0)
@@ -405,7 +405,7 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FARDragDropInfo> Weapon
 		{
 			FActorSpawnParameters SpawnInfo;
 			SpawnInfo.bNoCollisionFail = true;
-			SpawnInfo.Owner = TargetCharacter;
+			SpawnInfo.Owner = ARCharacterOwner;
 			
 			AARWeapon* weaponBase;
 			if (data->DefaultClass)
@@ -418,9 +418,9 @@ void UAREquipmentComponent::AttacheSheathedWeapon(TArray<FARDragDropInfo> Weapon
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->ItemInfo = data->ItemInfo;
 
-			weaponBase->SetOwner(TargetCharacter);
-			weaponBase->Instigator = TargetCharacter;
-			weaponBase->WeaponOwner = TargetCharacter;
+			weaponBase->SetOwner(ARCharacterOwner);
+			weaponBase->Instigator = ARCharacterOwner;
+			weaponBase->ARCharacterOwner = ARCharacterOwner;
 			if (HandIn == 0)
 				weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
 			else if (HandIn == 1)
@@ -461,7 +461,7 @@ void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWe
 	{
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.bNoCollisionFail = true;
-		SpawnInfo.Owner = TargetCharacter;
+		SpawnInfo.Owner = ARCharacterOwner;
 		
 		AARWeapon* weaponBase;
 		if (data->DefaultClass)
@@ -472,9 +472,9 @@ void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWe
 		weaponBase->ItemName = LastWeapon->ARItemID;
 		weaponBase->ARItemID = LastWeapon->ARItemID;
 		weaponBase->ItemIndex = LastWeapon->ItemIndex;
-		weaponBase->SetOwner(TargetCharacter);
-		weaponBase->Instigator = TargetCharacter;
-		weaponBase->WeaponOwner = TargetCharacter;
+		weaponBase->SetOwner(ARCharacterOwner);
+		weaponBase->Instigator = ARCharacterOwner;
+		weaponBase->ARCharacterOwner = ARCharacterOwner;
 		weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
 		weaponBase->ItemInfo = data->ItemInfo;
 
@@ -501,7 +501,9 @@ void UAREquipmentComponent::AttachSheathhWeaponOnSwap_Implementation(class AARWe
 	}
 	//}
 }
-
+/*
+	Make it run on Server.
+*/
 void UAREquipmentComponent::DetachSheathedWeapon(AARWeapon* WeaponToDetach)
 {
 	for (AARWeapon* weap : EquipedWeapons)
@@ -533,10 +535,10 @@ void UAREquipmentComponent::SetAttachWeapon(class AARWeapon* Weapon, FName Socke
 		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
 		if (MyChar)
 		{
-			Weapon->WeaponMesh->AttachTo(MyChar->Mesh, SocketName);
+			Weapon->WeaponMesh->AttachTo(MyChar->GetMesh(), SocketName);
 			Weapon->WeaponMesh->SetHiddenInGame(false);
 		}
-		Weapon->WeaponOwner = MyChar;
+		Weapon->ARCharacterOwner = MyChar;
 		Weapon->OnWeaponActive();
 	}
 }
@@ -548,14 +550,14 @@ void UAREquipmentComponent::SetSeathedWeapon(class AARWeapon* WeaponIn, FName So
 		AARCharacter* MyChar = Cast<AARCharacter>(GetOwner());
 		if (MyChar)
 		{
-			WeaponIn->WeaponMesh->AttachTo(TargetCharacter->Mesh, SocketNameIn);
+			WeaponIn->WeaponMesh->AttachTo(ARCharacterOwner->GetMesh(), SocketNameIn);
 			WeaponIn->WeaponMesh->SetHiddenInGame(false);
 			WeaponIn->WeaponMesh->SetSimulatePhysics(true);
 			WeaponIn->WeaponMesh->WakeRigidBody();
 			//WeaponIn->WeaponMesh->WakeAllRigidBodies();
 			//WeaponIn->WeaponMesh->SetWorldRotation(FRotator(0, 0, 180), false);
 		}
-		WeaponIn->WeaponOwner = MyChar;
+		WeaponIn->ARCharacterOwner = MyChar;
 	}
 }
 void UAREquipmentComponent::MulticastDetachWeaponSlotSwap_Implementation(FName WeaponID, int32 HandIn)
@@ -999,7 +1001,8 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
-			weaponBase->WeaponOwner = MyChar;
+			weaponBase->ARCharacterOwner = MyChar;
+			weaponBase->ARPCOwner = ARPCOwner;
 			weaponBase->WeaponHand = EWeaponHand::WeaponLeft;
 
 			weaponBase->ItemInfo = data->ItemInfo;
@@ -1040,8 +1043,8 @@ void UAREquipmentComponent::SetWeapon(FARDragDropInfo Weapon, class AARWeapon* P
 			weaponBase->ItemIndex = Weapon.ItemIndex;
 			weaponBase->SetOwner(MyChar);
 			weaponBase->Instigator = MyChar;
-			weaponBase->WeaponOwner = MyChar;
-			//weaponBase->OwningController = TargetController;
+			weaponBase->ARCharacterOwner = MyChar;
+			weaponBase->ARPCOwner = ARPCOwner;
 			weaponBase->WeaponHand = EWeaponHand::WeaponRight;
 
 			weaponBase->ItemInfo = data->ItemInfo;

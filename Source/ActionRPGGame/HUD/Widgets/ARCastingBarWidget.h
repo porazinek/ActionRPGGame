@@ -4,7 +4,7 @@
 
 #include "../../Types/ARStructTypes.h"
 
-#include "Slate.h"
+#include "SlateBasics.h"
 
 class SARCastingBarWidget : public SCompoundWidget
 {

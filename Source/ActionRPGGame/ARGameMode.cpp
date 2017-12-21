@@ -1,17 +1,35 @@
-// Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
+// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
-#include "ActionRPGGame.h"
-#include "GameplayTagsModule.h"
 #include "ARGameMode.h"
-#include "ARCharacter.h"
-
-AARGameMode::AARGameMode(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+#include "UObject/ConstructorHelpers.h"
+#include "Modules/ModuleManager.h"
+#include "AssetRegistryModule.h"
+#include "Engine/AssetManager.h"
+#include "Abilities/ARAbilityBase.h"
+//#include "IpConnec"
+//#include "OnlineSubsystemUtils/IpConnection.h"
+#include "IPAddress.h"
+#include "SDraggableWindowWidget.h"
+AARGameMode::AARGameMode()
 {
-
 }
-
 void AARGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	//if (GetNetMode() == ENetMode::NM_DedicatedServer)
+	{
+		if (UNetConnection* Conn = GetNetConnection())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Your message, %s \n"), *FString::FromInt(Conn->GetAddrAsInt()));
+		}
+	}
+	TSharedPtr<SDraggableDesktopWidget> desktop = SNew(SDraggableDesktopWidget);
+	GEngine->GameViewport->AddViewportWidgetContent(desktop.ToSharedRef());
+
+	//TSharedPtr<SDraggableWindowWidget> window = SNew(SDraggableWindowWidget);
+	//GEngine->GameViewport->AddViewportWidgetContent(window.ToSharedRef());
+	//desktop->AddWindow(window);
+	//TSharedPtr<SDraggableWindowWidget> window1 = SNew(SDraggableWindowWidget);
+	//GEngine->GameViewport->AddViewportWidgetContent(window1.ToSharedRef());
+	//desktop->AddWindow(window1);
 }

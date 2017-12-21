@@ -1,36 +1,14 @@
-// Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
+// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.Collections.Generic;
 
+[SupportedPlatforms(UnrealPlatformClass.Server)]
 public class ActionRPGGameServerTarget : TargetRules
 {
-    public ActionRPGGameServerTarget(TargetInfo Target)
+	public ActionRPGGameServerTarget(TargetInfo Target) : base(Target)
 	{
-        Type = TargetType.Server;
-        bUsesSlate = false;
+		Type = TargetType.Server;
+		ExtraModuleNames.Add("ActionRPGGame");
 	}
-
-	//
-	// TargetRules interface.
-	//
-    
-	public override void SetupBinaries(
-		TargetInfo Target,
-		ref List<UEBuildBinaryConfiguration> OutBuildBinaryConfigurations,
-		ref List<string> OutExtraModuleNames
-		)
-	{
-		OutExtraModuleNames.Add("GameInventorySystem");
-		OutExtraModuleNames.Add("GameAttributes");
-		OutExtraModuleNames.Add("GameAbilities");
-		OutExtraModuleNames.Add("GameSystem");
-		OutExtraModuleNames.Add("GameWidgets");
-        OutExtraModuleNames.Add("ActionRPGGame");
-    }
-
-    public override bool ShouldCompileMonolithic(UnrealTargetPlatform InPlatform, UnrealTargetConfiguration InConfiguration)
-    {
-        return false;
-    }
 }

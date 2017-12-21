@@ -1,45 +1,51 @@
-// Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
-#include "FCTFloatingTextComponent.h"
-#include "GSPlayerController.h"
-#include "FCTGlobalTypes.h"
-#include "GAGlobalTypes.h"
-#include "IGISInventory.h"
+
+#include "CoreMinimal.h"
+#include "GameFramework/PlayerController.h"
+#include "GameplayTags.h"
 #include "ARPlayerController.generated.h"
 
-
+/**
+ * 
+ */
 UCLASS()
-class ACTIONRPGGAME_API AARPlayerController : public AGSPlayerController, public IIGISInventory
+class ACTIONRPGGAME_API AARPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
-	class UGISInventoryBaseComponent* Inventory;
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|UI")
+		class UARUIComponent* UIComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|UI")
+		class UARUIAbilityManagerComponent* UIAbilityManagerComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|UI")
+		class UARWeaponManagerComponent* WeaponManager;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
-	class UGSAbilitiesComponent* Abilities;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|UI")
+		class UARAbilityManagerComponent* AbilityManager;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability Input")
+		FGameplayTag InputNextWeapon;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability Input")
+		FGameplayTag AbilitytNextWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability Input")
+		FGameplayTag InputPreviousWeapon;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Ability Input")
+		FGameplayTag AbilitytPreviousWeapon;
+
 public:
 	AARPlayerController(const FObjectInitializer& ObjectInitializer);
-	/** AActor Overrides - BEGIN */
-	virtual void BeginPlay() override;
-	/* AActor Overrides - END **/
-	
-	virtual void OnRep_Pawn() override;
-	virtual void SetupInputComponent() override;
+	virtual void SetPawn(APawn* InPawn) override;
+	void SetupInputComponent();
 
+	void InputSwitchAbilitySet();
 
-	UFUNCTION()
-		void OnRecivedModifiedAttribute(const FGAModifiedAttribute& AttributeModIn);
+	UFUNCTION(BlueprintCallable, Category = "ActionRPGGame|Weapons")
+		void NextWeapon();
+	UFUNCTION(BlueprintCallable, Category = "ActionRPGGame|Weapons")
+		void PreviousWeapon();
 
-	UFUNCTION(BlueprintImplementableEvent)
-		void OnPawnReplicated(APawn* NewPawn);
-	
-	/** IIGISInventory - BEGIN */
-	class UGISInventoryBaseComponent* GetInventory() override;
-	/* IIGISInventory - END **/
-
-	//virtual void PreInitializeComponents() override;
+	void OnInputAbilityReady(FGameplayTag InAbilityTag, FGameplayTag InInputTag);
 };
-
-
-

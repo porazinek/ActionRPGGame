@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{A36EBF10-476D-8159-343E-8FA796F9AC8F}",
+	"EngineAssociation": "",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -10,6 +10,24 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"AbilityFramework",
+				"InventoryFramework",
+				"Engine",
+				"AIModule",
+				"UMG",
+				"CoreUObject",
+				"Slate",
+				"SlateCore",
+				"InventoryFrameworkUI"
+			]
+		},
+		{
+			"Name": "ActionRPGGameEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"AbilityFramework",
+				"AbilityFrameworkEditor",
+				"InventoryFramework",
 				"Engine",
 				"AIModule",
 				"UMG",
@@ -27,6 +45,14 @@
 			"Enabled": true
 		},
 		{
+			"Name": "InventoryFramework",
+			"Enabled": true
+		},
+		{
+			"Name": "InventoryFrameworkUI",
+			"Enabled": true
+		},
+		{
 			"Name": "ActorSequenceEditor",
 			"Enabled": true
 		},
@@ -39,11 +65,18 @@
 			"Enabled": true
 		},
 		{
-			"Name": "OnlineSubsystemAmazon",
+			"Name": "OnlineFramework",
 			"Enabled": true
 		},
 		{
-			"Name": "OnlineFramework",
+			"Name": "ActionRPGGameUI",
+			"Enabled": true,
+			"BlacklistTargets": [
+				"Server"
+			]
+		},
+		{
+			"Name": "GRPC",
 			"Enabled": true
 		},
 		{
@@ -132,6 +165,94 @@
 		{
 			"Name": "AndroidPermission",
 			"Enabled": false
+		},
+		{
+			"Name": "AppleARKit",
+			"Enabled": false
+		},
+		{
+			"Name": "GLTFImporter",
+			"Enabled": true
+		},
+		{
+			"Name": "SteamAudio",
+			"Enabled": true,
+			"BlacklistTargets": [
+				"Server",
+				"Client"
+			]
+		},
+		{
+			"Name": "ResonanceAudio",
+			"Enabled": false,
+			"BlacklistTargets": [
+				"Server",
+				"Client"
+			]
+		},
+		{
+			"Name": "CodeView",
+			"Enabled": true
+		},
+		{
+			"Name": "SignificanceManager",
+			"Enabled": true
+		},
+		{
+			"Name": "CustomAnimNode",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/8901af6d589b40b68d763b44c9ced66c"
+		},
+		{
+			"Name": "Substance",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/2f6439c2f9584f49809d9b13b16c2ba4",
+			"BlacklistTargets": [
+				"Server",
+				"Client"
+			]
+		},
+		{
+			"Name": "LiveLink",
+			"Enabled": true
+		},
+		{
+			"Name": "ReplicationGraph",
+			"Enabled": true
+		},
+		{
+			"Name": "NiagaraExtras",
+			"Enabled": true
+		},
+		{
+			"Name": "MagicLeapMedia",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Lumin"
+			]
+		},
+		{
+			"Name": "MagicLeapEmulator",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Lumin"
+			]
+		},
+		{
+			"Name": "MagicLeap",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Lumin"
+			]
+		},
+		{
+			"Name": "AppleVision",
+			"Enabled": false
+		},
+		{
+			"Name": "RootMotionExtractor",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/4b450f82f56040338a4d5744b3eda4f9"
 		}
 	],
 	"TargetPlatforms": [

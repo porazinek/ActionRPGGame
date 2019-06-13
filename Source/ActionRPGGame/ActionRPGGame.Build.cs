@@ -4,37 +4,14 @@ using UnrealBuildTool;
 
 public class ActionRPGGame : ModuleRules
 {
-	public ActionRPGGame(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PublicIncludePaths.AddRange(
-        new string[] {
-                "AbilityFramework",
-                "AbilityFramework/Abilities",
-                "AbilityFramework/Attributes",
-                "AbilityFramework/Effects",
-                "AbilityFramework/Public",
-                "ActionRPGGame/Abilities",
-                "ActionRPGGame/AI",
-                "ActionRPGGame/Attributes",
-                "ActionRPGGame/UI",
-                "ActionRPGGame/UI/Abilities"
-            // ... add public include paths required here ...
-            }
-        );
-
-            PrivateIncludePaths.AddRange(
+    public ActionRPGGame(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        PublicDefinitions.Add("BOOST_SYSTEM_NOEXCEPT");
+        PublicDefinitions.Add("GPR_FORBID_UNREACHABLE_CODE=1");
+        PublicDefinitions.Add("GOOGLE_PROTOBUF_NO_RTTI=1");
+        PrivateIncludePaths.AddRange(
             new string[] {
-                    "AbilityFramework",
-                    "AbilityFramework/Abilities",
-                    "AbilityFramework/Attributes",
-                    "AbilityFramework/Effects",
-                    "AbilityFramework/Private",
-                    "ActionRPGGame/Abilities",
-                    "ActionRPGGame/AI",
-                    "ActionRPGGame/Attributes",
-                    "ActionRPGGame/UI",
-                    "ActionRPGGame/UI/Abilities"
                 // ... add other private include paths required here ...
                 }
             );
@@ -43,17 +20,64 @@ public class ActionRPGGame : ModuleRules
             "CoreUObject",
             "Engine",
             "InputCore",
-            "Slate",
-            "SlateCore",
-            "UMG",
+            "Json",
+            "JsonUtilities",
             "GameplayTags",
             "AbilityFramework",
             "AssetRegistry",
-            //"Sockets",
-            //"OnlineSubsystemUtils",
+            "OrionAnimation",
             "ActorSequence",
-            "AbilityManager",
-            "DraggableWindow"
+            "JsonUObject",
+            "InventoryFramework",
+            "OnlineSubsystem"
         });
-	}
+
+        if (Target.Type == TargetRules.TargetType.Editor)
+        {
+            PublicDependencyModuleNames.AddRange(new string[] { "UnrealEd", "SourceControl", "Matinee", "PropertyEditor", "ShaderCore", "AbilityFrameworkEditor" });
+            PrivateDependencyModuleNames.AddRange(new string[] { "AbilityFrameworkEditor" });
+        }
+        PublicDependencyModuleNames.AddRange(new string[] { "GRPC" });
+        PublicDefinitions.Add("GPR_GCOV=1"); //hax
+        if (Target.Type == TargetRules.TargetType.Server)
+        {
+            if (Target.Platform == UnrealTargetPlatform.Linux)
+            {
+                PublicDefinitions.Add("WITH_AGONES=1");
+                PublicDefinitions.Add("ENABLE_GRPC=1"); //hack
+                PublicDependencyModuleNames.AddRange(new string[] { "Agones" });
+
+            }
+            else
+            {
+                PublicDefinitions.Add("WITH_AGONES=0");
+                PublicDefinitions.Add("ENABLE_GRPC=0"); //hack
+            }
+        }
+		else
+        {
+            PublicDefinitions.Add("WITH_AGONES=0");
+            PublicDefinitions.Add("ENABLE_GRPC=0"); //hack
+        }
+
+        if ( (Target.Type == TargetRules.TargetType.Client) || (Target.Type == TargetRules.TargetType.Editor))
+        {
+            PublicDependencyModuleNames.AddRange(new string[] {
+				"Slate",
+				"SlateCore",
+				"UMG",
+                "InventoryFrameworkUI",
+                "DraggableWindow"
+            });
+
+            if (Target.Platform == UnrealTargetPlatform.Win64)
+            {
+                if (Target.Type == TargetRules.TargetType.Client)
+                {
+                    bEnableExceptions = true;
+                }
+            }
+        }
+    }
 }
+

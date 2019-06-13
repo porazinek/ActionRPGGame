@@ -8,14 +8,6 @@ public class DraggableWindow : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				"DraggableWindow/Public"
-				// ... add public include paths required here ...
-			}
-			);
-				
-		
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				"DraggableWindow/Private",
@@ -27,7 +19,7 @@ public class DraggableWindow : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+                 "Core",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -36,6 +28,7 @@ public class DraggableWindow : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+                "Core",
 				"CoreUObject",
 				"Engine",
                 "InputCore",
@@ -53,5 +46,9 @@ public class DraggableWindow : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-	}
+        if (Target.Type == TargetRules.TargetType.Editor)
+        {
+            PublicDependencyModuleNames.AddRange(new string[] { "UnrealEd", "PropertyEditor" });
+        }
+    }
 }
